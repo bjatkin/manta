@@ -1,3 +1,6 @@
+mod parser;
+mod ast;
+
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::error::Error;

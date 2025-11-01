@@ -53,6 +53,11 @@ cargo build --release
 
 Note: the above commands are illustrative; please check `src/main.rs` and the CLI help for the current, accurate flags.
 
+## Project Structure
+
+`parser.rs` and `src/parser` contains the source code lexer and parser code.
+`ast.rs` contains the expression nodes and statment nodes.
+
 ## Language spec references
 
 Primary design documents are in `docs/`. Key files to read:
@@ -62,13 +67,6 @@ Primary design documents are in `docs/`. Key files to read:
 - `docs/token_list.md` — the token kinds the lexer should emit.
 
 These documents were used to author the example programs in `examples/` and should be considered the source-of-truth while the language evolves.
-
-## Next steps & roadmap
-
-- Implement lexer and unit tests for tokenization.
-- Implement parser using the EBNF grammar and add AST unit tests.
-- Design a simple IR and a minimal codegen or interpreter for fast iteration.
-- Add a `manta` CLI that can `build`, `run`, and `test` example programs.
 
 ## Command-line interface
 
