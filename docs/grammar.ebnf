@@ -27,36 +27,45 @@ import_decl   := 'import' ( STRING | import_block )
 import_block  := '(' STRING+ ')'
 block         := '{' statement* '}'
 
-statement     := let_stmt | expr_stmt | return_stmt | defer_stmt | match_stmt
-let_stmt      := 'let' identifier (type_spec)? (':=' | '=') expression
+statement     := let_stmt | decl_stmt | assign_stmt | try_stmt | expr_stmt | return_stmt | defer_stmt | match_stmt
+let_stmt      := 'let' identifier (type_spec | (type_spec? '=' expression))
+decl_stmt     := identifier ':=' expression
+assign_stmt   := identifier '=' expression
+try_stmt      := identifier? '.' identifier '(' identifier ')' ':=' try_expr
 return_stmt   := 'return' expression?
 defer_stmt    := 'defer' block
 match_stmt    := 'match' expression '{' match_arm+ '}'
 match_arm     := pattern block
+pattern       := identifier? '.' identifier ( '(' identifier ')' )? | literal | identifier | '_'
 
 expr_stmt     := expression
 
-expression    := assignment_expr
-assignment_expr := try_expr (('=' | ':=') try_expr)? ; simplified assignment
+expression  := try_expr | binary_expr | unary_expr | primary_expr
 
-try_expr      := 'try' primary_expr ('catch' '(' identifier ')' block)?
+try_expr    := 'try' expression ('catch' '(' identifier ')' block)?
+
+binary_expr   := expression binary_op expression
+
+binary_op     := '+'  | '-'  | '*'  | '/'  | '%'
+               | '==' | '!=' | '<'  | '>'  | '<=' | '>='
+               | '&&' | '||'
+               | '&'  | '|'
+
+unary_expr    := unary_op unary_expr | primary_expr
+
+unary_op      := '-' | '!' | '&' | '*'
 
 primary_expr  := literal
                | identifier
-               | identifier '(' type_spec ')'  ; enum variant constructor / pattern
                | '(' expression ')'
                | call_expr
 
 call_expr     := identifier '(' argument_list? ')'
 argument_list := expression (',' expression)*
-
-pattern       := identifier? '.' identifier ( '(' pattern_list? ')' )? | literal | identifier | '_'
-pattern_list  := pattern (',' pattern)*
-
 literal       := INTEGER | FLOAT | STRING | 'nil' | 'true' | 'false'
 
 type_spec     := basic_type | pointer_type | array_type | slice_type | identifier
-basic_type    := 'i8' | 'i16' | 'i32' | 'i64' | 'isize' | 'u8' | 'u16' | 'u32' | 'u64' | 'usize' | 'f32' | 'f64' | 'bool' | 'char' | 'string'
+basic_type    := 'i8' | 'i16' | 'i32' | 'i64' | 'isize' | 'u8' | 'u16' | 'u32' | 'u64' | 'usize' | 'f32' | 'f64' | 'bool' | 'char' | 'str'
 pointer_type  := '*' type_spec
 array_type    := '[' INTEGER ']' type_spec
 slice_type    := '[]' type_spec

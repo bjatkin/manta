@@ -3,7 +3,7 @@ enum Operator {
     Subtract,
     Multiply,
     Divide,
-} 
+}
 
 struct BinaryOp {
     left: Box<Expr>,

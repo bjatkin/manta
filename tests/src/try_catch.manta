@@ -5,7 +5,7 @@ type ErrStr enum {
     IOError
 }
 
-fn read_file(path string) ErrStr {
+fn read_file(path str) ErrStr {
     .Ok(f) := try open(path) catch { return .IOError }
     defer { close(f) }
 

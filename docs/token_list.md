@@ -12,7 +12,8 @@ Tokens (grouped):
 - i8, i16, i32, i64, isize, u8, u16, u32, u64, usize, f32, f64, bool, char, str
 
 3) Operators and punctuation (single or multi-char tokens):
-- { } ( ) [ ] , : ; -> := = => | . * & _
+- { } ( ) [ ] , : ; = > < > | . * + - / % & _
+- := == >= <= || && //
 
 4) Literals:
 - INTEGER (decimal, allow underscores, e.g. 1_000)
@@ -36,7 +37,7 @@ Notes and choices:
 - Multi-character tokens like `==` (logical equal check) and `:=` (short assignment) should be recognized before single-char tokens.
 
 Example token stream for `let p *i32 = nil`:
-- LET '*' IDENT('i32') '=' NIL
+- LET STAR IDENT('i32') EQUAL NIL
 
 Next steps:
 - Implement lexer that emits these tokens and write unit tests for tokenizing example inputs.

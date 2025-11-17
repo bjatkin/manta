@@ -190,7 +190,7 @@ type Maybei32 enum {
     None
 }
 
-fn describe(m Maybei32) string {
+fn describe(m Maybei32) str {
     return match m {
         .Some(v) { "has value" }
         .None { "none" }
@@ -263,7 +263,7 @@ type ErrStr enum {
     IOError
 }
 
-fn read_or_default(path *u8) ErrStr {
+fn read_or_default(path str) ErrStr {
     .Ok(f) := try open(path) catch { return .IOError }
     defer { close(f) }
 
@@ -292,7 +292,7 @@ param_list := param (',' param)*
 param := identifier type?
 block := '{' statement* '}'
 statement := let_stmt | expr_stmt | defer_stmt | return_stmt | ...
-let_stmt := identifier (':')? ('=' expression)?
+let_stmt := 'let' identifier (type_spec | (type_spec? '=' expression))
 defer_stmt := 'defer' block
 
 expression := try_expr | binary_expr | unary_expr | primary

@@ -1,9 +1,9 @@
-mod parser;
 mod ast;
+mod parser;
 
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
 use std::error::Error;
+use std::path::PathBuf;
 
 /// The CLI for the Manta programming language
 #[derive(Parser, Debug)]
@@ -23,7 +23,9 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[command(about = "Compile the project and produce build artifacts (use --out-dir to change output)")]
+    #[command(
+        about = "Compile the project and produce build artifacts (use --out-dir to change output)"
+    )]
     Build {
         #[arg(short, long, value_name = "OUT_DIR")]
         out_dir: Option<PathBuf>,
@@ -32,7 +34,9 @@ enum Commands {
         args: Vec<String>,
     },
 
-    #[command(about = "Check complies the project but stops once all checks have been performed and reported")]
+    #[command(
+        about = "Check complies the project but stops once all checks have been performed and reported"
+    )]
     Check {},
 
     #[command(about = "Run complies the project and immediately executes the resulting artifact")]
@@ -58,20 +62,28 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match &cli.command {
         Commands::Build { out_dir, args } => {
-            println!("stub: build -> workspace={:?}, out_dir={:?}, args={:?}, verbose={}",
-                workspace, out_dir, args, cli.verbose);
+            println!(
+                "stub: build -> workspace={:?}, out_dir={:?}, args={:?}, verbose={}",
+                workspace, out_dir, args, cli.verbose
+            );
         }
-        Commands::Check { } => {
-            println!("stub: check -> workspace={:?}, verbose={}",
-                workspace, cli.verbose);
+        Commands::Check {} => {
+            println!(
+                "stub: check -> workspace={:?}, verbose={}",
+                workspace, cli.verbose
+            );
         }
-        Commands::Run { } => {
-            println!("stub: run -> workspace={:?}, verbose={}",
-                workspace, cli.verbose);
+        Commands::Run {} => {
+            println!(
+                "stub: run -> workspace={:?}, verbose={}",
+                workspace, cli.verbose
+            );
         }
         Commands::Fmt { write, inputs } => {
-            println!("stub: fmt -> workspace={:?}, write={}, inputs={:?}, verbose={}",
-                workspace, write, inputs, cli.verbose);
+            println!(
+                "stub: fmt -> workspace={:?}, write={}, inputs={:?}, verbose={}",
+                workspace, write, inputs, cli.verbose
+            );
         }
     }
 

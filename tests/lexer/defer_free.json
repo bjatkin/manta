@@ -1,0 +1,658 @@
+[
+  {
+    "kind": "TypeKeyword",
+    "lexeme": "type",
+    "span": {
+      "start": 30,
+      "end": 34
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "ErrWrite",
+    "span": {
+      "start": 35,
+      "end": 43
+    }
+  },
+  {
+    "kind": "EnumKeyword",
+    "lexeme": "enum",
+    "span": {
+      "start": 44,
+      "end": 48
+    }
+  },
+  {
+    "kind": "OpenBrace",
+    "lexeme": "{",
+    "span": {
+      "start": 49,
+      "end": 50
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "Ok",
+    "span": {
+      "start": 55,
+      "end": 57
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "IOError",
+    "span": {
+      "start": 62,
+      "end": 69
+    }
+  },
+  {
+    "kind": "CloseBrace",
+    "lexeme": "}",
+    "span": {
+      "start": 70,
+      "end": 71
+    }
+  },
+  {
+    "kind": "FnKeyword",
+    "lexeme": "fn",
+    "span": {
+      "start": 73,
+      "end": 75
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "write_and_cleanup",
+    "span": {
+      "start": 76,
+      "end": 93
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 93,
+      "end": 94
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "path",
+    "span": {
+      "start": 94,
+      "end": 98
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "string",
+    "span": {
+      "start": 99,
+      "end": 105
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 105,
+      "end": 106
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "ErrWrite",
+    "span": {
+      "start": 107,
+      "end": 115
+    }
+  },
+  {
+    "kind": "OpenBrace",
+    "lexeme": "{",
+    "span": {
+      "start": 116,
+      "end": 117
+    }
+  },
+  {
+    "kind": "Dot",
+    "lexeme": ".",
+    "span": {
+      "start": 122,
+      "end": 123
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "Ok",
+    "span": {
+      "start": 123,
+      "end": 125
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 125,
+      "end": 126
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "f",
+    "span": {
+      "start": 126,
+      "end": 127
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 127,
+      "end": 128
+    }
+  },
+  {
+    "kind": "ColonEqual",
+    "lexeme": ":=",
+    "span": {
+      "start": 129,
+      "end": 131
+    }
+  },
+  {
+    "kind": "TryKeyword",
+    "lexeme": "try",
+    "span": {
+      "start": 132,
+      "end": 135
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "open",
+    "span": {
+      "start": 136,
+      "end": 140
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 140,
+      "end": 141
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "path",
+    "span": {
+      "start": 141,
+      "end": 145
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 145,
+      "end": 146
+    }
+  },
+  {
+    "kind": "CatchKeyword",
+    "lexeme": "catch",
+    "span": {
+      "start": 147,
+      "end": 152
+    }
+  },
+  {
+    "kind": "OpenBrace",
+    "lexeme": "{",
+    "span": {
+      "start": 153,
+      "end": 154
+    }
+  },
+  {
+    "kind": "ReturnKeyword",
+    "lexeme": "return",
+    "span": {
+      "start": 155,
+      "end": 161
+    }
+  },
+  {
+    "kind": "Dot",
+    "lexeme": ".",
+    "span": {
+      "start": 162,
+      "end": 163
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "IOError",
+    "span": {
+      "start": 163,
+      "end": 170
+    }
+  },
+  {
+    "kind": "CloseBrace",
+    "lexeme": "}",
+    "span": {
+      "start": 171,
+      "end": 172
+    }
+  },
+  {
+    "kind": "DeferKeyword",
+    "lexeme": "defer",
+    "span": {
+      "start": 177,
+      "end": 182
+    }
+  },
+  {
+    "kind": "OpenBrace",
+    "lexeme": "{",
+    "span": {
+      "start": 183,
+      "end": 184
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "close",
+    "span": {
+      "start": 185,
+      "end": 190
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 190,
+      "end": 191
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "f",
+    "span": {
+      "start": 191,
+      "end": 192
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 192,
+      "end": 193
+    }
+  },
+  {
+    "kind": "CloseBrace",
+    "lexeme": "}",
+    "span": {
+      "start": 194,
+      "end": 195
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "buf",
+    "span": {
+      "start": 201,
+      "end": 204
+    }
+  },
+  {
+    "kind": "ColonEqual",
+    "lexeme": ":=",
+    "span": {
+      "start": 205,
+      "end": 207
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "new",
+    "span": {
+      "start": 208,
+      "end": 211
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 211,
+      "end": 212
+    }
+  },
+  {
+    "kind": "OpenSquare",
+    "lexeme": "[",
+    "span": {
+      "start": 212,
+      "end": 213
+    }
+  },
+  {
+    "kind": "CloseSquare",
+    "lexeme": "]",
+    "span": {
+      "start": 213,
+      "end": 214
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "u8",
+    "span": {
+      "start": 214,
+      "end": 216
+    }
+  },
+  {
+    "kind": "Comma",
+    "lexeme": ",",
+    "span": {
+      "start": 216,
+      "end": 217
+    }
+  },
+  {
+    "kind": "Int",
+    "lexeme": "256",
+    "span": {
+      "start": 218,
+      "end": 221
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 221,
+      "end": 222
+    }
+  },
+  {
+    "kind": "DeferKeyword",
+    "lexeme": "defer",
+    "span": {
+      "start": 227,
+      "end": 232
+    }
+  },
+  {
+    "kind": "OpenBrace",
+    "lexeme": "{",
+    "span": {
+      "start": 233,
+      "end": 234
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "free",
+    "span": {
+      "start": 235,
+      "end": 239
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 239,
+      "end": 240
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "buf",
+    "span": {
+      "start": 240,
+      "end": 243
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 243,
+      "end": 244
+    }
+  },
+  {
+    "kind": "CloseBrace",
+    "lexeme": "}",
+    "span": {
+      "start": 245,
+      "end": 246
+    }
+  },
+  {
+    "kind": "Dot",
+    "lexeme": ".",
+    "span": {
+      "start": 252,
+      "end": 253
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "Ok",
+    "span": {
+      "start": 253,
+      "end": 255
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 255,
+      "end": 256
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "n",
+    "span": {
+      "start": 256,
+      "end": 257
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 257,
+      "end": 258
+    }
+  },
+  {
+    "kind": "ColonEqual",
+    "lexeme": ":=",
+    "span": {
+      "start": 259,
+      "end": 261
+    }
+  },
+  {
+    "kind": "TryKeyword",
+    "lexeme": "try",
+    "span": {
+      "start": 262,
+      "end": 265
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "write",
+    "span": {
+      "start": 266,
+      "end": 271
+    }
+  },
+  {
+    "kind": "OpenParen",
+    "lexeme": "(",
+    "span": {
+      "start": 271,
+      "end": 272
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "f",
+    "span": {
+      "start": 272,
+      "end": 273
+    }
+  },
+  {
+    "kind": "Comma",
+    "lexeme": ",",
+    "span": {
+      "start": 273,
+      "end": 274
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "buf",
+    "span": {
+      "start": 275,
+      "end": 278
+    }
+  },
+  {
+    "kind": "Comma",
+    "lexeme": ",",
+    "span": {
+      "start": 278,
+      "end": 279
+    }
+  },
+  {
+    "kind": "Int",
+    "lexeme": "256",
+    "span": {
+      "start": 280,
+      "end": 283
+    }
+  },
+  {
+    "kind": "CloseParen",
+    "lexeme": ")",
+    "span": {
+      "start": 283,
+      "end": 284
+    }
+  },
+  {
+    "kind": "CatchKeyword",
+    "lexeme": "catch",
+    "span": {
+      "start": 285,
+      "end": 290
+    }
+  },
+  {
+    "kind": "OpenBrace",
+    "lexeme": "{",
+    "span": {
+      "start": 291,
+      "end": 292
+    }
+  },
+  {
+    "kind": "ReturnKeyword",
+    "lexeme": "return",
+    "span": {
+      "start": 293,
+      "end": 299
+    }
+  },
+  {
+    "kind": "Dot",
+    "lexeme": ".",
+    "span": {
+      "start": 300,
+      "end": 301
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "IOError",
+    "span": {
+      "start": 301,
+      "end": 308
+    }
+  },
+  {
+    "kind": "CloseBrace",
+    "lexeme": "}",
+    "span": {
+      "start": 309,
+      "end": 310
+    }
+  },
+  {
+    "kind": "ReturnKeyword",
+    "lexeme": "return",
+    "span": {
+      "start": 315,
+      "end": 321
+    }
+  },
+  {
+    "kind": "Dot",
+    "lexeme": ".",
+    "span": {
+      "start": 322,
+      "end": 323
+    }
+  },
+  {
+    "kind": "Ident",
+    "lexeme": "Ok",
+    "span": {
+      "start": 323,
+      "end": 325
+    }
+  },
+  {
+    "kind": "CloseBrace",
+    "lexeme": "}",
+    "span": {
+      "start": 326,
+      "end": 327
+    }
+  },
+  {
+    "kind": "Eof",
+    "lexeme": null,
+    "span": {
+      "start": 328,
+      "end": 328
+    }
+  }
+]
