@@ -1,6 +1,7 @@
 # Manta AST Specification
 
-This document describes the Abstract Syntax Tree (AST) structure for the Manta language, mapping language constructs to AST nodes. It serves as a reference for understanding the relationships between the concrete syntax (defined in `grammar.ebnf`) and the AST representation.
+This document describes the Abstract Syntax Tree (AST) structure for the Manta language, mapping language constructs to AST nodes.
+It serves as a reference for understanding the relationships between the concrete syntax (defined in `grammar.ebnf`) and the AST representation.
 
 ## Overview
 
@@ -487,7 +488,7 @@ assignment_expr := try_expr (('=' | ':=') try_expr)?
 **AST Structure**:
 ```
 Expr::Assignment {
-    target: Box<Expr>,   // usually an Identifier or dereference
+    target: Box<Expr>, // usually an Identifier or dereference
     value: Box<Expr>
 }
 ```
@@ -613,6 +614,8 @@ new([]T, n, cap) // allocate slice with length n and capacity cap, returns []T
 ```
 Expr::New {
     type_spec: TypeSpec
+    len: Option<Box<Expr>
+    cap: Option<Box<Expr>
 }
 ```
 
@@ -695,8 +698,7 @@ Maybei32         // user-defined enum type
 
 **Grammar Reference**:
 ```ebnf
-pattern       := identifier? '.' identifier ( '(' pattern_list? ')' )? | literal | identifier | '_'
-pattern_list  := pattern (',' pattern)*
+pattern := identifier? '.' identifier ( '(' identifier ')' )? | literal | identifier | '_'
 ```
 
 **Purpose**: Destructure values in match arms and let bindings, binding names to parts of a value.
@@ -709,18 +711,18 @@ enum Pattern {
     Wildcard,                   // _
     EnumVariant {
         variant_name: String,   // "Some", "None", "Ok", "IOError"
-        payload_pattern: Option<Box<Pattern>>
+        payload_pattern: Option<String> // x, y, v
     }
 }
 ```
 
 **Examples**:
 ```manta
-.Some(v)        // extract value from Some variant into v
-.None           // match None variant (no payload)
-_               // match anything, don't bind
-x               // match anything, bind to x
-42              // match literal 42
+.Some(v) // extract value from Some variant into v
+.None    // match None variant (no payload)
+_        // match anything, don't bind
+x        // match anything, bind to x
+42       // match literal 42
 ```
 
 ---
@@ -797,15 +799,20 @@ Expression
 ├── Try (try expr catch handler)
 ├── Call (function(args))
 ├── EnumVariant (.Variant(payload))
-├── New (allocation)
-└── Free (deallocation)
+├── New (new(type_spec))
+└── Free (free(expr))
 
 Statement
-├── Let (let x type := expr)
-├── Expression (expr;)
+├── Let (let x type = expr / x := expr)
+├── Assignment (x = expr)
+├── Expression (expr)
 ├── Return (return expr?)
 ├── Defer (defer block)
+├── If (if expr block)
 ├── Match (match expr { arms })
+├── Type Declaration (type Ident struct struct_block / type Ident enum enum_block)
+├── Const Declaration (const Ident = expr)
+├── Import Declaration (import "module" / import ("mod1" "mod2"))
 └── Block ({ statements })
 ```
 

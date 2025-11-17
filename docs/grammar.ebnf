@@ -4,8 +4,7 @@
 ; and maps to the language elements described in `docs/language_spec.md`.
 ;
 ; Note: This is a simplified grammar for the initial compiler front-end. It omits some
-; expression precedence and all operator details for brevity; these should be expanded
-; into a full expression grammar during implementation.
+; expression precedence and operator details for brevity
 
 program       := { top_level_decl } ; file of declarations
 
