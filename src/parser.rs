@@ -1,15 +1,15 @@
-pub mod expression;
 pub mod lexer;
 pub mod parselets;
-pub mod statements;
 pub mod types;
 
 use crate::ast::Expr;
 use crate::parser::lexer::{Lexer, Token, TokenKind};
-use parselets::{InfixParselet, PrefixParselet};
-use serde::{Deserialize, Serialize};
-
+use parselets::{
+    BoolLiteralParselet, FloatLiteralParselet, IdentifierParselet, InfixParselet,
+    IntLiteralParselet, NilLiteralParselet, Precedence, PrefixParselet, StringLiteralParselet,
+};
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /// Parse error type for the parser core.
 #[derive(Debug, Clone)]
@@ -19,19 +19,19 @@ pub enum ParseError {
     Custom(String),
 }
 
-// Operator precedence levels.
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub enum Precedence {
-    ASSIGNMENT,
-    LOGICAL_OR,
-    LOGICAL_AND,
-    EQUALITY,
-    COMPARISON,
-    ADDITIVE,
-    MULTIPLICATIVE,
-    EXPONENT,
-    PREFIX,
-    CALL,
+// More specific error variants for Phase 2 and beyond
+impl ParseError {
+    pub fn invalid_integer(lexeme: &str) -> Self {
+        ParseError::Custom(format!("Invalid integer literal: {}", lexeme))
+    }
+
+    pub fn invalid_float(lexeme: &str) -> Self {
+        ParseError::Custom(format!("Invalid float literal: {}", lexeme))
+    }
+
+    pub fn invalid_string(msg: &str) -> Self {
+        ParseError::Custom(format!("Invalid string literal: {}", msg))
+    }
 }
 
 /// A minimal Parser core scaffolding. This implements a buffered token stream
@@ -42,8 +42,8 @@ pub struct Parser {
     // small read buffer for lookahead
     read: Vec<Token>,
     // prefix and infix registries stored as HashMaps
-    prefix_parselets: HashMap<TokenKind, Box<dyn PrefixParselet>>,
-    infix_parselets: HashMap<TokenKind, Box<dyn InfixParselet>>,
+    prefix_parselets: HashMap<TokenKind, Rc<dyn PrefixParselet>>,
+    infix_parselets: HashMap<TokenKind, Rc<dyn InfixParselet>>,
 }
 
 impl Parser {
@@ -88,20 +88,89 @@ impl Parser {
     }
 
     /// Register a prefix parselet for a token kind.
-    pub fn register_prefix(&mut self, kind: TokenKind, parselet: Box<dyn PrefixParselet>) {
+    pub fn register_prefix(&mut self, kind: TokenKind, parselet: Rc<dyn PrefixParselet>) {
         self.prefix_parselets.insert(kind, parselet);
     }
 
     /// Register an infix parselet for a token kind.
-    pub fn register_infix(&mut self, kind: TokenKind, parselet: Box<dyn InfixParselet>) {
+    pub fn register_infix(&mut self, kind: TokenKind, parselet: Rc<dyn InfixParselet>) {
         self.infix_parselets.insert(kind, parselet);
     }
 
-    // Placeholder for parse_expression - will be implemented in Phase 2+.
+    /// Parse an expression, starting with minimum precedence 0.
+    /// This is the public API for expression parsing.
     pub fn parse_expression(&mut self) -> Result<Expr, ParseError> {
-        Err(ParseError::Custom(
-            "parse_expression not implemented".to_string(),
-        ))
+        self.parse_expression_precedence(Precedence::Base)
+    }
+
+    /// Parse an expression with a minimum precedence level.
+    /// This implements the Pratt parser algorithm.
+    pub fn parse_expression_precedence(
+        &mut self,
+        min_precedence: Precedence,
+    ) -> Result<Expr, ParseError> {
+        // Consume the next token
+        let token = self.consume()?;
+
+        // Look up the prefix parselet for this token
+        let prefix_opt = self.prefix_parselets.get(&token.kind);
+        if prefix_opt.is_none() {
+            return Err(ParseError::UnexpectedToken(format!(
+                "No prefix parselet for token kind: {:?}",
+                token.kind
+            )));
+        };
+        let prefix = prefix_opt.unwrap().clone();
+
+        // Parse the prefix expression
+        let mut left = prefix.parse(self, token)?;
+
+        // Loop: while the next token's precedence is higher than min_precedence
+        loop {
+            let next_token = self.lookahead(0)?.clone();
+            let next_precedence = self.get_precedence(&next_token.kind)?;
+
+            if next_precedence < min_precedence {
+                break;
+            }
+
+            let token = self.consume()?;
+            let infix_opt = self.infix_parselets.get(&token.kind);
+            if infix_opt.is_none() {
+                return Err(ParseError::UnexpectedToken(format!(
+                    "No infix parselet for token kind: {:?}",
+                    token.kind
+                )));
+            }
+            let infix = infix_opt.unwrap().clone();
+
+            left = infix.parse(self, left, token)?;
+        }
+
+        Ok(left)
+    }
+
+    /// Get the precedence of a token kind
+    fn get_precedence(&self, kind: &TokenKind) -> Result<Precedence, ParseError> {
+        match self.infix_parselets.get(kind) {
+            Some(parselet) => Ok(parselet.precedence()),
+            None => Err(ParseError::UnexpectedToken(format!(
+                "Unknown token precedence for kind: {:?}",
+                kind
+            ))),
+        }
+    }
+
+    /// Register all the parselets for the parser
+    pub fn register_parselets(&mut self) {
+        // Register prefix parselets for literals
+        self.register_prefix(TokenKind::Int, Rc::new(IntLiteralParselet));
+        self.register_prefix(TokenKind::Float, Rc::new(FloatLiteralParselet));
+        self.register_prefix(TokenKind::Str, Rc::new(StringLiteralParselet));
+        self.register_prefix(TokenKind::TrueLiteral, Rc::new(BoolLiteralParselet));
+        self.register_prefix(TokenKind::FalseLiteral, Rc::new(BoolLiteralParselet));
+        self.register_prefix(TokenKind::NilLiteral, Rc::new(NilLiteralParselet));
+        self.register_prefix(TokenKind::Ident, Rc::new(IdentifierParselet));
     }
 }
 
@@ -111,17 +180,56 @@ mod tests {
 
     #[test]
     fn lookahead_and_consume_basic() {
-        let src = "let x = 1";
-        let lexer = Lexer::new(src);
+        let input = "42";
+        let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
 
-        // lookahead should provide first token
-        let t0 = parser.lookahead(0).expect("lookahead0");
-        assert_eq!(t0.kind, TokenKind::LetKeyword);
+        let token0 = parser.lookahead(0).unwrap();
+        assert_eq!(token0.kind, TokenKind::Int);
 
-        // consume and then next token
-        let _ = parser.consume().expect("consume");
-        let t1 = parser.lookahead(0).expect("lookahead1");
-        assert_eq!(t1.kind, TokenKind::Ident);
+        let consumed = parser.consume().unwrap();
+        assert_eq!(consumed.kind, TokenKind::Int);
+    }
+
+    #[test]
+    fn lookahead_multiple() {
+        let input = "42 + 3.14";
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let token0 = parser.lookahead(0).unwrap();
+        assert_eq!(token0.kind, TokenKind::Int);
+
+        let token1 = parser.lookahead(1).unwrap();
+        assert_eq!(token1.kind, TokenKind::Plus);
+
+        let token2 = parser.lookahead(2).unwrap();
+        assert_eq!(token2.kind, TokenKind::Float);
+    }
+
+    #[test]
+    fn match_token_success() {
+        let input = "42";
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let matched = parser.match_token(TokenKind::Int).unwrap();
+        assert!(matched);
+
+        let eof_or_next = parser.lookahead(0).unwrap();
+        assert_eq!(eof_or_next.kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn match_token_failure() {
+        let input = "42";
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let matched = parser.match_token(TokenKind::Str).unwrap();
+        assert!(!matched);
+
+        let token = parser.lookahead(0).unwrap();
+        assert_eq!(token.kind, TokenKind::Int);
     }
 }

@@ -298,7 +298,78 @@ defer_stmt := 'defer' block
 expression := try_expr | binary_expr | unary_expr | primary
 try_expr := 'try' expression ('catch' '(' identifier ')' block)?
 
-## 7) Examples
+## 7) Operator precedence in Manta
+
+This section describes the intended operator precedence and associativity used by the Manta parser core.
+The parser's precedence levels are defined by the `Precedence` enum in `src/parser.rs` and token kinds are defined in `src/parser/lexer.rs`.
+
+Notes:
+- The `Precedence` enum (in `src/parser.rs`) orders variants from lowest to highest precedence. The Pratt parser uses these values when deciding whether to continue parsing infix operators.
+- The lexer exposes operator tokens as the `TokenKind` variants in `src/parser/lexer.rs`. Where possible the token names are shown below.
+
+### Precedence levels (highest → lowest)
+
+1. Call (highest)
+   - Purpose: function / method call binding (tightest binding).
+   - Typical token: `OpenParen` used as a postfix/infix for call parselets.
+
+2. Prefix
+   - Purpose: unary operators that appear before an expression (e.g. unary `-`).
+   - Typical tokens: `Minus` (unary negation), `&` (address-of) if used as a prefix in the language.
+   - Notes: Prefix parselets are handled when the prefix token is consumed; infix parselets are then applied according to their precedence.
+
+3. Exponentiation
+   - Purpose: power operator `**`.
+   - Token: `StarStar`.
+   - Associativity: right-associative (i.e. `a ** b ** c` parsed as `a ** (b ** c)`).
+
+4. Multiplication
+   - Purpose: `*`, `/`, `%`.
+   - Tokens: `Star`, `Slash`, `Percent`.
+   - Associativity: left-associative (i.e. `a * b / c` parsed as `(a * b) / c`).
+
+5. Addition
+   - Purpose: `+`, `-` (binary add/subtract).
+   - Tokens: `Plus`, `Minus`.
+   - Associativity: left-associative.
+
+6. Comparison
+   - Purpose: ordering comparisons.
+   - Tokens: `GreaterThan`, `LessThan`, `GreaterOrEqual`, `LessOrEqual`.
+   - Notes: languages vary on whether chained comparisons are allowed; Manta's parser should decide whether to support chaining (`a < b < c`) or to make comparisons non-associative.
+
+7. Equality
+   - Purpose: equality / inequality.
+   - Tokens: `EqualEqual`, `NotEqual`.
+   - Associativity: typically non-associative; if parsed as left-associative, be explicit about semantics.
+
+8. Logical AND
+   - Purpose: boolean AND.
+   - Token: `AndAnd`.
+   - Associativity: left-associative.
+
+9. Logical OR
+   - Purpose: boolean OR.
+   - Token: `PipePipe`.
+   - Associativity: left-associative.
+
+10. Assignment (lowest)
+    - Purpose: assignment and compound assignment.
+    - Tokens: `Equal` (simple assignment `=`), `PlusEqual`, `MinusEqual`, `ColonEqual` (used by some constructs), etc.
+    - Associativity: typically right-associative (`a = b = c` parsed as `a = (b = c)`).
+
+11. Base
+    - Purpose: base level used as the stopping point for the Pratt parser; primary expressions (literals, identifiers) are handled by prefix parselets.
+
+### Operator Precedence Examples
+
+- `a + b * c` → `a + (b * c)` (multiplication binds tighter than addition)
+- `-a * b` → `(-a) * b` (prefix binds before multiplication)
+- `a ** b ** c` → `a ** (b ** c)` (exponentiation is right-associative)
+- `a && b || c` → `(a && b) || c` (AND has higher precedence than OR)
+- `a = b + c` → `a = (b + c)` (assignment is low precedence)
+
+## 8) Examples
 
 Full example showing defer + new/free + try/catch + Option:
 
@@ -327,7 +398,7 @@ fn process(path *u8) MaybeErri32 {
     return .Ok(val)
 }
 
-## 8) Edge cases and follow-ups
+## 9) Edge cases and follow-ups
 
 - Define exact semantics for captures in `defer` blocks (by reference vs copy). Recommendation: capture variables by reference; if the user needs copies, they should explicitly copy into the defer block.
 - Decide on typed `free` (should `free` require a `*T` or accept `void*`?). Recommendation: `free(ptr: *any)` is accepted.
@@ -370,8 +441,3 @@ Integration with `defer` and `new`/`free`:
 - Because references are typed, `free` takes a `*T` and performs deallocation for that typed allocation. `free(nil)` is a no-op.
 - `defer` can capture typed references and will run cleanup even if they are `nil` (user code should check before freeing if necessary).
 
-## Next steps
-
-- Convert this draft into concrete grammar rules for the lexer and parser.
-- Design token kinds and AST node types for each construct.
-- Implement simple interpreter or codegen paths for testing semantics.
