@@ -1,4 +1,5 @@
 use crate::ast::{BinaryExpr, BinaryOp, Expr};
+use crate::parser::expression;
 use crate::parser::lexer::Token;
 use crate::parser::parselets::{InfixParselet, Precedence};
 use crate::parser::{ParseError, Parser};
@@ -18,7 +19,7 @@ pub struct BinaryOperatorParselet {
 
 impl InfixParselet for BinaryOperatorParselet {
     fn parse(&self, parser: &mut Parser, left: Expr, _token: Token) -> Result<Expr, ParseError> {
-        let right = parser.parse_expression_precedence(self.precedence)?;
+        let right = expression::parse_expression(parser, self.precedence)?;
 
         Ok(Expr::BinaryExpr(BinaryExpr {
             left: Box::new(left),

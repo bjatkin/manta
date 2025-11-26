@@ -1,4 +1,5 @@
 use crate::ast::{Expr, UnaryExpr, UnaryOp};
+use crate::parser::expression;
 use crate::parser::lexer::Token;
 use crate::parser::parselets::{Precedence, PrefixParselet};
 use crate::parser::{ParseError, Parser};
@@ -12,7 +13,7 @@ pub struct UnaryOperatorParselet {
 
 impl PrefixParselet for UnaryOperatorParselet {
     fn parse(&self, parser: &mut Parser, _token: Token) -> Result<Expr, ParseError> {
-        let right = parser.parse_expression_precedence(Precedence::Prefix)?;
+        let right = expression::parse_expression(parser, Precedence::Prefix)?;
         Ok(Expr::UnaryExpr(UnaryExpr {
             operator: self.operator,
             operand: Box::new(right),

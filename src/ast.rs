@@ -81,7 +81,7 @@ pub struct ImportDecl {
 }
 
 /// Type specification
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TypeSpec {
     Int32,
     Int16,
@@ -95,7 +95,6 @@ pub enum TypeSpec {
     Float32,
     String,
     Bool,
-    Void,
     // User-defined types
     Named(String),
     // Composite types

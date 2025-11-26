@@ -32,7 +32,6 @@ pub use unary_operator::UnaryOperatorParselet;
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Precedence {
     Base,
-    Assignment,
     LogicalOr,
     LogicalAnd,
     BitwiseOr,
