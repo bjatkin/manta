@@ -14,12 +14,9 @@ impl InfixParselet for FieldAccessParselet {
         let field_token = parser.consume()?;
 
         let field_name = match field_token.kind {
-            TokenKind::Ident => {
-                let name = field_token
-                    .lexeme
-                    .ok_or_else(|| ParseError::Custom("Field name missing lexeme".to_string()))?;
-                IdentifierExpr { name }
-            }
+            TokenKind::Ident => IdentifierExpr {
+                name: field_token.lexeme,
+            },
             _ => {
                 return Err(ParseError::UnexpectedToken(
                     "field name required after '.'".to_string(),

@@ -649,7 +649,7 @@
   },
   {
     "kind": "Eof",
-    "lexeme": null,
+    "lexeme": "",
     "span": {
       "start": 328,
       "end": 328

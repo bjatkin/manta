@@ -505,7 +505,7 @@
   },
   {
     "kind": "Eof",
-    "lexeme": null,
+    "lexeme": "",
     "span": {
       "start": 315,
       "end": 315

@@ -10,13 +10,10 @@ pub struct IntLiteralParselet;
 
 impl PrefixParselet for IntLiteralParselet {
     fn parse(&self, _parser: &mut Parser, token: Token) -> Result<Expr, ParseError> {
-        let lexeme = token
+        let value = token
             .lexeme
-            .ok_or_else(|| ParseError::Custom("Integer literal missing lexeme".to_string()))?;
-
-        let value = lexeme
             .parse::<i64>()
-            .map_err(|_| ParseError::invalid_integer(&lexeme))?;
+            .map_err(|_| ParseError::invalid_integer(&token.lexeme))?;
 
         Ok(Expr::IntLiteral(value))
     }
@@ -50,7 +47,7 @@ mod tests {
     fn test_parse_invalid_integer() {
         let token = Token::new(
             TokenKind::Int,
-            Some("99999999999999999999".to_string()),
+            "99999999999999999999".to_string(),
             Span::new(0, 20),
         );
         let mut parser = Parser::new(Lexer::new(""));
@@ -60,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_missing_lexeme() {
-        let token = Token::new(TokenKind::Int, None, Span::new(0, 0));
+        let token = Token::new(TokenKind::Int, String::new(), Span::new(0, 0));
         let mut parser = Parser::new(Lexer::new(""));
         let result = IntLiteralParselet.parse(&mut parser, token);
         assert!(result.is_err());

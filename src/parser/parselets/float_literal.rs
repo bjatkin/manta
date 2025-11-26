@@ -10,13 +10,10 @@ pub struct FloatLiteralParselet;
 
 impl PrefixParselet for FloatLiteralParselet {
     fn parse(&self, _parser: &mut Parser, token: Token) -> Result<Expr, ParseError> {
-        let lexeme = token
+        let value = token
             .lexeme
-            .ok_or_else(|| ParseError::Custom("Float literal missing lexeme".to_string()))?;
-
-        let value = lexeme
             .parse::<f64>()
-            .map_err(|_| ParseError::invalid_float(&lexeme))?;
+            .map_err(|_| ParseError::invalid_float(&token.lexeme))?;
 
         Ok(Expr::FloatLiteral(value))
     }
@@ -48,7 +45,7 @@ mod tests {
 
     #[test]
     fn test_missing_lexeme() {
-        let token = Token::new(TokenKind::Float, None, Span::new(0, 0));
+        let token = Token::new(TokenKind::Float, String::new(), Span::new(0, 0));
         let mut parser = Parser::new(Lexer::new(""));
         let result = FloatLiteralParselet.parse(&mut parser, token);
         assert!(result.is_err());

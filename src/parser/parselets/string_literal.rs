@@ -10,23 +10,13 @@ pub struct StringLiteralParselet;
 
 impl PrefixParselet for StringLiteralParselet {
     fn parse(&self, _parser: &mut Parser, token: Token) -> Result<Expr, ParseError> {
-        let lexeme = match token.lexeme {
-            Some(lex) => lex,
-            None => {
-                return Err(ParseError::invalid_string(
-                    "missing lexeme for string literal",
-                ));
-            }
-        };
-
-        Ok(Expr::StringLiteral(lexeme))
+        Ok(Expr::StringLiteral(token.lexeme))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::lexer::{Lexer, Span, TokenKind};
 
     crate::test_parselet!(
         StringLiteralParselet,
@@ -46,12 +36,4 @@ mod tests {
             want_value: assert_eq!(s, "hello world"),
         },
     );
-
-    #[test]
-    fn test_missing_lexeme() {
-        let token = Token::new(TokenKind::Str, None, Span::new(0, 0));
-        let mut parser = Parser::new(Lexer::new(""));
-        let result = StringLiteralParselet.parse(&mut parser, token);
-        assert!(result.is_err());
-    }
 }
