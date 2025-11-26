@@ -22,6 +22,7 @@ pub enum ParseError {
     MissingExpression(String),
     Custom(String),
     InvalidTypeSpec(String),
+    InvalidArguments(String),
 }
 
 impl ParseError {

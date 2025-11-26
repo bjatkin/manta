@@ -53,6 +53,7 @@ pub fn parse_expression(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::TypeSpec;
     use crate::ast::{BinaryOp, Expr, UnaryOp};
     use crate::parser::lexer::Lexer;
 
@@ -752,6 +753,125 @@ mod tests {
                     _ => panic!("Expected target to be CallExpr"),
                 }
                 assert_eq!(field_access.field.name, "host");
+            },
+        },
+        parse_expression_call_new {
+            input: "new(i32)",
+            want_var: Expr::New(new_expr),
+            want_value: {
+                match new_expr.type_spec {
+                    TypeSpec::Int32 => (),
+                    _ => panic!("Expected TypeSpec::Int32, but got {:?}", new_expr.type_spec),
+                }
+                assert!(new_expr.len.is_none());
+                assert!(new_expr.cap.is_none());
+            },
+        },
+        parse_expression_call_new_slice {
+            input: "new([]f64, 10)",
+            want_var: Expr::New(new_expr),
+            want_value: {
+                match new_expr.type_spec {
+                    TypeSpec::Slice(t) => assert_eq!(*t, TypeSpec::Float64),
+                    _ => panic!("Expected TypeSpec::Slice, but got {:?}", new_expr.type_spec),
+                }
+                match new_expr.len {
+                    Some(len_expr) => match *len_expr {
+                        Expr::IntLiteral(10) => (),
+                        _ => panic!("Expected len to be IntLiteral(10)"),
+                    },
+                    None => panic!("Expected len to be Some"),
+                }
+                assert!(new_expr.cap.is_none());
+            },
+        },
+        parse_expression_call_new_slice_with_cap {
+            input: "new([ ] bool, 10, 20)",
+            want_var: Expr::New(new_expr),
+            want_value: {
+                match new_expr.type_spec {
+                    TypeSpec::Slice(t) => assert_eq!(*t, TypeSpec::Bool),
+                    _ => panic!(
+                        "Expected TypeSpec::Slice(TypeSpec::Bool), but got {:?}",
+                        new_expr.type_spec
+                    ),
+                }
+                match new_expr.len {
+                    Some(len_expr) => match *len_expr {
+                        Expr::IntLiteral(10) => (),
+                        _ => panic!("Expected len to be IntLiteral(10)"),
+                    },
+                    None => panic!("Expected len to be Some"),
+                }
+                match new_expr.cap {
+                    Some(cap_expr) => match *cap_expr {
+                        Expr::IntLiteral(20) => (),
+                        _ => panic!("Expected cap to be IntLiteral(20)"),
+                    },
+                    None => panic!("Expected cap to be Some"),
+                }
+            },
+        },
+        parse_expression_call_new_method {
+            input: "new(i32).method()",
+            want_var: Expr::Call(call),
+            want_value: {
+                match *call.func {
+                    Expr::FieldAccess(field_access) => {
+                        match *field_access.target {
+                            Expr::New(new_expr) => {
+                                match new_expr.type_spec {
+                                    TypeSpec::Int32 => (),
+                                    _ => panic!(
+                                        "Expected TypeSpec::Int32, but got {:?}",
+                                        new_expr.type_spec
+                                    ),
+                                }
+                                assert!(new_expr.len.is_none());
+                                assert!(new_expr.cap.is_none());
+                            }
+                            _ => panic!("Expected target to be NewExpr"),
+                        }
+                        assert_eq!(field_access.field.name, "method");
+                    }
+                    _ => panic!("Expected func to be FieldAccessExpr"),
+                }
+                assert_eq!(call.args.len(), 0);
+            },
+        },
+        parse_expression_call_free {
+            input: "free(ptr)",
+            want_var: Expr::Free(call),
+            want_value: {
+                match *call.expr {
+                    Expr::Identifier(ident) => assert_eq!(ident.name, "ptr"),
+                    _ => panic!("Expected arg to be Identifier(ptr)"),
+                }
+            },
+        },
+        parse_expression_call_free_complex {
+            input: "free(data.buffer.ptr)",
+            want_var: Expr::Free(call),
+            want_value: {
+                match *call.expr {
+                    Expr::FieldAccess(field_access) => {
+                        match *field_access.target {
+                            Expr::FieldAccess(nested_field_access) => {
+                                match *nested_field_access.target {
+                                    Expr::Identifier(ident) => assert_eq!(ident.name, "data"),
+                                    _ => panic!("Expected nested target to be Identifier(data)"),
+                                }
+                                assert_eq!(nested_field_access.field.name, "buffer");
+                            }
+                            _ => panic!(
+                                "Expected target to be FieldAccessExpr, got {:?}",
+                                field_access.target
+                            ),
+                        }
+                        assert_eq!(field_access.field.name, "ptr");
+                    }
+                    _ => panic!("Expected arg to be FieldAccessExpr, got {:?}", call.expr),
+                }
             },
         },
     );

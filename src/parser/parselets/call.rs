@@ -1,7 +1,10 @@
+use std::ops::Deref;
+
 use super::Precedence;
-use crate::ast::{Expr, FunctionCall};
+use crate::ast::{Expr, FreeExpr, FunctionCall, IdentifierExpr, NewExpr};
 use crate::parser::lexer::{Token, TokenKind};
 use crate::parser::parselets::InfixParselet;
+use crate::parser::types as type_parser;
 use crate::parser::{ParseError, Parser};
 
 /// Parses function call expressions.
@@ -10,7 +13,15 @@ use crate::parser::{ParseError, Parser};
 pub struct CallParselet;
 
 impl InfixParselet for CallParselet {
-    fn parse(&self, parser: &mut Parser, left: Expr, _token: Token) -> Result<Expr, ParseError> {
+    fn parse(&self, parser: &mut Parser, left: Expr, token: Token) -> Result<Expr, ParseError> {
+        // Special-case memory ops where the callee is a bare identifier
+        if let Expr::Identifier(IdentifierExpr { ref name }) = left {
+            if name == "new" {
+                return self.parse_new_call(parser, token);
+            }
+        };
+
+        // Generic function call parsing
         let mut arguments = Vec::new();
 
         // Check for empty argument list
@@ -41,13 +52,59 @@ impl InfixParselet for CallParselet {
             ));
         }
 
-        Ok(Expr::Call(FunctionCall {
-            func: Box::new(left),
-            args: arguments,
-        }))
+        match left {
+            Expr::Identifier(IdentifierExpr { ref name }) if name == "free" => {
+                if arguments.len() != 1 {
+                    return Err(ParseError::InvalidArguments(
+                        "free() expects exactly one argument".to_string(),
+                    ));
+                }
+
+                let expr = arguments.remove(0);
+                let expr = Box::new(expr);
+                Ok(Expr::Free(FreeExpr { expr }))
+            }
+            _ => Ok(Expr::Call(FunctionCall {
+                func: Box::new(left),
+                args: arguments,
+            })),
+        }
     }
 
     fn precedence(&self) -> super::Precedence {
         Precedence::Call
+    }
+}
+
+impl CallParselet {
+    fn parse_new_call(&self, parser: &mut Parser, _token: Token) -> Result<Expr, ParseError> {
+        // new(type_spec [, len [, cap]])
+        // Parse a type specification first (not an expression)
+        let tyspec = type_parser::parse_type(parser)?;
+
+        let mut len = None;
+        let mut cap = None;
+
+        if parser.match_token(TokenKind::Comma)? {
+            let le = parser.parse_expression()?;
+            len = Some(Box::new(le));
+
+            if parser.match_token(TokenKind::Comma)? {
+                let ce = parser.parse_expression()?;
+                cap = Some(Box::new(ce));
+            }
+        }
+
+        if !parser.match_token(TokenKind::CloseParen)? {
+            return Err(ParseError::UnexpectedToken(
+                "expected ')' after new(...)".to_string(),
+            ));
+        }
+
+        Ok(Expr::New(NewExpr {
+            type_spec: tyspec,
+            len,
+            cap,
+        }))
     }
 }

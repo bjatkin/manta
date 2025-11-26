@@ -354,12 +354,10 @@ Key implications for the parser design:
 
 1. **New Expression** (prefix operator-like)
    - Syntax: `new ( type_spec )`, `new ( [ n ] type_spec )`, `new ( [ ] type_spec , len )`, `new ( [ ] type_spec , len , cap )`
-   - Parselet: `NewParselet` (prefix)
    - AST node: `Expr::New(NewExpr)`
 
 2. **Free Expression** (prefix operator)
    - Syntax: `free ( expression )`
-   - Parselet: `FreeParselet` (prefix)
    - AST node: `Expr::Free(Box<Expr>)`
 
 #### Testing Strategy
@@ -501,7 +499,7 @@ Key implications for the parser design:
 
 ---
 
-### Phase 15: Type Parsing
+### Phase 15: Type Parsing [DONE]
 **Goal**: Parse type specifications
 
 #### Features to Add
