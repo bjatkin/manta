@@ -287,7 +287,7 @@ This document outlines a comprehensive, phased approach to implementing the Mant
 
 ---
 
-### Phase 7: Function Calls
+### Phase 7: Function Calls [DONE]
 **Goal**: Parse function call expressions
 
 #### Features to Add

@@ -4,6 +4,7 @@ use crate::parser::lexer::Token;
 
 pub mod binary_operator;
 pub mod bool_literal;
+pub mod call;
 pub mod float_literal;
 pub mod group;
 pub mod identifier;
@@ -14,6 +15,7 @@ pub mod unary_operator;
 
 pub use binary_operator::BinaryOperatorParselet;
 pub use bool_literal::BoolLiteralParselet;
+pub use call::CallParselet;
 pub use float_literal::FloatLiteralParselet;
 pub use group::GroupParselet;
 pub use identifier::IdentifierParselet;

@@ -5,7 +5,7 @@ pub mod types;
 use crate::ast::{BinaryOp, Expr, UnaryOp};
 use crate::parser::lexer::{Lexer, Token, TokenKind};
 use parselets::{
-    BinaryOperatorParselet, BoolLiteralParselet, FloatLiteralParselet, GroupParselet,
+    BinaryOperatorParselet, BoolLiteralParselet, CallParselet, FloatLiteralParselet, GroupParselet,
     IdentifierParselet, InfixParselet, IntLiteralParselet, NilLiteralParselet, Precedence,
     PrefixParselet, StringLiteralParselet, UnaryOperatorParselet,
 };
@@ -21,7 +21,6 @@ pub enum ParseError {
     Custom(String),
 }
 
-// More specific error variants for Phase 2 and beyond
 impl ParseError {
     pub fn invalid_integer(lexeme: &str) -> Self {
         ParseError::Custom(format!("Invalid integer literal: {}", lexeme))
@@ -211,6 +210,7 @@ impl Parser {
                 precedence: Precedence::BitwiseXor,
             }),
         );
+        parser.register_infix(TokenKind::OpenParen, Rc::new(CallParselet {}));
 
         parser
     }
@@ -283,7 +283,10 @@ impl Parser {
         // Loop while the next token's precedence is higher than or equal to min_precedence
         loop {
             let next_token = self.lookahead(0)?.clone();
-            if next_token.kind == TokenKind::Eof || next_token.kind == TokenKind::CloseParen {
+            if next_token.kind == TokenKind::Eof
+                || next_token.kind == TokenKind::CloseParen
+                || next_token.kind == TokenKind::Comma
+            {
                 break;
             }
 
@@ -879,6 +882,40 @@ mod tests {
                         }
                     }
                     _ => panic!("Expected right to be BinaryExpr"),
+                }
+            },
+        },
+        parse_expression_call_no_args {
+            input: "print()",
+            want_var: Expr::Call(call),
+            want_value: {
+                match *call.func {
+                    Expr::Identifier(name) => assert_eq!(name, "print"),
+                    _ => panic!("Expected func to be Identifier(print)"),
+                }
+                assert_eq!(call.args.len(), 0);
+            },
+        },
+        parse_expression_call_with_args {
+            input: "sum(1, b, 3)",
+            want_var: Expr::Call(call),
+            want_value: {
+                match *call.func {
+                    Expr::Identifier(name) => assert_eq!(name, "sum"),
+                    _ => panic!("Expected func to be Identifier(sum)"),
+                }
+                assert_eq!(call.args.len(), 3);
+                match &call.args[0] {
+                    Expr::IntLiteral(1) => {}
+                    _ => panic!("Expected first arg to be IntLiteral(1)"),
+                }
+                match &call.args[1] {
+                    Expr::Identifier(name) => assert_eq!(name, "b"),
+                    _ => panic!("Expected second arg to be Identifier(b)"),
+                }
+                match &call.args[2] {
+                    Expr::IntLiteral(3) => {}
+                    _ => panic!("Expected third arg to be IntLiteral(3)"),
                 }
             },
         },

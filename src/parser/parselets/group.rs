@@ -9,7 +9,7 @@ use crate::parser::{ParseError, Parser};
 pub struct GroupParselet;
 
 impl PrefixParselet for GroupParselet {
-    fn parse(&self, parser: &mut Parser, token: Token) -> Result<Expr, ParseError> {
+    fn parse(&self, parser: &mut Parser, _token: Token) -> Result<Expr, ParseError> {
         // Parse the inner expression
         let expr = match parser.parse_expression() {
             Ok(expr) => expr,
@@ -25,9 +25,6 @@ impl PrefixParselet for GroupParselet {
         if !matched {
             return Err(ParseError::UnexpectedToken("expected ')'".to_string()));
         }
-
-        // Make sure we consume the ')' or we'll get an error
-        parser.consume().unwrap();
 
         Ok(expr)
     }

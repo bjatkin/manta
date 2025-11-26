@@ -273,7 +273,7 @@ pub enum UnaryOp {
 
 #[derive(Debug)]
 pub struct FunctionCall {
-    pub name: String,
+    pub func: Box<Expr>,
     pub args: Vec<Expr>,
 }
 

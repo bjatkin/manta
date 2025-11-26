@@ -10,9 +10,14 @@ pub struct StringLiteralParselet;
 
 impl PrefixParselet for StringLiteralParselet {
     fn parse(&self, _parser: &mut Parser, token: Token) -> Result<Expr, ParseError> {
-        let lexeme = token
-            .lexeme
-            .ok_or_else(|| ParseError::Custom("String literal missing lexeme".to_string()))?;
+        let lexeme = match token.lexeme {
+            Some(lex) => lex,
+            None => {
+                return Err(ParseError::invalid_string(
+                    "missing lexeme for string literal",
+                ));
+            }
+        };
 
         Ok(Expr::StringLiteral(lexeme))
     }
