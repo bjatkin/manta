@@ -20,7 +20,7 @@ This is a draft intended to guide lexer/parser and AST design.
 
 Keywords (reserved):
 
-- fn, return, if, else, while, for, break, continue, defer, new, free, try, catch, struct, enum, match, let, const
+- fn, return, if, else, while, for, break, continue, defer, new, free, catch, struct, enum, match, let, const
 
 Primitive integer and float type names:
 
@@ -213,7 +213,7 @@ variant_pattern := '.' identifier ( '(' identifier ')' )?
 
 Integration with `try`/destructuring:
 
-The existing destructuring assignment style (e.g. `.Some(x) := try foo()`) is a convenience that desugars to a `match` or conditional check; the `match` form is the general, explicit mechanism and is preferred for complex cases.
+The existing destructuring assignment style (e.g. `.Some(x) := foo()`) is a convenience that desugars to a `match` or conditional check; the `match` form is the general, explicit mechanism and is preferred for complex cases.
 
 ## 5) try/catch error propagation
 
@@ -227,7 +227,7 @@ Concepts:
 
 Standard Syntax:
 
-.Some(x) := try foo() catch (e) {
+.Some(x) := foo() catch (e) {
     // handle error and return from the function
     // This block must return else the value of x
     // would be invalid
@@ -239,7 +239,7 @@ Semantics:
 
 Default Syntax:
 
-.Some(x) := try foo() else 0
+.Some(x) := foo() else 0
 
 Default Semantics:
 - `foo()` return a `ErrT`, if the value is a `ErrT.Some` variant, x is unwraped and set to that value.
@@ -247,7 +247,7 @@ Default Semantics:
 
 Shorthand Syntax:
 
-.Some(x) := try foo()
+.Some(x) := foo()
 
 Shorthand Semantics:
 - `foo()` return a `ErrT`, if the value is a `ErrT.Some` variant, x is unwraped and set to that value.
@@ -264,14 +264,14 @@ type ErrStr enum {
 }
 
 fn read_or_default(path str) ErrStr {
-    .Ok(f) := try open(path) catch { return .IOError }
+    .Ok(f) := open(path) catch { return .IOError }
     defer { close(f) }
 
-    .Ok(s) = try read_to_string(f) catch { return .IOError }
+    .Ok(s) = read_to_string(f) catch { return .IOError }
     return .Ok(s) // the complier infers the correct enum variant
 }
 
-.Ok(content) := try read_or_default("/tmp/x.txt") catch (e) {
+.Ok(content) := read_or_default("/tmp/x.txt") catch (e) {
     // return fallback string
     return ""
 }
@@ -292,11 +292,10 @@ param_list := param (',' param)*
 param := identifier type?
 block := '{' statement* '}'
 statement := let_stmt | expr_stmt | defer_stmt | return_stmt | ...
+try_stmt      := identifier? '.' identifier '(' identifier ')' ':=' try_body
+try_body      := expression 'catch' ( '(' identifier ')' )? block
 let_stmt := 'let' identifier (type_spec | (type_spec? '=' expression))
 defer_stmt := 'defer' block
-
-expression := try_expr | binary_expr | unary_expr | primary
-try_expr := 'try' expression ('catch' '(' identifier ')' block)?
 
 ## 7) Operator precedence in Manta
 
@@ -381,19 +380,19 @@ type MaybeErri32 enum {
 }
 
 fn process(path *u8) MaybeErri32 {
-    .Ok(f) := try open(path) catch { return .IOError }
+    .Ok(f) := open(path) catch { return .IOError }
     defer { close(f) }
 
     buf := new([]u8, 1024)
     defer { free(buf) }
 
-    .Ok(n) := try read(f, buf, 1024) catch { return .IOError }
+    .Ok(n) := read(f, buf, 1024) catch { return .IOError }
     if n == 0 {
         return .Ok(None)
     }
 
     // parse integer from buf
-    .Ok(val) := try parse_int(buf) catch { return .InvalidInt }
+    .Ok(val) := parse_int(buf) catch { return .InvalidInt }
 
     return .Ok(val)
 }

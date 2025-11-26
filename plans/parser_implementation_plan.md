@@ -366,35 +366,7 @@ Key implications for the parser design:
 
 ---
 
-### Phase 11: Try/Catch Expressions
-**Goal**: Parse error handling with try/catch
-
-#### Features to Add
-
-1. **Try/Catch Expression**
-   - Syntax: `try expression catch ( identifier )? block`
-   - Parselet: `TryParselet` (prefix or statement-level)
-   - AST node: `Expr::Try(TryExpr)`
-
-#### Implementation Note
-
-- `try` can appear at expression level but has statement-like semantics
-- Optional error binding with `catch (e)`
-
-#### Testing Strategy
-
-- Unit tests for catch block parsing
-- Integration test: `tests/parser/try_catch.manta` (reference from `examples/try_catch.manta`)
-  ```manta
-  fn test_try() {
-      .Ok(result) := try some_call() catch { return .Error }
-      .Ok(result) := try some_call() catch (e) { print(e); return }
-  }
-  ```
-
----
-
-### Phase 12: Statements - Let, Return, Defer
+### Phase 11: Statements - Let, Return, Defer
 **Goal**: Parse statement-level constructs in blocks
 
 #### Features to Add
@@ -422,17 +394,26 @@ Key implications for the parser design:
 #### Testing Strategy
 
 - Unit tests for statement parsing
-- Integration test: `tests/parser/statements.manta`
-  ```manta
-  fn test_statements() {
-      let x i32
-      let y i32 = 10
-      let z = 20
-      return
-      return 42
-      defer { print("cleanup") }
-  }
-  ```
+
+---
+
+### Phase 12: Try/Catch Statement
+**Goal**: Parse error handling with try/catch
+
+#### Features to Add
+
+1. **Try/Catch Expression**
+   - Syntax: `pat (:= | = ) expression catch ( (identifier) )? block`
+   - Parselet: `TryParselet` (prefix or statement-level)
+   - AST node: `Expr::Try(TryExpr)`
+
+#### Implementation Note
+
+- Optional error binding with `catch (e)` vs basic `catch`
+
+#### Testing Strategy
+
+- Unit tests for try/catch expressions
 
 ---
 

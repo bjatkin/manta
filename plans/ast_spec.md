@@ -182,6 +182,7 @@ Note: both `let_stmt` and `decl_stmt` rules are covered by the same AST node.
 ```manta
 x := 3    // type inference and explicit value
 let x i32 // explicit type, value is the zero value of the given type
+.Ok(f) := open(path) catch { return .IOError }  // try/catch with pattern
 ```
 
 **AST Structure**:
@@ -195,7 +196,61 @@ LetStmt {
 
 ---
 
-### 2.2 Assignment Statement (`assign_stmt`)
+### 2.2 Try/Catch Statement (`try_stmt`)
+
+**Grammar Reference**:
+```ebnf
+try_stmt := pattern (':=' | '=') expression 'catch' ('(' identifier ')')? block
+pattern  := identifier? '.' identifier ('(' identifier ')')? | literal | '_'
+```
+
+**Purpose** (from `language_spec.md`):
+- Pattern-match on a sum type value to destructure and extract a variant
+- If the pattern matches, bind any payloads and continue execution
+- If the pattern fails, execute the `catch` block
+
+**Examples** (from `examples/try_catch.manta`):
+```manta
+.Ok(f) := open(path) catch { return .IOError }
+.Ok(content) := read_file("/tmp/x.txt") catch (e) {
+    print("read failed: ", e)
+    return
+}
+```
+
+**AST Structure**:
+```
+TryStmt {
+    pattern: Pattern,
+    expr: Box<Expr>,
+    catch_handler: CatchHandler
+}
+
+CatchHandler {
+    error_binding: Option<String>,  // the identifier in catch(identifier)
+    body: Block
+}
+
+enum Pattern {
+    Literal(Literal),           // 42, "hello", true, nil
+    Identifier(String),         // x, y, result
+    Wildcard,                   // _
+    EnumVariant {
+        variant_name: String,   // "Some", "None", "Ok", "IOError"
+        payload_pattern: Option<String> // x, y, v
+    }
+}
+```
+
+**Semantics**:
+- The left-hand side pattern is matched against the result of the right-hand side expression
+- If the pattern succeeds (e.g., `.Ok(value)`), any bindings are in scope for the rest of the block
+- If the pattern fails, the catch block is executed with an optional error binding
+- The catch block determines what happens next (e.g., `return`, assign a default, or continue)
+
+---
+
+### 2.3 Assignment Statement (`assign_stmt`)
 
 **Grammar Reference**:
 ```ebnf
@@ -219,7 +274,7 @@ AssignStmt {
 
 ---
 
-### 2.3 Expression Statement (`expr_stmt`)
+### 2.4 Expression Statement (`expr_stmt`)
 
 **Grammar Reference**:
 ```ebnf
@@ -243,7 +298,7 @@ ExprStmt {
 
 ---
 
-### 2.4 Return Statement (`return_stmt`)
+### 2.5 Return Statement (`return_stmt`)
 
 **Grammar Reference**:
 ```ebnf
@@ -268,7 +323,7 @@ ReturnStmt {
 
 ---
 
-### 2.5 Defer Statement (`defer_stmt`)
+### 2.6 Defer Statement (`defer_stmt`)
 
 **Grammar Reference**:
 ```ebnf
@@ -284,13 +339,13 @@ defer_stmt := 'defer' block
 **Example** (from `examples/defer_free.manta`):
 ```manta
 fn write_and_cleanup(path str) ErrWrite {
-    .Ok(f) := try open(path) catch { return .IOError }
+    .Ok(f) := open(path) catch { return .IOError }
     defer { close(f) }
     
     buf := new([]u8, 256)
     defer { free(buf) }
     
-    .Ok(n) := try write(f, buf, 256) catch { return .IOError }
+    .Ok(n) := write(f, buf, 256) catch { return .IOError }
     return .Ok
 }
 ```
@@ -309,7 +364,7 @@ DeferStmt {
 
 ---
 
-### 2.6 Match Statement (`match_stmt`)
+### 2.7 Match Statement (`match_stmt`)
 
 **Grammar Reference**:
 ```ebnf
@@ -474,45 +529,13 @@ enum UnaryOp {
 
 ### 3.5 Assignment (moved to Statements)
 
-Assignment is a statement-level construct and does not belong in the expression grammar. See **2.2 Assignment Statement** for the grammar, examples and the `AssignStmt` AST node. The expression parser will not produce `Expr::Assignment` nodes; assignment is handled by the statement parser and produces `Stmt::Assign` / `AssignStmt` nodes.
+Assignment is a statement-level construct and does not belong in the expression grammar. See **2.3 Assignment Statement** for the grammar, examples and the `AssignStmt` AST node. The expression parser will not produce `Expr::Assignment` nodes; assignment is handled by the statement parser and produces `Stmt::Assign` / `AssignStmt` nodes.
 
 ---
 
-### 3.6 Try Expression (`try_expr`)
+### 3.6 Try/Catch (moved to Statements)
 
-**Grammar Reference**:
-```ebnf
-try_expr := 'try' primary_expr ('catch' '(' identifier ')' block)?
-```
-
-**Purpose** (from `language_spec.md`):
-- Attempt to extract a success variant from a sum type
-- If extraction fails, execute the `catch` block
-- If no `catch` is provided, propagate the error upward
-
-**Example** (from `examples/defer_free.manta`):
-```manta
-.Ok(f) := try open(path) catch { return .IOError }
-```
-
-**AST Structure**:
-```
-Expr::Try {
-    expr: Box<Expr>,
-    catch_handler: Option<CatchHandler>
-}
-
-CatchHandler {
-    error_binding: Option<String>,  // the identifier in catch(identifier)
-    body: Block
-}
-```
-
-**Semantics**:
-- Pattern matches on the result of `expr`
-- If the pattern succeeds (e.g., `.Ok(value)`), the value is bound
-- If it fails, the catch handler is executed
-- If no catch handler, control flow propagates (return or continue unwinding)
+Try/catch is now a statement-level construct and does not belong in the expression grammar. See **2.2 Try/Catch Statement** for the grammar, examples and the `TryStmt` AST node. The expression parser will not produce `Expr::Try` nodes; try/catch is handled by the statement parser and produces `Stmt::Try` / `TryStmt` nodes.
 
 ---
 
@@ -771,7 +794,6 @@ Expression
 ├── Identifier
 ├── BinaryOp (left op right)
 ├── UnaryOp (op operand)
-├── Try (try expr catch handler)
 ├── Call (function(args))
 ├── EnumVariant (.Variant(payload))
 ├── New (new(type_spec))
@@ -779,6 +801,7 @@ Expression
 
 Statement
 ├── Let (let x type = expr / x := expr)
+├── Try (pattern := expr catch handler)
 ├── Assignment (x = expr)
 ├── Expression (expr)
 ├── Return (return expr?)

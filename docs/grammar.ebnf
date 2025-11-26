@@ -30,7 +30,8 @@ statement     := let_stmt | decl_stmt | assign_stmt | try_stmt | expr_stmt | ret
 let_stmt      := 'let' identifier (type_spec | (type_spec? '=' expression))
 decl_stmt     := identifier ':=' expression
 assign_stmt   := identifier '=' expression
-try_stmt      := identifier? '.' identifier '(' identifier ')' ':=' try_expr
+try_stmt      := identifier? '.' identifier '(' identifier ')' ':=' try_body
+try_body      := expression 'catch' ( '(' identifier ')' )? block
 return_stmt   := 'return' expression?
 defer_stmt    := 'defer' block
 match_stmt    := 'match' expression '{' match_arm+ '}'
@@ -39,9 +40,7 @@ pattern       := identifier? '.' identifier ( '(' identifier ')' )? | literal | 
 
 expr_stmt     := expression
 
-expression  := try_expr | binary_expr | unary_expr | primary_expr
-
-try_expr    := 'try' expression ('catch' '(' identifier ')' block)?
+expression  := binary_expr | unary_expr | primary_expr
 
 binary_expr   := expression binary_op expression
 
