@@ -238,17 +238,7 @@ This document outlines a comprehensive, phased approach to implementing the Mant
 #### Testing Strategy
 
 - Unit tests for precedence and associativity
-- Integration test: `tests/parser/arithmetic.manta`
-  ```manta
-  fn test_arithmetic() {
-      let a i32 = 1 + 2
-      let b i32 = 3 - 4
-      let c i32 = 5 * 6
-      let d i32 = 7 / 2
-      let e i32 = 8 % 3
-      let f i32 = 1 + 2 * 3  // precedence: should be (1 + (2 * 3))
-  }
-  ```
+- Unit tests using hard coded code snippets
 
 ---
 
