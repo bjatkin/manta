@@ -1,5 +1,6 @@
 use super::Precedence;
 use crate::ast::Expr;
+use crate::parser::lexer::TokenKind;
 use crate::parser::{ParseError, Parser};
 
 /// Parse an expression with a minimum precedence level.
@@ -17,18 +18,22 @@ pub fn parse_expression(
             token.kind
         )));
     };
-    let prefix = prefix_opt.unwrap().clone();
 
+    let prefix = prefix_opt.unwrap().clone();
     let mut left = prefix.parse(parser, token)?;
 
     // Loop while the next token's precedence is higher than or equal to min_precedence
     loop {
         let next_token = parser.lookahead(0)?.clone();
-        if parser.expression_done(&next_token.kind) {
+        if expression_done(&next_token.kind) {
             break;
         }
 
-        let next_precedence = parser.get_precedence(&next_token.kind)?;
+        let next_precedence = parser.get_precedence(&next_token.kind);
+        if next_precedence.is_err() {
+            break;
+        }
+        let next_precedence = next_precedence.unwrap();
 
         if next_precedence <= min_precedence {
             break;
@@ -37,10 +42,7 @@ pub fn parse_expression(
         let token = parser.consume()?;
         let infix_opt = parser.infix_parselets.get(&token.kind);
         if infix_opt.is_none() {
-            return Err(ParseError::UnexpectedToken(format!(
-                "No infix parselet for token kind: {:?}",
-                token.kind
-            )));
+            break;
         }
         let infix = infix_opt.unwrap().clone();
 
@@ -48,6 +50,18 @@ pub fn parse_expression(
     }
 
     Ok(left)
+}
+
+/// Check if the expression is done based on the next token kind
+fn expression_done(kind: &TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::Eof
+            | TokenKind::CloseParen
+            | TokenKind::CloseSquare
+            | TokenKind::CloseBrace
+            | TokenKind::Comma
+    )
 }
 
 #[cfg(test)]

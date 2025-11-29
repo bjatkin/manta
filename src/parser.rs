@@ -5,12 +5,13 @@ pub mod statement;
 pub mod types;
 
 use crate::ast::{BinaryOp, Expr, Stmt, UnaryOp};
+use crate::parser::parselets::BlockParselet;
 use lexer::{Lexer, Token, TokenKind};
 use parselets::{
-    BinaryOperatorParselet, BoolLiteralParselet, CallParselet, FieldAccessParselet,
+    BinaryOperatorParselet, BoolLiteralParselet, CallParselet, DeferParselet, FieldAccessParselet,
     FloatLiteralParselet, GroupParselet, IdentifierParselet, IndexParselet, InfixParselet,
-    IntLiteralParselet, NilLiteralParselet, Precedence, PrefixParselet, StringLiteralParselet,
-    UnaryOperatorParselet,
+    IntLiteralParselet, LetParselet, NilLiteralParselet, Precedence, PrefixParselet,
+    ReturnParselet, StatementParselet, StringLiteralParselet, UnaryOperatorParselet,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -51,6 +52,8 @@ pub struct Parser {
     // prefix and infix registries stored as HashMaps
     prefix_parselets: HashMap<TokenKind, Rc<dyn PrefixParselet>>,
     infix_parselets: HashMap<TokenKind, Rc<dyn InfixParselet>>,
+    // statement registries stored as HashMaps
+    statement_parselets: HashMap<TokenKind, Rc<dyn StatementParselet>>,
 }
 
 impl Parser {
@@ -61,6 +64,7 @@ impl Parser {
             read: Vec::new(),
             prefix_parselets: HashMap::new(),
             infix_parselets: HashMap::new(),
+            statement_parselets: HashMap::new(),
         };
 
         // Register all prefix parselets
@@ -220,6 +224,12 @@ impl Parser {
         parser.register_infix(TokenKind::OpenSquare, Rc::new(IndexParselet {}));
         parser.register_infix(TokenKind::Dot, Rc::new(FieldAccessParselet {}));
 
+        // Register statement parselets
+        parser.register_statement(TokenKind::LetKeyword, Rc::new(LetParselet));
+        parser.register_statement(TokenKind::ReturnKeyword, Rc::new(ReturnParselet));
+        parser.register_statement(TokenKind::DeferKeyword, Rc::new(DeferParselet));
+        parser.register_statement(TokenKind::OpenBrace, Rc::new(BlockParselet));
+
         parser
     }
 
@@ -268,6 +278,11 @@ impl Parser {
         self.infix_parselets.insert(kind, parselet);
     }
 
+    /// Register a statement parser for a token kind.
+    pub fn register_statement(&mut self, kind: TokenKind, parselet: Rc<dyn StatementParselet>) {
+        self.statement_parselets.insert(kind, parselet);
+    }
+
     /// Parse an expression, starting with minimum precedence.
     /// This is the public API for expression parsing.
     pub fn parse_expression(&mut self) -> Result<Expr, ParseError> {
@@ -276,14 +291,6 @@ impl Parser {
 
     pub fn parse_statement(&mut self) -> Result<Stmt, ParseError> {
         statement::parse_statement(self)
-    }
-
-    /// Check if the expression is done based on the next token kind
-    fn expression_done(&self, kind: &TokenKind) -> bool {
-        matches!(
-            kind,
-            TokenKind::Eof | TokenKind::CloseParen | TokenKind::CloseSquare | TokenKind::Comma
-        )
     }
 
     /// Get the precedence of a token kind
@@ -301,7 +308,6 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{Expr, UnaryOp};
     use pretty_assertions::assert_eq;
 
     #[test]

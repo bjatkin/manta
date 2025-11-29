@@ -118,6 +118,7 @@ pub enum Stmt {
     Return(ReturnStmt),
     Defer(DeferStmt),
     Match(MatchStmt),
+    Block(Block),
 }
 
 #[derive(Debug, PartialEq)]
