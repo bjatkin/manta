@@ -139,14 +139,14 @@ pub struct LetStmt {
 
 #[derive(Debug, PartialEq)]
 pub struct ShortLetStmt {
-    pub name: String,
+    pub name: IdentifierExpr,
     pub value: Expr,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct AssignStmt {
-    pub name: String,
-    pub value: Expr,
+    pub lvalue: Expr,
+    pub rvalue: Expr,
 }
 
 #[derive(Debug, PartialEq)]

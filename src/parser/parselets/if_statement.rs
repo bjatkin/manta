@@ -40,8 +40,4 @@ impl PrefixStmtParselet for IfParselet {
             fail,
         }))
     }
-
-    fn matches(&self, _parser: &mut Parser) -> bool {
-        true
-    }
 }

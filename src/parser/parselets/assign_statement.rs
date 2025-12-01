@@ -1,6 +1,6 @@
-use crate::ast::{AssignStmt, ShortLetStmt, Stmt};
-use crate::parser::lexer::{Token, TokenKind};
-use crate::parser::parselets::PrefixStmtParselet;
+use crate::ast::{AssignStmt, Expr, Stmt};
+use crate::parser::lexer::Token;
+use crate::parser::parselets::InfixStmtParselet;
 use crate::parser::{ParseError, Parser};
 
 /// Parses assignment statements
@@ -8,48 +8,13 @@ use crate::parser::{ParseError, Parser};
 /// Example: `x = 10`
 pub struct AssignParselet;
 
-impl PrefixStmtParselet for AssignParselet {
-    fn parse(&self, parser: &mut Parser, token: Token) -> Result<Stmt, ParseError> {
-        let assign_token = parser.consume()?;
-
+impl InfixStmtParselet for AssignParselet {
+    fn parse(&self, parser: &mut Parser, left: Expr, _token: Token) -> Result<Stmt, ParseError> {
         let expr = parser.parse_expression()?;
 
-        match assign_token.kind {
-            TokenKind::Equal => Ok(Stmt::Assign(AssignStmt {
-                name: token.lexeme,
-                value: expr,
-            })),
-            TokenKind::ColonEqual => Ok(Stmt::ShortLet(ShortLetStmt {
-                name: token.lexeme,
-                value: expr,
-            })),
-            _ => unreachable!("this code should be unreachable"),
-        }
-    }
-
-    fn matches(&self, parser: &mut Parser) -> bool {
-        let first = parser.lookahead(0);
-        let first = if first.is_ok() {
-            first.unwrap()
-        } else {
-            return false;
-        };
-
-        if first.kind != TokenKind::Identifier {
-            return false;
-        }
-
-        let second = parser.lookahead(1);
-        let second = if second.is_ok() {
-            second.unwrap()
-        } else {
-            return false;
-        };
-
-        match second.kind {
-            TokenKind::Equal => true,
-            TokenKind::ColonEqual => true,
-            _ => false,
-        }
+        Ok(Stmt::Assign(AssignStmt {
+            lvalue: left,
+            rvalue: expr,
+        }))
     }
 }

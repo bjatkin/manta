@@ -22,8 +22,4 @@ impl PrefixStmtParselet for ReturnParselet {
 
         Ok(Stmt::Return(ReturnStmt { value }))
     }
-
-    fn matches(&self, _parser: &mut Parser) -> bool {
-        true
-    }
 }

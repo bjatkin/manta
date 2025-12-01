@@ -1,6 +1,6 @@
 use crate::ast::{BlockStmt, ExprStmt, Stmt};
 use crate::parser::lexer::TokenKind;
-use crate::parser::{ParseError, Parser};
+use crate::parser::{ParseError, Parser, parselets};
 
 /// Parse manta statements
 pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
@@ -9,21 +9,27 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
     let token_kind = token.kind;
 
     let parselet = parser.prefix_stmt_parselets.get(&token_kind);
-    if parselet.is_none() {
-        let expr = parser.parse_expression()?;
-        return Ok(Stmt::Expr(ExprStmt { expr }));
-    }
+    if let Some(parselet) = parselet {
+        let parselet = parselet.clone();
+        let token = parser.consume()?;
+        return parselet.parse(parser, token);
+    };
 
-    // we need to do an additional check here because some of the statments are a lot more complex to match
-    // than just checking the token prefix
-    let parselet = parselet.unwrap().clone();
-    if !parselet.matches(parser) {
-        let expr = parser.parse_expression()?;
-        return Ok(Stmt::Expr(ExprStmt { expr }));
-    }
+    // if we failed to match a statment, parse this as expression instead
+    let expr = parser.parse_expression()?;
 
-    let token = parser.consume()?;
-    parselet.parse(parser, token)
+    let token = parser.lookahead(0)?;
+    let token_kind = token.kind;
+
+    // check if this expression is actually the left hand side of a statement
+    let parselet = parser.infix_stmt_parselets.get(&token_kind);
+    if let Some(parselet) = parselet {
+        let parselet = parselet.clone();
+        let token = parser.consume()?;
+        Ok(parselet.parse(parser, expr, token)?)
+    } else {
+        Ok(Stmt::Expr(ExprStmt { expr }))
+    }
 }
 
 pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
@@ -272,8 +278,10 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 AssignStmt {
-                    name: "x".to_string(),
-                    value: Expr::IntLiteral(10),
+                    lvalue: Expr::Identifier(IdentifierExpr {
+                        name: "x".to_string(),
+                    }),
+                    rvalue: Expr::IntLiteral(10),
                 },
             ),
         },
@@ -283,8 +291,10 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 AssignStmt {
-                    name: "name".to_string(),
-                    value: Expr::Call(CallExpr {
+                    lvalue: Expr::Identifier(IdentifierExpr {
+                        name: "name".to_string(),
+                    }),
+                    rvalue: Expr::Call(CallExpr {
                         func: Box::new(Expr::FieldAccess(FieldAccessExpr {
                             target: Box::new(Expr::Identifier(IdentifierExpr {
                                 name: "person".to_string()
@@ -312,13 +322,31 @@ mod test {
                 }
             ),
         },
+        parse_stmt_assign_array {
+            input: "a[0] = 10",
+            want_var: Stmt::Assign(stmt),
+            want_value: assert_eq!(
+                stmt,
+                AssignStmt {
+                    lvalue: Expr::Index(IndexExpr {
+                        target: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "a".to_string()
+                        })),
+                        index: Box::new(Expr::IntLiteral(0)),
+                    }),
+                    rvalue: Expr::IntLiteral(10),
+                },
+            ),
+        },
         parse_stmt_short_let {
             input: "x := 10",
             want_var: Stmt::ShortLet(stmt),
             want_value: assert_eq!(
                 stmt,
                 ShortLetStmt {
-                    name: "x".to_string(),
+                    name: IdentifierExpr {
+                        name: "x".to_string()
+                    },
                     value: Expr::IntLiteral(10),
                 },
             ),
@@ -329,7 +357,9 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 ShortLetStmt {
-                    name: "got".to_string(),
+                    name: IdentifierExpr {
+                        name: "got".to_string(),
+                    },
                     value: Expr::Index(IndexExpr {
                         target: Box::new(Expr::FieldAccess(FieldAccessExpr {
                             target: Box::new(Expr::FieldAccess(FieldAccessExpr {
@@ -399,8 +429,10 @@ mod test {
                     },
                     fail: Some(BlockStmt {
                         statements: vec![Stmt::Assign(AssignStmt {
-                            name: "a".to_string(),
-                            value: Expr::BinaryExpr(BinaryExpr {
+                            lvalue: Expr::Identifier(IdentifierExpr {
+                                name: "a".to_string(),
+                            }),
+                            rvalue: Expr::BinaryExpr(BinaryExpr {
                                 left: Box::new(Expr::IntLiteral(10)),
                                 operator: BinaryOp::Add,
                                 right: Box::new(Expr::Call(CallExpr {

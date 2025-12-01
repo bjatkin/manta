@@ -18,6 +18,7 @@ pub mod int_literal;
 pub mod let_statement;
 pub mod nil_literal;
 pub mod return_statement;
+pub mod short_let_statement;
 pub mod string_literal;
 pub mod unary_operator;
 
@@ -37,6 +38,7 @@ pub use int_literal::IntLiteralParselet;
 pub use let_statement::LetParselet;
 pub use nil_literal::NilLiteralParselet;
 pub use return_statement::ReturnParselet;
+pub use short_let_statement::ShortLetParselet;
 pub use string_literal::StringLiteralParselet;
 pub use unary_operator::UnaryOperatorParselet;
 
@@ -67,12 +69,7 @@ pub trait PrefixExprParselet {
 /// Trait for infix expression parselets.
 pub trait InfixExprParselet {
     /// Parse an infix expression with `left` already parsed and the consumed token.
-    fn parse(
-        &self,
-        parser: &mut crate::parser::Parser,
-        left: Expr,
-        token: Token,
-    ) -> Result<Expr, ParseError>;
+    fn parse(&self, parser: &mut Parser, left: Expr, token: Token) -> Result<Expr, ParseError>;
 
     /// Precedence of this infix operator.
     fn precedence(&self) -> Precedence;
@@ -82,8 +79,10 @@ pub trait InfixExprParselet {
 pub trait PrefixStmtParselet {
     /// Parse a prefix statement given the consumed token.
     fn parse(&self, parser: &mut Parser, token: Token) -> Result<Stmt, ParseError>;
+}
 
-    /// Ensures that the parselset matches the expected token stream.
-    /// This function should NEVER consume tokens from the parser or things will fail.
-    fn matches(&self, parser: &mut Parser) -> bool;
+/// Trait for infix statement parselets.
+pub trait InfixStmtParselet {
+    /// Parse an infix statement with `left` already parsed and the consumed token.
+    fn parse(&self, parser: &mut Parser, left: Expr, token: Token) -> Result<Stmt, ParseError>;
 }

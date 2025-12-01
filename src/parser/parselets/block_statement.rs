@@ -15,8 +15,4 @@ impl PrefixStmtParselet for BlockParselet {
 
         Ok(Stmt::Block(block))
     }
-
-    fn matches(&self, _parser: &mut Parser) -> bool {
-        true
-    }
 }

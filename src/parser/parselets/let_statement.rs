@@ -53,8 +53,4 @@ impl PrefixStmtParselet for LetParselet {
             value: Some(value),
         }))
     }
-
-    fn matches(&self, _parser: &mut Parser) -> bool {
-        true
-    }
 }

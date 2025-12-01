@@ -417,7 +417,7 @@ Key implications for the parser design:
 
 ---
 
-### Phase 13: Statements - Assignment & If/Else
+### Phase 13: Statements - Assignment & If/Else [DONE]
 **Goal**: Parse assignment and conditional statements
 
 #### Features to Add

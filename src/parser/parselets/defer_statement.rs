@@ -23,8 +23,4 @@ impl PrefixStmtParselet for DeferParselet {
 
         Ok(Stmt::Defer(DeferStmt { block }))
     }
-
-    fn matches(&self, _parser: &mut Parser) -> bool {
-        true
-    }
 }

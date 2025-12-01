@@ -5,7 +5,7 @@ pub mod statement;
 pub mod types;
 
 use crate::ast::{BinaryOp, Expr, Stmt, UnaryOp};
-use crate::parser::parselets::BlockParselet;
+use crate::parser::parselets::{BlockParselet, InfixStmtParselet, ShortLetParselet};
 use lexer::{Lexer, Token, TokenKind};
 use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, DeferParselet,
@@ -26,6 +26,7 @@ pub enum ParseError {
     MissingExpression(String),
     InvalidTypeSpec(String),
     InvalidArguments(String),
+    InvalidExpression(String),
     UnknownStatement(String),
 }
 
@@ -57,6 +58,7 @@ pub struct Parser {
 
     // prefix and infix statement parselets
     prefix_stmt_parselets: HashMap<TokenKind, Rc<dyn PrefixStmtParselet>>,
+    infix_stmt_parselets: HashMap<TokenKind, Rc<dyn InfixStmtParselet>>,
 }
 
 impl Parser {
@@ -68,172 +70,176 @@ impl Parser {
             prefix_expr_parselets: HashMap::new(),
             infix_expr_parselets: HashMap::new(),
             prefix_stmt_parselets: HashMap::new(),
+            infix_stmt_parselets: HashMap::new(),
         };
 
         // Register all prefix parselets
-        parser.register_prefix(TokenKind::Int, Rc::new(IntLiteralParselet));
-        parser.register_prefix(TokenKind::Float, Rc::new(FloatLiteralParselet));
-        parser.register_prefix(TokenKind::Str, Rc::new(StringLiteralParselet));
-        parser.register_prefix(TokenKind::TrueLiteral, Rc::new(BoolLiteralParselet));
-        parser.register_prefix(TokenKind::FalseLiteral, Rc::new(BoolLiteralParselet));
-        parser.register_prefix(TokenKind::NilLiteral, Rc::new(NilLiteralParselet));
-        parser.register_prefix(TokenKind::Identifier, Rc::new(IdentifierParselet));
-        parser.register_prefix(
+        parser.register_expr_prefix(TokenKind::Int, Rc::new(IntLiteralParselet));
+        parser.register_expr_prefix(TokenKind::Float, Rc::new(FloatLiteralParselet));
+        parser.register_expr_prefix(TokenKind::Str, Rc::new(StringLiteralParselet));
+        parser.register_expr_prefix(TokenKind::TrueLiteral, Rc::new(BoolLiteralParselet));
+        parser.register_expr_prefix(TokenKind::FalseLiteral, Rc::new(BoolLiteralParselet));
+        parser.register_expr_prefix(TokenKind::NilLiteral, Rc::new(NilLiteralParselet));
+        parser.register_expr_prefix(TokenKind::Identifier, Rc::new(IdentifierParselet));
+        parser.register_expr_prefix(
             TokenKind::Minus,
             Rc::new(UnaryOperatorParselet {
                 operator: UnaryOp::Negate,
             }),
         );
-        parser.register_prefix(
+        parser.register_expr_prefix(
             TokenKind::Plus,
             Rc::new(UnaryOperatorParselet {
                 operator: UnaryOp::Positive,
             }),
         );
-        parser.register_prefix(
+        parser.register_expr_prefix(
             TokenKind::Bang,
             Rc::new(UnaryOperatorParselet {
                 operator: UnaryOp::Not,
             }),
         );
-        parser.register_prefix(
+        parser.register_expr_prefix(
             TokenKind::Star,
             Rc::new(UnaryOperatorParselet {
                 operator: UnaryOp::Dereference,
             }),
         );
-        parser.register_prefix(
+        parser.register_expr_prefix(
             TokenKind::And,
             Rc::new(UnaryOperatorParselet {
                 operator: UnaryOp::AddressOf,
             }),
         );
-        parser.register_prefix(TokenKind::OpenParen, Rc::new(GroupParselet {}));
+        parser.register_expr_prefix(TokenKind::OpenParen, Rc::new(GroupParselet {}));
 
         // Register infix parselets for binary operators
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Plus,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::Add,
                 precedence: Precedence::Addition,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Minus,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::Subtract,
                 precedence: Precedence::Addition,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Star,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::Multiply,
                 precedence: Precedence::Multiplication,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Slash,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::Divide,
                 precedence: Precedence::Multiplication,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Percent,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::Modulo,
                 precedence: Precedence::Multiplication,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::EqualEqual,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::Equal,
                 precedence: Precedence::Equality,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::NotEqual,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::NotEqual,
                 precedence: Precedence::Equality,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::LessThan,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::LessThan,
                 precedence: Precedence::Comparison,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::GreaterThan,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::GreaterThan,
                 precedence: Precedence::Comparison,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::LessOrEqual,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::LessThanOrEqual,
                 precedence: Precedence::Comparison,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::GreaterOrEqual,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::GreaterThanOrEqual,
                 precedence: Precedence::Comparison,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::AndAnd,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::LogicalAnd,
                 precedence: Precedence::LogicalAnd,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::PipePipe,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::LogicalOr,
                 precedence: Precedence::LogicalOr,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::And,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::BitwiseAnd,
                 precedence: Precedence::BitwiseAnd,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Pipe,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::BitwiseOr,
                 precedence: Precedence::BitwiseOr,
             }),
         );
-        parser.register_infix(
+        parser.register_expr_infix(
             TokenKind::Caret,
             Rc::new(BinaryOperatorParselet {
                 operator: BinaryOp::BitwiseXor,
                 precedence: Precedence::BitwiseXor,
             }),
         );
-        parser.register_infix(TokenKind::OpenParen, Rc::new(CallParselet {}));
-        parser.register_infix(TokenKind::OpenSquare, Rc::new(IndexParselet {}));
-        parser.register_infix(TokenKind::Dot, Rc::new(FieldAccessParselet {}));
+        parser.register_expr_infix(TokenKind::OpenParen, Rc::new(CallParselet {}));
+        parser.register_expr_infix(TokenKind::OpenSquare, Rc::new(IndexParselet {}));
+        parser.register_expr_infix(TokenKind::Dot, Rc::new(FieldAccessParselet {}));
 
-        // Register statement parselets
-        parser.register_statement(TokenKind::LetKeyword, Rc::new(LetParselet));
-        parser.register_statement(TokenKind::ReturnKeyword, Rc::new(ReturnParselet));
-        parser.register_statement(TokenKind::DeferKeyword, Rc::new(DeferParselet));
-        parser.register_statement(TokenKind::OpenBrace, Rc::new(BlockParselet));
-        parser.register_statement(TokenKind::Identifier, Rc::new(AssignParselet));
-        parser.register_statement(TokenKind::IfKeyword, Rc::new(IfParselet));
+        // Register prefix statement parselets
+        parser.register_stmt_prefix(TokenKind::LetKeyword, Rc::new(LetParselet));
+        parser.register_stmt_prefix(TokenKind::ReturnKeyword, Rc::new(ReturnParselet));
+        parser.register_stmt_prefix(TokenKind::DeferKeyword, Rc::new(DeferParselet));
+        parser.register_stmt_prefix(TokenKind::OpenBrace, Rc::new(BlockParselet));
+        parser.register_stmt_prefix(TokenKind::IfKeyword, Rc::new(IfParselet));
+
+        // Register infix statement parselets
+        parser.register_stmt_infix(TokenKind::Equal, Rc::new(AssignParselet));
+        parser.register_stmt_infix(TokenKind::ColonEqual, Rc::new(ShortLetParselet));
 
         parser
     }
@@ -273,29 +279,30 @@ impl Parser {
         }
     }
 
-    /// Register a prefix parselet for a token kind.
-    pub fn register_prefix(&mut self, kind: TokenKind, parselet: Rc<dyn PrefixExprParselet>) {
+    /// Register a expr prefix parselet for a token kind.
+    pub fn register_expr_prefix(&mut self, kind: TokenKind, parselet: Rc<dyn PrefixExprParselet>) {
         self.prefix_expr_parselets.insert(kind, parselet);
     }
 
-    /// Register an infix parselet for a token kind.
-    pub fn register_infix(&mut self, kind: TokenKind, parselet: Rc<dyn InfixExprParselet>) {
+    /// Register an expr infix parselet for a token kind.
+    pub fn register_expr_infix(&mut self, kind: TokenKind, parselet: Rc<dyn InfixExprParselet>) {
         self.infix_expr_parselets.insert(kind, parselet);
     }
 
-    /// Register a statement parser for a token kind.
-    pub fn register_statement(&mut self, kind: TokenKind, parselet: Rc<dyn PrefixStmtParselet>) {
+    /// Register a stmt prefix parser for a token kind.
+    pub fn register_stmt_prefix(&mut self, kind: TokenKind, parselet: Rc<dyn PrefixStmtParselet>) {
         self.prefix_stmt_parselets.insert(kind, parselet);
+    }
+
+    /// Register an infix stmt parselet for a token kind.
+    pub fn register_stmt_infix(&mut self, kind: TokenKind, parselets: Rc<dyn InfixStmtParselet>) {
+        self.infix_stmt_parselets.insert(kind, parselets);
     }
 
     /// Parse an expression, starting with minimum precedence.
     /// This is the public API for expression parsing.
     pub fn parse_expression(&mut self) -> Result<Expr, ParseError> {
         expression::parse_expression(self, Precedence::Base)
-    }
-
-    pub fn parse_statement(&mut self) -> Result<Stmt, ParseError> {
-        statement::parse_statement(self)
     }
 
     /// Get the precedence of a token kind
