@@ -112,3 +112,30 @@ Examples (using the built binary in `target/release`):
 # Format manta source files in-place
 ./target/release/manta fmt -w src/
 ```
+
+# Code Coverage
+
+This project uses `cargo-llvm-cov` for code coverage reporting.
+
+## Installation
+
+```bash
+cargo install cargo-llvm-cov
+```
+
+## Generating Coverage Reports
+
+Generate an HTML coverage report:
+```bash
+cargo cov-html
+```
+
+View coverage summary in the terminal:
+```bash
+cargo coc
+```
+
+Generate a JSON report:
+```bash
+cargo cov-json
+```

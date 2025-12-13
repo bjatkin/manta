@@ -1,0 +1,4 @@
+[alias]
+cov = "llvm-cov"
+cov-html = "llvm-cov --html"
+cov-json = "llvm-cov --json"
