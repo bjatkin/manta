@@ -1,6 +1,6 @@
 use crate::ast::{BlockStmt, ExprStmt, Stmt};
 use crate::parser::lexer::TokenKind;
-use crate::parser::{ParseError, Parser, parselets};
+use crate::parser::{ParseError, Parser};
 
 /// Parse manta statements
 pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
@@ -80,7 +80,6 @@ mod test {
                         _ => panic!("Expected {} => {}, but got {:?}", stringify!($want_var), stringify!($want_value), stmt),
                     }
                 }
-
             )*
         }
     }
@@ -444,6 +443,21 @@ mod test {
                             })
                         }),]
                     })
+                }
+            ),
+        },
+        parse_stmt_return_enum_variant {
+            input: "return .Ok",
+            want_var: Stmt::Return(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ReturnStmt {
+                    value: Some(Expr::FieldAccess(FieldAccessExpr {
+                        target: None,
+                        field: Box::new(IdentifierExpr {
+                            name: "Ok".to_string(),
+                        }),
+                    })),
                 }
             ),
         },

@@ -783,5 +783,37 @@ mod tests {
                 }
             ),
         },
+        parse_expression_enum_variant {
+            input: ".Ok",
+            want_var: Expr::FieldAccess(expr),
+            want_value: assert_eq!(
+                expr,
+                FieldAccessExpr {
+                    target: None,
+                    field: Box::new(IdentifierExpr {
+                        name: "Ok".to_string(),
+                    }),
+                },
+            ),
+        },
+        parse_expression_enum_check {
+            input: "ret == .Err",
+            want_var: Expr::Binary(expr),
+            want_value: assert_eq!(
+                expr,
+                BinaryExpr {
+                    left: Box::new(Expr::Identifier(IdentifierExpr {
+                        name: "ret".to_string(),
+                    })),
+                    operator: BinaryOp::Equal,
+                    right: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                        target: None,
+                        field: Box::new(IdentifierExpr {
+                            name: "Err".to_string(),
+                        }),
+                    })),
+                },
+            ),
+        },
     );
 }

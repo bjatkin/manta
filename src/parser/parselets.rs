@@ -14,12 +14,14 @@ pub mod group;
 pub mod identifier;
 pub mod if_statement;
 pub mod index;
+pub mod inferred_variant;
 pub mod int_literal;
 pub mod let_statement;
 pub mod nil_literal;
 pub mod return_statement;
 pub mod short_let_statement;
 pub mod string_literal;
+pub mod try_statement;
 pub mod unary_operator;
 
 pub use assign_statement::AssignParselet;
@@ -34,12 +36,14 @@ pub use group::GroupParselet;
 pub use identifier::IdentifierParselet;
 pub use if_statement::IfParselet;
 pub use index::IndexParselet;
+pub use inferred_variant::InferedVariantParselet;
 pub use int_literal::IntLiteralParselet;
 pub use let_statement::LetParselet;
 pub use nil_literal::NilLiteralParselet;
 pub use return_statement::ReturnParselet;
 pub use short_let_statement::ShortLetParselet;
 pub use string_literal::StringLiteralParselet;
+pub use try_statement::TryParselet;
 pub use unary_operator::UnaryOperatorParselet;
 
 // Operator precedence levels.
