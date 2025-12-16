@@ -60,7 +60,7 @@ mod test {
     use super::*;
     use crate::ast::{
         AssignStmt, BinaryExpr, BinaryOp, BlockStmt, DeferStmt, Expr, FieldAccessExpr, FreeExpr,
-        IdentifierExpr, IfStmt, IndexExpr, NewExpr, ReturnStmt, ShortLetStmt, Stmt,
+        IdentifierExpr, IfStmt, IndexExpr, NewExpr, ReturnStmt, ShortLetStmt, Stmt, TryStmt,
     };
     use crate::ast::{CallExpr, LetStmt, TypeSpec};
     use crate::parser::lexer::Lexer;
@@ -457,6 +457,108 @@ mod test {
                         field: Box::new(IdentifierExpr {
                             name: "Ok".to_string(),
                         }),
+                    })),
+                }
+            ),
+        },
+        parse_stmt_try_no_catch {
+            input: "try .Ok := call() !",
+            want_var: Stmt::Try(stmt),
+            want_value: assert_eq!(
+                stmt,
+                TryStmt {
+                    pattern_enum: None,
+                    pattern_variant: Box::new(IdentifierExpr {
+                        name: "Ok".to_string()
+                    }),
+                    decl: None,
+                    expr: Box::new(Expr::Call(CallExpr {
+                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "call".to_string(),
+                        })),
+                        args: vec![],
+                    })),
+                    catch_binding: None,
+                    catch_body: None,
+                },
+            ),
+        },
+        parse_stmt_try_simple_catch {
+            input: "try Ret.Valid(v) := validate(\"data\") catch {\n\tprint(\"invalid!\")\n}",
+            want_var: Stmt::Try(stmt),
+            want_value: assert_eq!(
+                stmt,
+                TryStmt {
+                    pattern_enum: Some(Box::new(IdentifierExpr {
+                        name: "Ret".to_string(),
+                    })),
+                    pattern_variant: Box::new(IdentifierExpr {
+                        name: "Valid".to_string(),
+                    }),
+                    decl: Some(Box::new(IdentifierExpr {
+                        name: "v".to_string()
+                    })),
+                    expr: Box::new(Expr::Call(CallExpr {
+                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "validate".to_string()
+                        })),
+                        args: vec![Expr::StringLiteral("data".to_string())],
+                    })),
+                    catch_binding: None,
+                    catch_body: Some(Box::new(BlockStmt {
+                        statements: vec![Stmt::Expr(ExprStmt {
+                            expr: Expr::Call(CallExpr {
+                                func: Box::new(Expr::Identifier(IdentifierExpr {
+                                    name: "print".to_string(),
+                                })),
+                                args: vec![Expr::StringLiteral("invalid!".to_string())],
+                            }),
+                        })],
+                    })),
+                },
+            ),
+        },
+        parse_stmt_try_catch_binding {
+            input: "try .Err := build_item(name, false) catch(i) {\n\tprint(\"built item\")\n\treturn i\n}",
+            want_var: Stmt::Try(stmt),
+            want_value: assert_eq!(
+                stmt,
+                TryStmt {
+                    pattern_enum: None,
+                    pattern_variant: Box::new(IdentifierExpr {
+                        name: "Err".to_string()
+                    }),
+                    decl: None,
+                    expr: Box::new(Expr::Call(CallExpr {
+                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "build_item".to_string(),
+                        })),
+                        args: vec![
+                            Expr::Identifier(IdentifierExpr {
+                                name: "name".to_string()
+                            }),
+                            Expr::BoolLiteral(false),
+                        ],
+                    })),
+                    catch_binding: Some(Box::new(IdentifierExpr {
+                        name: "i".to_string()
+                    })),
+                    catch_body: Some(Box::new(BlockStmt {
+                        statements: vec![
+                            Stmt::Expr(ExprStmt {
+                                expr: Expr::Call(CallExpr {
+                                    func: Box::new(Expr::Identifier(IdentifierExpr {
+                                        name: "print".to_string()
+                                    })),
+                                    args: vec![Expr::StringLiteral("built item".to_string())],
+                                })
+                            }),
+                            Stmt::Return(ReturnStmt {
+                                value: Some(Expr::Identifier(IdentifierExpr {
+                                    name: "i".to_string()
+                                })),
+                            }),
+                        ],
                     })),
                 }
             ),
