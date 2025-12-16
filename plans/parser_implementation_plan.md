@@ -397,7 +397,7 @@ Key implications for the parser design:
 
 ---
 
-### Phase 12: Try/Catch Statement
+### Phase 12: Try/Catch Statement [DONE]
 **Goal**: Parse error handling with try/catch
 
 #### Features to Add

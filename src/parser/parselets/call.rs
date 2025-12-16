@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use super::Precedence;
 use crate::ast::{CallExpr, Expr, FreeExpr, IdentifierExpr, NewExpr};
 use crate::parser::lexer::{Token, TokenKind};
