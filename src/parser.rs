@@ -10,9 +10,9 @@ use lexer::{Lexer, Token, TokenKind};
 use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, DeferParselet,
     FieldAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet, IfParselet,
-    IndexParselet, InfixExprParselet, IntLiteralParselet, LetParselet, NilLiteralParselet,
-    Precedence, PrefixExprParselet, PrefixStmtParselet, ReturnParselet, StringLiteralParselet,
-    UnaryOperatorParselet,
+    IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet, LetParselet,
+    NilLiteralParselet, Precedence, PrefixExprParselet, PrefixStmtParselet, ReturnParselet,
+    StringLiteralParselet, TryParselet, UnaryOperatorParselet,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -112,6 +112,7 @@ impl Parser {
             }),
         );
         parser.register_expr_prefix(TokenKind::OpenParen, Rc::new(GroupParselet {}));
+        parser.register_expr_prefix(TokenKind::Dot, Rc::new(InferedVariantParselet {}));
 
         // Register infix parselets for binary operators
         parser.register_expr_infix(
@@ -236,6 +237,7 @@ impl Parser {
         parser.register_stmt_prefix(TokenKind::DeferKeyword, Rc::new(DeferParselet));
         parser.register_stmt_prefix(TokenKind::OpenBrace, Rc::new(BlockParselet));
         parser.register_stmt_prefix(TokenKind::IfKeyword, Rc::new(IfParselet));
+        parser.register_stmt_prefix(TokenKind::TryKeyword, Rc::new(TryParselet));
 
         // Register infix statement parselets
         parser.register_stmt_infix(TokenKind::Equal, Rc::new(AssignParselet));

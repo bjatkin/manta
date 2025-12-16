@@ -110,6 +110,16 @@ pub struct BlockStmt {
 }
 
 #[derive(Debug, PartialEq)]
+pub struct TryStmt {
+    pub pattern_enum: Option<Box<IdentifierExpr>>,
+    pub pattern_variant: Box<IdentifierExpr>,
+    pub decl: Option<Box<IdentifierExpr>>,
+    pub expr: Box<Expr>,
+    pub catch_binding: Option<Box<IdentifierExpr>>,
+    pub catch_body: Option<Box<BlockStmt>>,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct IfStmt {
     pub check: Box<Expr>,
     pub success: BlockStmt,
@@ -127,6 +137,7 @@ pub enum Stmt {
     Defer(DeferStmt),
     Match(MatchStmt),
     Block(BlockStmt),
+    Try(TryStmt),
     If(IfStmt),
 }
 
@@ -225,9 +236,6 @@ pub enum Expr {
     New(NewExpr),
     Free(FreeExpr),
 
-    // Try/Catch extraction
-    Try(TryExpr),
-
     // Type casting expressions
     Cast(CastExpr),
 }
@@ -311,13 +319,6 @@ pub struct AssignmentExpr {
     // target is any l-value expression (identifier, deref, index, field access)
     pub target: Box<Expr>,
     pub value: Box<Expr>,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct TryExpr {
-    pub expr: Box<Expr>,
-    pub catch_binding: Box<IdentifierExpr>,
-    pub catch_body: Box<BlockStmt>,
 }
 
 #[derive(Debug, PartialEq)]
