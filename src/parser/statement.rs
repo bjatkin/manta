@@ -60,7 +60,8 @@ mod test {
     use super::*;
     use crate::ast::{
         AssignStmt, BinaryExpr, BinaryOp, BlockStmt, DeferStmt, Expr, FieldAccessExpr, FreeExpr,
-        IdentifierExpr, IfStmt, IndexExpr, NewExpr, ReturnStmt, ShortLetStmt, Stmt, TryStmt,
+        IdentifierExpr, IfStmt, IndexExpr, MatchArm, MatchStmt, NewExpr, Pattern, ReturnStmt,
+        ShortLetStmt, Stmt, TryStmt,
     };
     use crate::ast::{CallExpr, LetStmt, TypeSpec};
     use crate::parser::lexer::Lexer;
@@ -560,6 +561,171 @@ mod test {
                             }),
                         ],
                     })),
+                }
+            ),
+        },
+        parse_stmt_match {
+            input: "match x {\n.Some(v) { print(v) }\n.None { print(\"none\") }\n}",
+            want_var: Stmt::Match(stmt),
+            want_value: assert_eq!(
+                stmt,
+                MatchStmt {
+                    target: Expr::Identifier(IdentifierExpr {
+                        name: "x".to_string(),
+                    }),
+                    arms: vec![
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "Some".to_string(),
+                                payload_binding: Some("v".to_string()),
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![Expr::Identifier(IdentifierExpr {
+                                            name: "v".to_string(),
+                                        })],
+                                    }),
+                                })],
+                            },
+                        },
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "None".to_string(),
+                                payload_binding: None,
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![Expr::StringLiteral("none".to_string())],
+                                    }),
+                                })],
+                            },
+                        },
+                    ],
+                }
+            ),
+        },
+        parse_stmt_match_mixed_patterns {
+            input: "match result {\n.Success(val) { print(val) }\n.Warning(msg) { print(msg) }\n.Failed { print(\"error\") }\n}",
+            want_var: Stmt::Match(stmt),
+            want_value: assert_eq!(
+                stmt,
+                MatchStmt {
+                    target: Expr::Identifier(IdentifierExpr {
+                        name: "result".to_string(),
+                    }),
+                    arms: vec![
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "Success".to_string(),
+                                payload_binding: Some("val".to_string()),
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![Expr::Identifier(IdentifierExpr {
+                                            name: "val".to_string(),
+                                        })],
+                                    }),
+                                })],
+                            },
+                        },
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "Warning".to_string(),
+                                payload_binding: Some("msg".to_string()),
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![Expr::Identifier(IdentifierExpr {
+                                            name: "msg".to_string(),
+                                        })],
+                                    }),
+                                })],
+                            },
+                        },
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "Failed".to_string(),
+                                payload_binding: None,
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![Expr::StringLiteral("error".to_string())],
+                                    }),
+                                })],
+                            },
+                        },
+                    ],
+                }
+            ),
+        },
+        parse_stmt_match_empty_payload {
+            input: "match signal {\n.Ready() { print(\"go\") }\n.Idle(ts) { print(\"idle since\", ts) }\n}",
+            want_var: Stmt::Match(stmt),
+            want_value: assert_eq!(
+                stmt,
+                MatchStmt {
+                    target: Expr::Identifier(IdentifierExpr {
+                        name: "signal".to_string(),
+                    }),
+                    arms: vec![
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "Ready".to_string(),
+                                payload_binding: None,
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![Expr::StringLiteral("go".to_string())],
+                                    }),
+                                })],
+                            },
+                        },
+                        MatchArm {
+                            pattern: Pattern::EnumVariant {
+                                name: "Idle".to_string(),
+                                payload_binding: Some("ts".to_string()),
+                            },
+                            body: BlockStmt {
+                                statements: vec![Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: "print".to_string(),
+                                        })),
+                                        args: vec![
+                                            Expr::StringLiteral("idle since".to_string()),
+                                            Expr::Identifier(IdentifierExpr {
+                                                name: "ts".to_string(),
+                                            }),
+                                        ],
+                                    }),
+                                })],
+                            },
+                        },
+                    ],
                 }
             ),
         },
