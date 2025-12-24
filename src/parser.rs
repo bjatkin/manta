@@ -15,7 +15,7 @@ use parselets::{
     FieldAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet, IfParselet,
     IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet, LetParselet,
     MatchParselet, NilLiteralParselet, Precedence, PrefixExprParselet, PrefixStmtParselet,
-    ReturnParselet, StringLiteralParselet, TryParselet, UnaryOperatorParselet,
+    ReturnParselet, StringLiteralParselet, TryParselet, TypeDeclParselet, UnaryOperatorParselet,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -256,6 +256,7 @@ impl Parser {
             TokenKind::FnKeyword,
             Rc::new(parselets::FunctionDeclParselet),
         );
+        parser.register_decl_prefix(TokenKind::TypeKeyword, Rc::new(TypeDeclParselet));
 
         parser
     }

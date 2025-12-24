@@ -23,13 +23,14 @@ pub fn parse_declaration(parser: &mut Parser) -> Result<Decl, ParseError> {
 mod tests {
     use super::*;
     use crate::ast::{
-        BinaryExpr, BinaryOp, BlockStmt, CallExpr, Expr, ExprStmt, FunctionDecl, IdentifierExpr,
-        IfStmt, NewExpr, Parameter, ReturnStmt, Stmt, TypeSpec,
+        BinaryExpr, BinaryOp, BlockStmt, CallExpr, EnumType, EnumVariant, Expr, ExprStmt,
+        FunctionDecl, IdentifierExpr, IfStmt, NewExpr, Parameter, ReturnStmt, Stmt, StructField,
+        StructType, TypeDecl, TypeSpec,
     };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
 
-    macro_rules! test_parse_program {
+    macro_rules! test_parse_declaration {
         ( $( $case:ident { input: $input:expr, want_var: $want_var:pat, want_value: $want_value:expr, } ),*, ) => {
             $(
                 #[test]
@@ -47,8 +48,8 @@ mod tests {
         }
     }
 
-    test_parse_program!(
-        parse_program_single_function {
+    test_parse_declaration!(
+        parse_decl_single_function {
             input: r#"fn add(a, b i32) i32 {
                 return a + b
             }"#,
@@ -84,7 +85,7 @@ mod tests {
                 }
             ),
         },
-        parse_program_function_no_params {
+        parse_decl_function_no_params {
             input: r#"fn main() {
                 print("hello")
                 return
@@ -112,7 +113,7 @@ mod tests {
                 }
             ),
         },
-        parse_program_function_mixed_params {
+        parse_decl_function_mixed_params {
             input: r#"fn process(x i32, msg str) bool {
                 return true
             }"#,
@@ -140,7 +141,7 @@ mod tests {
                 },
             ),
         },
-        parse_program_function_no_return_type {
+        parse_decl_function_no_return_type {
             input: r#"fn greet(name str) {
                 print(name)
             }"#,
@@ -169,7 +170,7 @@ mod tests {
                 }
             ),
         },
-        parse_program_function_with_complex_body {
+        parse_decl_function_with_complex_body {
             input: r#"fn maybe_div(a, b i32) i32 {
                 if b == 0 {
                     return 0
@@ -225,7 +226,7 @@ mod tests {
                 },
             ),
         },
-        parse_program_pointer_return_type {
+        parse_decl_pointer_return_type {
             input: r#"fn alloc() *i32 {
                 return new(i32)
             }"#,
@@ -248,7 +249,7 @@ mod tests {
                 },
             ),
         },
-        parse_program_slice_parameter {
+        parse_decl_slice_parameter {
             input: r#"fn process_array(arr []i32) {
                 print(arr)
             }"#,
@@ -274,6 +275,93 @@ mod tests {
                             }),
                         })],
                     },
+                },
+            ),
+        },
+        parse_decl_struct {
+            input: "type Point struct {\n\tx i32\n\ty i32\n}",
+            want_var: Decl::Type(decl),
+            want_value: assert_eq!(
+                decl,
+                TypeDecl {
+                    name: IdentifierExpr {
+                        name: "Point".to_string()
+                    },
+                    type_spec: TypeSpec::Struct(StructType {
+                        fields: vec![
+                            StructField {
+                                name: "x".to_string(),
+                                type_spec: TypeSpec::Int32,
+                            },
+                            StructField {
+                                name: "y".to_string(),
+                                type_spec: TypeSpec::Int32,
+                            },
+                        ]
+                    }),
+                }
+            ),
+        },
+        parse_decl_enum {
+            input: "type Result enum {\n\tOk(MyType)\n\tError\n}",
+            want_var: Decl::Type(decl),
+            want_value: assert_eq!(
+                decl,
+                TypeDecl {
+                    name: IdentifierExpr {
+                        name: "Result".to_string()
+                    },
+                    type_spec: TypeSpec::Enum(EnumType {
+                        variants: vec![
+                            EnumVariant {
+                                name: "Ok".to_string(),
+                                payload: Some(TypeSpec::Named("MyType".to_string())),
+                            },
+                            EnumVariant {
+                                name: "Error".to_string(),
+                                payload: None,
+                            },
+                        ],
+                    }),
+                },
+            ),
+        },
+        parse_decl_list_node {
+            input: "type Node enum {\n\tSome(*Node)\n\tNone\n}",
+            want_var: Decl::Type(decl),
+            want_value: assert_eq!(
+                decl,
+                TypeDecl {
+                    name: IdentifierExpr {
+                        name: "Node".to_string(),
+                    },
+                    type_spec: TypeSpec::Enum(EnumType {
+                        variants: vec![
+                            EnumVariant {
+                                name: "Some".to_string(),
+                                payload: Some(TypeSpec::Pointer(Box::new(TypeSpec::Named(
+                                    "Node".to_string()
+                                )))),
+                            },
+                            EnumVariant {
+                                name: "None".to_string(),
+                                payload: None,
+                            },
+                        ],
+                    }),
+                },
+            ),
+        },
+        parse_decl_empty_struct {
+            input: "type None struct{}",
+            want_var: Decl::Type(decl),
+            want_value: assert_eq!(
+                decl,
+                TypeDecl {
+                    name: IdentifierExpr {
+                        name: "None".to_string(),
+                    },
+                    type_spec: TypeSpec::Struct(StructType { fields: vec![] }),
                 },
             ),
         },

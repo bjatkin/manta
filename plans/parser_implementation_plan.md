@@ -520,7 +520,7 @@ Key implications for the parser design:
 
 ---
 
-### Phase 16: Top-Level Declarations - Functions
+### Phase 16: Top-Level Declarations - Functions [DONE]
 **Goal**: Parse function declarations (the main building blocks)
 
 #### Features to Add

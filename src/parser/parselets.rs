@@ -24,6 +24,7 @@ pub mod return_statement;
 pub mod short_let_statement;
 pub mod string_literal;
 pub mod try_statement;
+pub mod type_decl;
 pub mod unary_operator;
 
 pub use assign_statement::AssignParselet;
@@ -48,6 +49,7 @@ pub use return_statement::ReturnParselet;
 pub use short_let_statement::ShortLetParselet;
 pub use string_literal::StringLiteralParselet;
 pub use try_statement::TryParselet;
+pub use type_decl::TypeDeclParselet;
 pub use unary_operator::UnaryOperatorParselet;
 
 // Operator precedence levels.

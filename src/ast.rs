@@ -23,48 +23,17 @@ pub struct FunctionDecl {
     pub body: BlockStmt,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct TypeDecl {
+    pub name: IdentifierExpr,
+    pub type_spec: TypeSpec,
+}
+
 /// Function parameter
 #[derive(Debug, PartialEq)]
 pub struct Parameter {
     pub name: String,
     pub type_spec: TypeSpec,
-}
-
-/// Type declaration (struct or enum)
-#[derive(Debug, PartialEq)]
-pub struct TypeDecl {
-    pub name: String,
-    pub kind: TypeKind,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum TypeKind {
-    Struct(StructType),
-    Enum(EnumType),
-}
-
-/// Struct type with named fields
-#[derive(Debug, PartialEq)]
-pub struct StructType {
-    pub fields: Vec<StructField>,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct StructField {
-    pub name: String,
-    pub type_spec: TypeSpec,
-}
-
-/// Enum type with named variants
-#[derive(Debug, PartialEq)]
-pub struct EnumType {
-    pub variants: Vec<EnumVariant>,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct EnumVariant {
-    pub name: String,
-    pub payload: Option<TypeSpec>,
 }
 
 /// Const declaration
@@ -110,8 +79,41 @@ pub enum TypeSpec {
     Named(String),
     // Composite types
     Pointer(Box<TypeSpec>),
-    Array(Box<TypeSpec>, usize),
     Slice(Box<TypeSpec>),
+    Array(ArrayType),
+    Struct(StructType),
+    Enum(EnumType),
+}
+
+/// Array type with size
+#[derive(Debug, PartialEq, Clone)]
+pub struct ArrayType {
+    pub type_spec: Box<TypeSpec>,
+    pub size: usize,
+}
+
+/// Struct type with named fields
+#[derive(Debug, PartialEq, Clone)]
+pub struct StructType {
+    pub fields: Vec<StructField>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct StructField {
+    pub name: String,
+    pub type_spec: TypeSpec,
+}
+
+/// Enum type with named variants
+#[derive(Debug, PartialEq, Clone)]
+pub struct EnumType {
+    pub variants: Vec<EnumVariant>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct EnumVariant {
+    pub name: String,
+    pub payload: Option<TypeSpec>,
 }
 
 /// A block of statements
