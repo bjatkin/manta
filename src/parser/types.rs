@@ -1,4 +1,4 @@
-use crate::ast::TypeSpec;
+use crate::ast::{ArrayType, TypeSpec};
 use crate::parser::ParseError;
 use crate::parser::Parser;
 use crate::parser::lexer::TokenKind;
@@ -53,7 +53,10 @@ pub fn parse_type(parser: &mut Parser) -> Result<TypeSpec, ParseError> {
                     }
 
                     let inner = parse_type(parser)?;
-                    Ok(TypeSpec::Array(Box::new(inner), size))
+                    Ok(TypeSpec::Array(ArrayType {
+                        type_spec: Box::new(inner),
+                        size,
+                    }))
                 }
                 other => Err(ParseError::InvalidTypeSpec(format!(
                     "Unexpected token in array type: {:?}",
@@ -123,7 +126,10 @@ mod tests {
         },
         parse_type_array_type {
             input: "[3]i32",
-            want: TypeSpec::Array(Box::new(TypeSpec::Int32), 3),
+            want: TypeSpec::Array(ArrayType {
+                type_spec: Box::new(TypeSpec::Int32),
+                size: 3
+            }),
         },
         parse_type_slice_type {
             input: "[]i32",
@@ -131,7 +137,10 @@ mod tests {
         },
         parse_type_nested_pointer_array {
             input: "*[2]i32",
-            want: TypeSpec::Pointer(Box::new(TypeSpec::Array(Box::new(TypeSpec::Int32), 2))),
+            want: TypeSpec::Pointer(Box::new(TypeSpec::Array(ArrayType {
+                type_spec: Box::new(TypeSpec::Int32),
+                size: 2
+            }))),
         },
     );
 }
