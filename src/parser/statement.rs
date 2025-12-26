@@ -61,7 +61,7 @@ mod test {
     use crate::ast::{
         AssignStmt, BinaryExpr, BinaryOp, BlockStmt, DeferStmt, Expr, FieldAccessExpr, FreeExpr,
         IdentifierExpr, IfStmt, IndexExpr, MatchArm, MatchStmt, NewExpr, Pattern, ReturnStmt,
-        ShortLetStmt, Stmt, TryStmt,
+        ShortLetStmt, Stmt, TryStmt, UnaryExpr, UnaryOp,
     };
     use crate::ast::{CallExpr, LetStmt, TypeSpec};
     use crate::parser::lexer::Lexer;
@@ -282,6 +282,22 @@ mod test {
                         name: "x".to_string(),
                     }),
                     rvalue: Expr::IntLiteral(10),
+                },
+            ),
+        },
+        parse_stmt_ptr_assign {
+            input: "*p = 42",
+            want_var: Stmt::Assign(stmt),
+            want_value: assert_eq!(
+                stmt,
+                AssignStmt {
+                    lvalue: Expr::Unary(UnaryExpr {
+                        operator: UnaryOp::Dereference,
+                        operand: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "p".to_string(),
+                        })),
+                    }),
+                    rvalue: Expr::IntLiteral(42),
                 },
             ),
         },
