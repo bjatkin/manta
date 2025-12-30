@@ -144,6 +144,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 155,
+      "end": 156
+    }
+  },
+  {
     "kind": "Star",
     "lexeme": "*",
     "span": {
@@ -176,6 +184,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 171,
+      "end": 172
+    }
+  },
+  {
     "kind": "ReturnKeyword",
     "lexeme": "return",
     "span": {
@@ -192,11 +208,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 188,
+      "end": 189
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 193,
       "end": 194
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 194,
+      "end": 195
     }
   },
   {
@@ -216,11 +248,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 214,
+      "end": 215
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 215,
       "end": 216
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 216,
+      "end": 217
     }
   },
   {
@@ -312,6 +360,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 257,
+      "end": 258
+    }
+  },
+  {
     "kind": "IfKeyword",
     "lexeme": "if",
     "span": {
@@ -392,6 +448,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 293,
+      "end": 294
+    }
+  },
+  {
     "kind": "Identifier",
     "lexeme": "free",
     "span": {
@@ -421,6 +485,14 @@
     "span": {
       "start": 308,
       "end": 309
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 309,
+      "end": 310
     }
   },
   {
@@ -480,6 +552,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 353,
+      "end": 354
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
@@ -488,11 +568,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 359,
+      "end": 360
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 360,
       "end": 361
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 361,
+      "end": 362
     }
   },
   {

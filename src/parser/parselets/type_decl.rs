@@ -106,6 +106,14 @@ fn parse_enum_variants(parser: &mut Parser) -> Result<Vec<EnumVariant>, ParseErr
             payload,
         });
 
+        // Expect semicolon after variant
+        let matched = parser.match_token(TokenKind::Semicolon)?;
+        if !matched {
+            return Err(ParseError::UnexpectedToken(
+                "Expected ';' after enum variant".to_string(),
+            ));
+        }
+
         // Check if there are more variants
         match parser.lookahead(0)?.kind {
             TokenKind::CloseBrace => break,
@@ -179,6 +187,14 @@ fn parse_struct_fields(parser: &mut Parser) -> Result<Vec<StructField>, ParseErr
             name: field_name,
             type_spec: field_type,
         });
+
+        // Expect semicolon after field
+        let matched = parser.match_token(TokenKind::Semicolon)?;
+        if !matched {
+            return Err(ParseError::UnexpectedToken(
+                "Expected ';' after enum variant".to_string(),
+            ));
+        }
 
         // Check if there are more fields
         match parser.lookahead(0)?.kind {

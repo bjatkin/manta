@@ -12,7 +12,15 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
     if let Some(parselet) = parselet {
         let parselet = parselet.clone();
         let token = parser.consume()?;
-        return parselet.parse(parser, token);
+        let stmt = parselet.parse(parser, token)?;
+
+        // Consume trailing semicolon for prefix statements
+        let matched = parser.match_token(TokenKind::Semicolon)?;
+        if !matched {
+            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+        }
+
+        return Ok(stmt);
     };
 
     // if we failed to match a statment, parse this as expression instead
@@ -26,8 +34,20 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
     if let Some(parselet) = parselet {
         let parselet = parselet.clone();
         let token = parser.consume()?;
-        Ok(parselet.parse(parser, expr, token)?)
+        let stmt = parselet.parse(parser, expr, token)?;
+
+        let matched = parser.match_token(TokenKind::Semicolon)?;
+        if !matched {
+            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+        }
+
+        Ok(stmt)
     } else {
+        let matched = parser.match_token(TokenKind::Semicolon)?;
+        if !matched {
+            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+        }
+
         Ok(Stmt::Expr(ExprStmt { expr }))
     }
 }

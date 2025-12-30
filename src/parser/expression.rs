@@ -25,7 +25,7 @@ pub fn parse_expression(
     // Loop while the next token's precedence is higher than or equal to min_precedence
     loop {
         let next_token = parser.lookahead(0)?.clone();
-        if expression_done(&next_token.kind) {
+        if next_token.kind == TokenKind::Eof || next_token.kind == TokenKind::Semicolon {
             break;
         }
 
@@ -50,18 +50,6 @@ pub fn parse_expression(
     }
 
     Ok(left)
-}
-
-/// Check if the expression is done based on the next token kind
-fn expression_done(kind: &TokenKind) -> bool {
-    matches!(
-        kind,
-        TokenKind::Eof
-            | TokenKind::CloseParen
-            | TokenKind::CloseSquare
-            | TokenKind::CloseBrace
-            | TokenKind::Comma
-    )
 }
 
 #[cfg(test)]

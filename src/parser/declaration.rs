@@ -414,7 +414,9 @@ mod tests {
             ),
         },
         parse_decl_import_single {
-            input: r#"import ("math")"#,
+            input: r#"import (
+                "math"
+            )"#,
             want_var: Decl::Import(decl),
             want_value: assert_eq!(
                 decl,

@@ -401,8 +401,8 @@ mod tests {
         let matched = parser.match_token(TokenKind::Int).unwrap();
         assert!(matched);
 
-        let eof_or_next = parser.lookahead(0).unwrap();
-        assert_eq!(eof_or_next.kind, TokenKind::Eof);
+        let semicolon_or_next = parser.lookahead(0).unwrap();
+        assert_eq!(semicolon_or_next.kind, TokenKind::Semicolon);
     }
 
     #[test]
