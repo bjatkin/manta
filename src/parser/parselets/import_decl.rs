@@ -46,7 +46,14 @@ fn parse_import_modules(parser: &mut Parser) -> Result<Vec<String>, ParseError> 
             break;
         }
 
-        modules.push(parser.consume()?.lexeme);
+        let module = parser.consume()?;
+
+        let matched = parser.match_token(TokenKind::Semicolon)?;
+        if !matched {
+            return Err(ParseError::UnexpectedToken("Expected ';'".to_string()));
+        }
+
+        modules.push(module.lexeme);
     }
 
     if modules.is_empty() {

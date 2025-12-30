@@ -45,6 +45,13 @@ impl PrefixStmtParselet for MatchParselet {
 
             let body = statement::parse_block(parser)?;
 
+            let matched = parser.match_token(TokenKind::Semicolon)?;
+            if !matched {
+                return Err(ParseError::UnexpectedToken(
+                    "Expected ';' after body in match arm".to_string(),
+                ));
+            }
+
             arms.push(MatchArm { pattern, body });
         }
 

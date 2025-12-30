@@ -131,6 +131,7 @@ pub struct Lexer {
     input: String,
     pos: usize,
     len: usize,
+    last_token_kind: Option<TokenKind>,
 }
 
 impl Lexer {
@@ -140,6 +141,7 @@ impl Lexer {
             input: source.to_string(),
             pos: 0,
             len: source.len(),
+            last_token_kind: None,
         }
     }
 
@@ -156,26 +158,64 @@ impl Lexer {
 
         if self.eof() {
             let span = Span::new(self.pos, self.pos);
+            if self.is_end_of_statement() {
+                self.last_token_kind = Some(TokenKind::Semicolon);
+                return Ok(Token::new(TokenKind::Semicolon, String::new(), span));
+            }
+
+            self.last_token_kind = Some(TokenKind::Eof);
             return Ok(Token::eof(span));
         }
 
         // determine by first char
         let ch = self.current_char().unwrap();
 
+        if ch == '\n' {
+            // if this newline wasn't skipped it's because we need to insert a semicolon
+            let start = self.pos;
+            self.bump();
+            let end = self.pos;
+
+            self.last_token_kind = Some(TokenKind::Semicolon);
+            return Ok(Token::new(
+                TokenKind::Semicolon,
+                "\n".to_string(),
+                Span::new(start, end),
+            ));
+        }
+
+        if ch == '}' && self.is_end_of_statement() {
+            let pos = self.pos;
+            self.last_token_kind = Some(TokenKind::Semicolon);
+            return Ok(Token::new(
+                TokenKind::Semicolon,
+                String::new(),
+                Span::new(pos, pos),
+            ));
+        }
+
         if is_ident_start(ch) {
-            return Ok(self.read_ident_or_keyword());
+            let token = self.read_ident_or_keyword();
+            self.last_token_kind = Some(token.kind);
+            return Ok(token);
         }
 
         if ch.is_ascii_digit() {
-            return Ok(self.read_number());
+            let token = self.read_number();
+            self.last_token_kind = Some(token.kind);
+            return Ok(token);
         }
 
         if ch == '"' {
-            return self.read_string();
+            let token = self.read_string()?;
+            self.last_token_kind = Some(token.kind);
+            return Ok(token);
         }
 
         // operators and punctuation
-        Ok(self.read_operator_or_punct())
+        let token = self.read_operator_or_punct();
+        self.last_token_kind = Some(token.kind);
+        Ok(token)
     }
 
     // internal helpers for the lexer
@@ -223,6 +263,13 @@ impl Lexer {
 
     fn skip_whitespace_and_comments(&mut self) -> Result<(), LexError> {
         loop {
+            // check if this should be a synthetic semicolon
+            if let Some(ch) = self.current_char() {
+                if ch == '\n' && self.is_end_of_statement() {
+                    break;
+                }
+            };
+
             // skip whitespace
             let mut progressed = false;
             while let Some(ch) = self.current_char() {
@@ -269,6 +316,27 @@ impl Lexer {
             }
         }
         Ok(())
+    }
+
+    fn is_end_of_statement(&mut self) -> bool {
+        if let Some(kind) = self.last_token_kind {
+            kind == TokenKind::Identifier
+                || kind == TokenKind::Int
+                || kind == TokenKind::Float
+                || kind == TokenKind::Str
+                || kind == TokenKind::TrueLiteral
+                || kind == TokenKind::FalseLiteral
+                || kind == TokenKind::NilLiteral
+                || kind == TokenKind::ReturnKeyword
+                || kind == TokenKind::BreakKeyword
+                || kind == TokenKind::ConstKeyword
+                || kind == TokenKind::CloseBrace
+                || kind == TokenKind::CloseParen
+                || kind == TokenKind::CloseSquare
+                || kind == TokenKind::Bang
+        } else {
+            false
+        }
     }
 
     fn read_ident_or_keyword(&mut self) -> Token {
@@ -632,14 +700,34 @@ mod tests {
                 Token::new(TokenKind::Identifier, "x".to_string(), Span::new(4, 5)),
                 Token::new(TokenKind::Equal, "=".to_string(), Span::new(6, 7)),
                 Token::new(TokenKind::Int, "42".to_string(), Span::new(8, 10)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(10, 10)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(10, 10)),
+            ],
+        },
+        lex_input_assign_with_new_line{
+            input: "x = 5\n",
+            want: vec![
+            Token::new(TokenKind::Identifier, "x".to_string(), Span::new(0,1)),
+            Token::new(TokenKind::Equal, "=".to_string(), Span::new(2,3)),
+            Token::new(TokenKind::Int, "5".to_string(), Span::new(4,5)),
+            Token::new(TokenKind::Semicolon, "\n".to_string(), Span::new(5,6)),
+            Token::new(TokenKind::Eof, String::new(), Span::new(6,6)),
             ],
         },
         lex_input_string_and_escape {
             input: "\"hello\\n\"",
             want: vec![
                 Token::new(TokenKind::Str, "hello\n".to_string(), Span::new(0, 9)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(9, 9)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(9, 9)),
+            ],
+        },
+        lex_input_int_with_semicolon {
+            input: "20;",
+            want: vec![
+                Token::new(TokenKind::Int, "20".to_string(), Span::new(0, 2)),
+                Token::new(TokenKind::Semicolon, ";".to_string(), Span::new(2, 3)),
+                Token::new(TokenKind::Eof, String::new(), Span::new(3, 3)),
             ],
         },
         lex_input_comments_and_whitespace {
@@ -653,6 +741,7 @@ mod tests {
                 Token::new(TokenKind::Identifier, "x".to_string(), Span::new(30, 31)),
                 Token::new(TokenKind::Equal, "=".to_string(), Span::new(32, 33)),
                 Token::new(TokenKind::Int, "1".to_string(), Span::new(34, 35)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(43, 43)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(43, 43)),
             ],
         },
@@ -667,6 +756,7 @@ mod tests {
                     Span::new(10, 16),
                 ),
                 Token::new(TokenKind::Int, "1_000".to_string(), Span::new(17, 22)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(22, 22)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(22, 22)),
             ],
         },
@@ -727,11 +817,12 @@ mod tests {
                 Token::new(TokenKind::Identifier, "x".to_string(), Span::new(4, 5)),
                 Token::new(TokenKind::Equal, "=".to_string(), Span::new(6, 7)),
                 Token::new(TokenKind::Int, "1".to_string(), Span::new(8, 9)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(9, 9)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(9, 9)),
             ],
         },
         lex_input_type_enum_tokens {
-            input: "type ErrWrite enum { Ok IOError }",
+            input: "type ErrWrite enum { Ok; IOError }",
             want: vec![
                 Token::new(
                     TokenKind::TypeKeyword,
@@ -755,16 +846,27 @@ mod tests {
                 ),
                 Token::new(TokenKind::Identifier, "Ok".to_string(), Span::new(21, 23)),
                 Token::new(
+                    TokenKind::Semicolon,
+                    ";".to_string(),
+                    Span::new(23, 24),
+                ),
+                Token::new(
                     TokenKind::Identifier,
                     "IOError".to_string(),
-                    Span::new(24, 31),
+                    Span::new(25, 32),
+                ),
+                Token::new(
+                    TokenKind::Semicolon,
+                    "".to_string(),
+                    Span::new(33, 33),
                 ),
                 Token::new(
                     TokenKind::CloseBrace,
                     "}".to_string(),
-                    Span::new(32, 33),
+                    Span::new(33, 34),
                 ),
-                Token::new(TokenKind::Eof, String::new(), Span::new(33, 33)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(34, 34)),
+                Token::new(TokenKind::Eof, String::new(), Span::new(34, 34)),
             ],
         },
         lex_input_fn_decl {
@@ -811,11 +913,12 @@ mod tests {
                     "}".to_string(),
                     Span::new(42, 43),
                 ),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(43, 43)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(43, 43)),
             ],
         },
         lex_input_try_catch {
-            input: ".Ok(f) := open(path) catch { return .IOError }",
+            input: ".Ok(f) := open(path) catch { return .IOError; }",
             want: vec![
                 Token::new(TokenKind::Dot, ".".to_string(), Span::new(0, 1)),
                 Token::new(TokenKind::Identifier, "Ok".to_string(), Span::new(1, 3)),
@@ -873,11 +976,17 @@ mod tests {
                     Span::new(37, 44),
                 ),
                 Token::new(
+                    TokenKind::Semicolon,
+                    ";".to_string(),
+                    Span::new(44, 45),
+                ),
+                Token::new(
                     TokenKind::CloseBrace,
                     "}".to_string(),
-                    Span::new(45, 46),
+                    Span::new(46, 47),
                 ),
-                Token::new(TokenKind::Eof, String::new(), Span::new(46, 46)),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(47, 47)),
+                Token::new(TokenKind::Eof, String::new(), Span::new(47, 47)),
             ],
         },
         lex_input_pointer_and_nil {
@@ -912,6 +1021,11 @@ if p != nil {
                     TokenKind::CloseParen,
                     ")".to_string(),
                     Span::new(22, 23),
+                ),
+                Token::new(
+                    TokenKind::Semicolon,
+                    "\n".to_string(),
+                    Span::new(23, 24),
                 ),
                 Token::new(
                     TokenKind::IfKeyword,
@@ -952,6 +1066,11 @@ if p != nil {
                     Span::new(50, 51),
                 ),
                 Token::new(
+                    TokenKind::Semicolon,
+                    "\n".to_string(),
+                    Span::new(51, 52),
+                ),
+                Token::new(
                     TokenKind::Identifier,
                     "free".to_string(),
                     Span::new(56, 60),
@@ -968,10 +1087,16 @@ if p != nil {
                     Span::new(62, 63),
                 ),
                 Token::new(
+                    TokenKind::Semicolon,
+                    "\n".to_string(),
+                    Span::new(63, 64),
+                ),
+                Token::new(
                     TokenKind::CloseBrace,
                     "}".to_string(),
                     Span::new(64, 65),
                 ),
+                Token::new(TokenKind::Semicolon, String::new(), Span::new(65, 65)),
                 Token::new(TokenKind::Eof, String::new(), Span::new(65, 65)),
             ],
         },

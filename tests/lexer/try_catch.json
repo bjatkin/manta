@@ -64,6 +64,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 119,
+      "end": 120
+    }
+  },
+  {
     "kind": "Identifier",
     "lexeme": "IOError",
     "span": {
@@ -72,11 +80,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 131,
+      "end": 132
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 132,
       "end": 133
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 133,
+      "end": 134
     }
   },
   {
@@ -272,11 +296,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "",
+    "span": {
+      "start": 268,
+      "end": 268
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 268,
       "end": 269
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 269,
+      "end": 270
     }
   },
   {
@@ -328,11 +368,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "",
+    "span": {
+      "start": 291,
+      "end": 291
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 291,
       "end": 292
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 292,
+      "end": 293
     }
   },
   {
@@ -464,11 +520,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "",
+    "span": {
+      "start": 354,
+      "end": 354
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 354,
       "end": 355
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 355,
+      "end": 356
     }
   },
   {
@@ -520,11 +592,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 373,
+      "end": 374
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 374,
       "end": 375
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 375,
+      "end": 376
     }
   },
   {
@@ -744,6 +832,14 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 513,
+      "end": 514
+    }
+  },
+  {
     "kind": "ReturnKeyword",
     "lexeme": "return",
     "span": {
@@ -752,11 +848,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 528,
+      "end": 529
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 533,
       "end": 534
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 534,
+      "end": 535
     }
   },
   {
@@ -789,6 +901,14 @@
     "span": {
       "start": 552,
       "end": 553
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 553,
+      "end": 554
     }
   },
   {
@@ -888,11 +1008,27 @@
     }
   },
   {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 672,
+      "end": 673
+    }
+  },
+  {
     "kind": "CloseBrace",
     "lexeme": "}",
     "span": {
       "start": 673,
       "end": 674
+    }
+  },
+  {
+    "kind": "Semicolon",
+    "lexeme": "\n",
+    "span": {
+      "start": 674,
+      "end": 675
     }
   },
   {
