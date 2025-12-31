@@ -34,6 +34,10 @@ impl PrefixStmtParselet for IfParselet {
             fail = Some(statement::parse_block(parser)?);
         }
 
+        let one = parser.lookahead(0)?.kind;
+        let two = parser.lookahead(1)?.kind;
+        let three = parser.lookahead(2)?.kind;
+
         Ok(Stmt::If(IfStmt {
             check,
             success,

@@ -1,0 +1,19 @@
+// examples/if_else.manta
+
+// test if our if statments work
+fn main() {
+    check_this := true
+
+    if check_this {
+        print("yes")
+    }
+
+    let nine = 9
+
+    if nine > 10 {
+        print("no")
+    } else {
+        print("yes")
+    }
+}
+
