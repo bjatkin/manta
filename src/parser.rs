@@ -361,6 +361,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::Decl;
     use pretty_assertions::assert_eq;
     use std::fs;
     use std::path::Path;
@@ -461,8 +462,10 @@ mod tests {
         test_dir: &std::path::Path,
         parser_dir: &std::path::Path,
     ) {
-        let entry =
-            entry.expect(format!("Failed to read entry in '{:?}' directory", test_dir).as_str());
+        let entry = match entry {
+            Ok(dir) => dir,
+            Err(_) => panic!("Failed to read entry in '{:?}' directory", test_dir),
+        };
 
         let path = entry.path();
         let ext = path.extension().expect("Failed to get file extension");
@@ -476,13 +479,15 @@ mod tests {
             .and_then(|s| s.to_str())
             .unwrap_or("unknown");
 
-        let source =
-            fs::read_to_string(&path).expect(&format!("Failed to read {}", path.display()));
+        let source = match fs::read_to_string(&path) {
+            Ok(s) => s,
+            Err(_) => format!("Failed to read {}", path.display()),
+        };
 
         let lexer = Lexer::new(&source);
         let mut parser = Parser::new(lexer);
 
-        let ast: Result<Vec<crate::ast::Decl>, ParseError> = parser.parse_program();
+        let ast: Result<Vec<Decl>, ParseError> = parser.parse_program();
 
         let ast = match ast {
             Ok(a) => a,
@@ -497,8 +502,10 @@ mod tests {
         let parser_file = parser_dir.join(format!("{}.json", file_name));
 
         if parser_file.exists() {
-            let expected_json = fs::read_to_string(&parser_file)
-                .expect(&format!("Failed to read {}", parser_file.display()));
+            let expected_json = match fs::read_to_string(&parser_file) {
+                Ok(s) => s,
+                Err(_) => format!("Failed to read {}", parser_file.display()),
+            };
 
             assert_eq!(
                 json_output, expected_json,
@@ -510,10 +517,10 @@ mod tests {
             fs::create_dir_all(parser_dir).expect("Failed to create parser test directory");
 
             // Write the output if the file does not exist
-            fs::write(&parser_file, &json_output).expect(&format!(
-                "Failed to write parser output to {:?}",
-                parser_file
-            ));
+            match fs::write(&parser_file, &json_output) {
+                Ok(_) => (),
+                Err(_) => panic!("Failed to write parser output to {:?}", parser_file),
+            };
 
             // If we generated the output file, fail the test to prompt the user to verify it's correctness
             panic!(

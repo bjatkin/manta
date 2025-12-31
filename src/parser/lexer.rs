@@ -615,8 +615,10 @@ mod tests {
     }
 
     fn assert_file_eq(entry: Result<DirEntry, std::io::Error>, test_dir: &Path, lex_dir: &Path) {
-        let entry =
-            entry.expect(format!("Failed to read entry in '{:?}' directory", test_dir).as_str());
+        let entry = match entry {
+            Ok(dir) => dir,
+            Err(_) => panic!("Failed to read entry in '{:?}' directory", test_dir),
+        };
 
         let path = entry.path();
         let ext = path.extension().expect("Failed to get file extension");
@@ -630,8 +632,10 @@ mod tests {
             .and_then(|s| s.to_str())
             .unwrap_or("unknown");
 
-        let source =
-            fs::read_to_string(&path).expect(&format!("Failed to read {}", path.display()));
+        let source = match fs::read_to_string(&path) {
+            Ok(s) => s,
+            Err(_) => panic!("Failed to read {}", path.display()),
+        };
 
         let lexer = Lexer::new(&source);
         let tokens: Result<Vec<Token>, LexError> = lexer.into_iter().collect();
@@ -649,8 +653,10 @@ mod tests {
         let lex_file = lex_dir.join(format!("{}.json", file_name));
 
         if lex_file.exists() {
-            let expected_json = fs::read_to_string(&lex_file)
-                .expect(&format!("Failed to read {}", lex_file.display()));
+            let expected_json = match fs::read_to_string(&lex_file) {
+                Ok(s) => s,
+                Err(_) => panic!("Failed to read {}", lex_file.display()),
+            };
 
             assert_eq!(
                 json_output, expected_json,
@@ -662,8 +668,10 @@ mod tests {
             fs::create_dir_all(lex_dir).expect("Failed to create lexer test directory");
 
             // Write the output if the file does not exist
-            fs::write(&lex_file, &json_output)
-                .expect(&format!("Failed to write lexer output to {:?}", lex_file));
+            match fs::write(&lex_file, &json_output) {
+                Ok(_) => (),
+                Err(_) => panic!("Failed to write lexer output to {:?}", lex_file),
+            };
 
             // If we generated the output file, fail the test to prompt the user to verify it's correctness
             panic!(
