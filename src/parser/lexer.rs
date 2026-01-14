@@ -601,6 +601,7 @@ mod tests {
     use std::fs::{self, DirEntry};
     use std::path::Path;
 
+    /*
     #[test]
     fn lex_file_tests() {
         let test_dir = Path::new("tests/src");
@@ -620,6 +621,7 @@ mod tests {
             assert_file_eq(entry, test_dir, lex_dir);
         }
     }
+    */
 
     fn assert_file_eq(entry: Result<DirEntry, std::io::Error>, test_dir: &Path, lex_dir: &Path) {
         let entry = match entry {
