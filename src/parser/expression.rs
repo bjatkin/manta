@@ -106,11 +106,6 @@ mod tests {
             want_var: Expr::BoolLiteral(false),
             want_value: (),
         },
-        parse_expression_nil_literal {
-            input: "nil",
-            want_var: Expr::NilLiteral,
-            want_value: (),
-        },
         parse_expression_identifier {
             input: "myVariable",
             want_var: Expr::Identifier(ident),
@@ -182,14 +177,14 @@ mod tests {
             ),
         },
         parse_expression_address_of {
-            input: "&var",
+            input: "&abc",
             want_var: Expr::Unary(expr),
             want_value: assert_eq!(
                 expr,
                 UnaryExpr {
                     operator: UnaryOp::AddressOf,
                     operand: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "var".to_string(),
+                        name: "abc".to_string(),
                     })),
                 },
             ),

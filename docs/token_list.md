@@ -6,14 +6,14 @@ as the canonical source when implementing the lexer.
 Tokens (grouped):
 
 1) Keywords (case-sensitive):
-- fn, return, loop, for, break, continue, defer, alloc, free, let, mut, var, const, struct, enum, match, type, use
+- fn, return, loop, for, break, continue, defer, alloc, free, let, mut, var, const, struct, enum, match, type, use, mod, or, wrap
 
 2) Primitive type tokens (treated as identifiers in the parser but useful to call out):
 - i8, i16, i32, i64, u8, u16, u32, u64, f32, f64, bool, rune, str
 
 3) Operators and punctuation (single or multi-char tokens):
 - { } ( ) [ ] , : ; = > < > | . * + - / % & _
-- := == >= <= || && //
+- := == >= <= || && // :: !
 
 4) Literals:
 - INTEGER (decimal, allow underscores, e.g. 1_000)
@@ -33,3 +33,19 @@ Tokens (grouped):
 Example token stream for `let answer = 42`:
 - LET IDENT('answer') EQUAL INTEGER(42)
 
+## Example Token Streams
+
+### Module declaration:
+`mod main` → MOD IDENT('main')
+
+### Module-qualified identifier:
+`os::open_file` → IDENT('os') COLONCOLON IDENT('open_file')
+
+### Mutable variable binding:
+`mut x = 10` → MUT IDENT('x') EQUAL INTEGER(10)
+
+### Variable declaration:
+`var counter = 0` → VAR IDENT('counter') EQUAL INTEGER(0)
+
+### Use statement with module path:
+`use ("os")` → USE OPENPAREN STR('os') CLOSEPAREN
