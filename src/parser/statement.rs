@@ -1,4 +1,4 @@
-use crate::ast::{BlockStmt, ExprStmt, Stmt};
+use crate::ast::{BlockStmt, ExprStmt, Pattern, Stmt};
 use crate::parser::lexer::TokenKind;
 use crate::parser::{ParseError, Parser};
 
@@ -75,15 +75,86 @@ pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
     Ok(BlockStmt { statements })
 }
 
+pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
+    let token = parser.lookahead(0)?;
+
+    match token.kind {
+        TokenKind::Identifier => {
+            let token = parser.consume()?;
+            Ok(Pattern::Identifier(token.lexeme))
+        }
+        TokenKind::Int => {
+            let token = parser.consume()?;
+            let i: i64 = token.lexeme.parse().unwrap();
+            Ok(Pattern::IntLiteral(i))
+        }
+        TokenKind::Str => {
+            let token = parser.consume()?;
+            Ok(Pattern::StringLiteral(token.lexeme))
+        }
+        TokenKind::Float => {
+            let token = parser.consume()?;
+            let f: f64 = token.lexeme.parse().unwrap();
+            Ok(Pattern::FloatLiteral(f))
+        }
+        TokenKind::TrueLiteral => {
+            parser.consume()?;
+            Ok(Pattern::BoolLiteral(true))
+        }
+        TokenKind::FalseLiteral => {
+            parser.consume()?;
+            Ok(Pattern::BoolLiteral(false))
+        }
+        TokenKind::Underscore => {
+            parser.consume()?;
+            Ok(Pattern::Default)
+        }
+        TokenKind::Dot => {
+            parser.consume()?;
+            let ident = parser.lookahead(0)?;
+            if ident.kind != TokenKind::Identifier {
+                return Err(ParseError::UnexpectedToken(
+                    "Not a valid pattern".to_string(),
+                ));
+            }
+            let name = ident.lexeme.clone();
+
+            let mut payload_binding = None;
+            parser.consume()?;
+            if parser.lookahead(0).unwrap().kind == TokenKind::OpenParen {
+                parser.consume()?;
+                let payload = parser.lookahead(0)?;
+                if payload.kind != TokenKind::Identifier {
+                    return Err(ParseError::UnexpectedToken(
+                        "Not a valid pattern".to_string(),
+                    ));
+                }
+
+                payload_binding = Some(payload.lexeme.clone());
+                parser.consume()?;
+
+                parser.match_token(TokenKind::CloseParen)?;
+            }
+
+            Ok(Pattern::EnumVariant {
+                name,
+                payload_binding,
+            })
+        }
+        _ => Err(ParseError::UnexpectedToken(
+            "Not a valid pattern".to_string(),
+        )),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::ast::{
-        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, DeferStmt, Expr, FieldAccessExpr, FreeExpr,
-        IdentifierExpr, IfStmt, IndexExpr, MatchArm, MatchStmt, NewExpr, Pattern, ReturnStmt,
-        ShortLetStmt, Stmt, TryStmt, UnaryExpr, UnaryOp,
+        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, Expr, FieldAccessExpr,
+        FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm, MatchStmt, NewExpr,
+        Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
     };
-    use crate::ast::{CallExpr, LetStmt, TypeSpec};
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
 
@@ -372,51 +443,6 @@ mod test {
                     }),
                     rvalue: Expr::IntLiteral(10),
                 },
-            ),
-        },
-        parse_stmt_short_let {
-            input: "x := 10",
-            want_var: Stmt::ShortLet(stmt),
-            want_value: assert_eq!(
-                stmt,
-                ShortLetStmt {
-                    name: IdentifierExpr {
-                        name: "x".to_string()
-                    },
-                    value: Expr::IntLiteral(10),
-                },
-            ),
-        },
-        parse_stmt_short_let_index {
-            input: "got := test.result.value[2 | 3_000]",
-            want_var: Stmt::ShortLet(stmt),
-            want_value: assert_eq!(
-                stmt,
-                ShortLetStmt {
-                    name: IdentifierExpr {
-                        name: "got".to_string(),
-                    },
-                    value: Expr::Index(IndexExpr {
-                        target: Box::new(Expr::FieldAccess(FieldAccessExpr {
-                            target: Some(Box::new(Expr::FieldAccess(FieldAccessExpr {
-                                target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "test".to_string(),
-                                }))),
-                                field: Box::new(IdentifierExpr {
-                                    name: "result".to_string(),
-                                }),
-                            }))),
-                            field: Box::new(IdentifierExpr {
-                                name: "value".to_string(),
-                            }),
-                        })),
-                        index: Box::new(Expr::Binary(BinaryExpr {
-                            left: Box::new(Expr::IntLiteral(2)),
-                            operator: BinaryOp::BitwiseOr,
-                            right: Box::new(Expr::IntLiteral(3_000)),
-                        })),
-                    })
-                }
             ),
         },
         parse_stmt_if {
@@ -773,4 +799,93 @@ mod test {
             ),
         },
     );
+
+    // Tests for parse_pattern function
+    #[test]
+    fn test_parse_pattern_int_literal() {
+        let lexer = Lexer::new("42");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::IntLiteral(42));
+    }
+
+    #[test]
+    fn test_parse_pattern_string_literal() {
+        let lexer = Lexer::new("\"hello\"");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::StringLiteral("hello".to_string()));
+    }
+
+    #[test]
+    fn test_parse_pattern_float_literal() {
+        let lexer = Lexer::new("3.14");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::FloatLiteral(3.14));
+    }
+
+    #[test]
+    fn test_parse_pattern_true_literal() {
+        let lexer = Lexer::new("true");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::BoolLiteral(true));
+    }
+
+    #[test]
+    fn test_parse_pattern_false_literal() {
+        let lexer = Lexer::new("false");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::BoolLiteral(false));
+    }
+
+    #[test]
+    fn test_parse_pattern_underscore() {
+        let lexer = Lexer::new("_");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::Default);
+    }
+
+    #[test]
+    fn test_parse_pattern_identifier() {
+        let lexer = Lexer::new("myVar");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::Identifier("myVar".to_string()));
+    }
+
+    #[test]
+    fn test_parse_pattern_type_spec_i32() {
+        let lexer = Lexer::new("i32");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::TypeSpec(TypeSpec::Int32));
+    }
+
+    #[test]
+    fn test_parse_pattern_type_spec_bool() {
+        let lexer = Lexer::new("bool");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::TypeSpec(TypeSpec::Bool));
+    }
+
+    #[test]
+    fn test_parse_pattern_type_spec_string() {
+        let lexer = Lexer::new("string");
+        let mut parser = Parser::new(lexer);
+        let pattern = parse_pattern(&mut parser).unwrap();
+        assert_eq!(pattern, Pattern::TypeSpec(TypeSpec::String));
+    }
+
+    #[test]
+    fn test_parse_pattern_invalid() {
+        let lexer = Lexer::new("+ ");
+        let mut parser = Parser::new(lexer);
+        let result = parse_pattern(&mut parser);
+        assert!(result.is_err());
+    }
 }

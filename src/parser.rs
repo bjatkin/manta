@@ -6,16 +6,14 @@ pub mod statement;
 pub mod types;
 
 use crate::ast::{BinaryOp, Decl, Expr, UnaryOp};
-use crate::parser::parselets::{
-    BlockParselet, InfixStmtParselet, PrefixDeclParselet, ShortLetParselet,
-};
+use crate::parser::parselets::{BlockParselet, InfixStmtParselet, PrefixDeclParselet};
 use lexer::{Lexer, Token, TokenKind};
 use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, ConstDeclParselet,
     DeferParselet, FieldAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet,
     IfParselet, IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet,
     LetParselet, MatchParselet, Precedence, PrefixExprParselet, PrefixStmtParselet, ReturnParselet,
-    StringLiteralParselet, TryParselet, TypeDeclParselet, UnaryOperatorParselet, UseDeclParselet,
+    StringLiteralParselet, TypeDeclParselet, UnaryOperatorParselet, UseDeclParselet,
 };
 use std::collections::HashMap;
 use std::rc::Rc;

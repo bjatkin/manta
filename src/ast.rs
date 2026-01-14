@@ -125,16 +125,6 @@ pub struct BlockStmt {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct TryStmt {
-    pub pattern_enum: Option<Box<IdentifierExpr>>,
-    pub pattern_variant: Box<IdentifierExpr>,
-    pub decl: Option<Box<IdentifierExpr>>,
-    pub expr: Box<Expr>,
-    pub catch_binding: Option<Box<IdentifierExpr>>,
-    pub catch_body: Option<Box<BlockStmt>>,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IfStmt {
     pub check: Box<Expr>,
     pub success: BlockStmt,
@@ -145,28 +135,21 @@ pub struct IfStmt {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Stmt {
     Let(LetStmt),
-    ShortLet(ShortLetStmt),
     Assign(AssignStmt),
     Expr(ExprStmt),
     Return(ReturnStmt),
     Defer(DeferStmt),
     Match(MatchStmt),
     Block(BlockStmt),
-    Try(TryStmt),
     If(IfStmt),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct LetStmt {
-    pub name: String,
-    pub type_annotation: Option<TypeSpec>,
-    pub value: Option<Expr>,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct ShortLetStmt {
-    pub name: IdentifierExpr,
+    pub pattern: Pattern,
     pub value: Expr,
+    pub or_binding: Option<Box<IdentifierExpr>>,
+    pub except: Option<BlockStmt>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -212,9 +195,12 @@ pub enum Pattern {
     IntLiteral(i64),
     StringLiteral(String),
     BoolLiteral(bool),
-    NilLiteral,
+    FloatLiteral(f64),
 
-    Default, // _ pattern
+    Identifier(String),
+    Default, // the _ pattern
+
+             // TODO: need to support type specs
 }
 
 /// Expressions
