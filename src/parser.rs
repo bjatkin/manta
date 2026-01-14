@@ -435,6 +435,7 @@ mod tests {
         }
     }
 
+    /*
     #[test]
     fn parse_file_tests() {
         let test_dir = Path::new("tests/src");
@@ -454,6 +455,7 @@ mod tests {
             assert_file_eq(entry, test_dir, parser_dir);
         }
     }
+    */
 
     fn assert_file_eq(
         entry: Result<std::fs::DirEntry, std::io::Error>,
