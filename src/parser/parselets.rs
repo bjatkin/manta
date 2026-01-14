@@ -15,19 +15,18 @@ pub mod function_declaration;
 pub mod group;
 pub mod identifier;
 pub mod if_statement;
-pub mod import_decl;
 pub mod index;
 pub mod inferred_variant;
 pub mod int_literal;
 pub mod let_statement;
 pub mod match_statement;
-pub mod nil_literal;
 pub mod return_statement;
 pub mod short_let_statement;
 pub mod string_literal;
 pub mod try_statement;
 pub mod type_decl;
 pub mod unary_operator;
+pub mod use_decl;
 
 pub use assign_statement::AssignParselet;
 pub use binary_operator::BinaryOperatorParselet;
@@ -42,19 +41,18 @@ pub use function_declaration::FunctionDeclParselet;
 pub use group::GroupParselet;
 pub use identifier::IdentifierParselet;
 pub use if_statement::IfParselet;
-pub use import_decl::ImportDeclParselet;
 pub use index::IndexParselet;
 pub use inferred_variant::InferedVariantParselet;
 pub use int_literal::IntLiteralParselet;
 pub use let_statement::LetParselet;
 pub use match_statement::MatchParselet;
-pub use nil_literal::NilLiteralParselet;
 pub use return_statement::ReturnParselet;
 pub use short_let_statement::ShortLetParselet;
 pub use string_literal::StringLiteralParselet;
 pub use try_statement::TryParselet;
 pub use type_decl::TypeDeclParselet;
 pub use unary_operator::UnaryOperatorParselet;
+pub use use_decl::UseDeclParselet;
 
 // Operator precedence levels.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

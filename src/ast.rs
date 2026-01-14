@@ -6,7 +6,7 @@ pub enum Decl {
     Function(FunctionDecl),
     Type(TypeDecl),
     Const(ConstDecl),
-    Import(ImportDecl),
+    Use(UseDecl),
 }
 
 /// Function declaration
@@ -50,7 +50,7 @@ pub struct ConstDecl {
     pub value: Expr,
 }
 
-/// Import declaration
+/// Use declaration
 ///
 /// Example:
 /// ```manta
@@ -58,7 +58,7 @@ pub struct ConstDecl {
 /// import ("std", "io")
 /// ```
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct ImportDecl {
+pub struct UseDecl {
     pub modules: Vec<String>,
 }
 

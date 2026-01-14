@@ -1,4 +1,4 @@
-use crate::ast::{Decl, ImportDecl};
+use crate::ast::{Decl, UseDecl};
 use crate::parser::lexer::{Token, TokenKind};
 use crate::parser::parselets::PrefixDeclParselet;
 use crate::parser::{ParseError, Parser};
@@ -6,9 +6,9 @@ use crate::parser::{ParseError, Parser};
 /// Parses top-level import declarations
 ///
 /// Example: `import ("math"\n"io")`
-pub struct ImportDeclParselet;
+pub struct UseDeclParselet;
 
-impl PrefixDeclParselet for ImportDeclParselet {
+impl PrefixDeclParselet for UseDeclParselet {
     fn parse(&self, parser: &mut Parser, _token: Token) -> Result<Decl, ParseError> {
         // Expect opening paren
         let matched = parser.match_token(TokenKind::OpenParen)?;
@@ -29,7 +29,7 @@ impl PrefixDeclParselet for ImportDeclParselet {
             ));
         }
 
-        Ok(Decl::Import(ImportDecl { modules }))
+        Ok(Decl::Use(UseDecl { modules }))
     }
 }
 

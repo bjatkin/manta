@@ -5,9 +5,9 @@ use crate::parser::{ParseError, Parser, statement};
 
 /// Parses try expressions
 ///
-/// Example: `try .Ok := do() catch { return .Err }`
-/// Example: `try .Ok(buf) := read_file(file) catch(e) { print(e); return }`
-/// Example: `try Ret.Ok := send_data(data) !`
+/// Example: `let .Ok := do() or { return .Err }`
+/// Example: `let .Ok(buf) := read_file(file) or(e) { print(e); return }`
+/// Example: `let Ret.Ok := send_data(data) !`
 pub struct TryParselet;
 
 impl PrefixStmtParselet for TryParselet {
@@ -65,7 +65,7 @@ impl PrefixStmtParselet for TryParselet {
 
         let next = parser.consume()?;
         match next.kind {
-            TokenKind::CatchKeyword => {
+            TokenKind::OrKeyword => {
                 let next = parser.lookahead(0)?;
                 let catch_binding = if next.kind == TokenKind::OpenParen {
                     parser.consume()?;
@@ -94,11 +94,11 @@ impl PrefixStmtParselet for TryParselet {
                 };
 
                 Ok(Stmt::Try(TryStmt {
+                    decl,
+                    catch_binding,
                     pattern_enum: enum_name,
                     pattern_variant: variant_name,
-                    decl: decl,
                     expr: Box::new(expr),
-                    catch_binding: catch_binding,
                     catch_body,
                 }))
             }

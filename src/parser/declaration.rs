@@ -34,8 +34,8 @@ mod tests {
     use super::*;
     use crate::ast::{
         BinaryExpr, BinaryOp, BlockStmt, CallExpr, ConstDecl, EnumType, EnumVariant, Expr,
-        ExprStmt, FunctionDecl, IdentifierExpr, IfStmt, ImportDecl, NewExpr, Parameter, ReturnStmt,
-        Stmt, StructField, StructType, TypeDecl, TypeSpec,
+        ExprStmt, FunctionDecl, IdentifierExpr, IfStmt, NewExpr, Parameter, ReturnStmt, Stmt,
+        StructField, StructType, TypeDecl, TypeSpec, UseDecl,
     };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
@@ -423,28 +423,28 @@ mod tests {
                 },
             ),
         },
-        parse_decl_import_single {
-            input: r#"import (
+        parse_decl_use_single {
+            input: r#"use (
                 "math"
             )"#,
-            want_var: Decl::Import(decl),
+            want_var: Decl::Use(decl),
             want_value: assert_eq!(
                 decl,
-                ImportDecl {
+                UseDecl {
                     modules: vec!["math".to_string()],
                 },
             ),
         },
-        parse_decl_import_multiple {
-            input: r#"import (
+        parse_decl_use_multiple {
+            input: r#"use (
                 "std"
                 "io"
                 "math"
             )"#,
-            want_var: Decl::Import(decl),
+            want_var: Decl::Use(decl),
             want_value: assert_eq!(
                 decl,
-                ImportDecl {
+                UseDecl {
                     modules: vec!["std".to_string(), "io".to_string(), "math".to_string()],
                 },
             ),

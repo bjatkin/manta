@@ -13,10 +13,9 @@ use lexer::{Lexer, Token, TokenKind};
 use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, ConstDeclParselet,
     DeferParselet, FieldAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet,
-    IfParselet, ImportDeclParselet, IndexParselet, InferedVariantParselet, InfixExprParselet,
-    IntLiteralParselet, LetParselet, MatchParselet, NilLiteralParselet, Precedence,
-    PrefixExprParselet, PrefixStmtParselet, ReturnParselet, StringLiteralParselet, TryParselet,
-    TypeDeclParselet, UnaryOperatorParselet,
+    IfParselet, IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet,
+    LetParselet, MatchParselet, Precedence, PrefixExprParselet, PrefixStmtParselet, ReturnParselet,
+    StringLiteralParselet, TryParselet, TypeDeclParselet, UnaryOperatorParselet, UseDeclParselet,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -87,7 +86,6 @@ impl Parser {
         parser.register_expr_prefix(TokenKind::Str, Rc::new(StringLiteralParselet));
         parser.register_expr_prefix(TokenKind::TrueLiteral, Rc::new(BoolLiteralParselet));
         parser.register_expr_prefix(TokenKind::FalseLiteral, Rc::new(BoolLiteralParselet));
-        parser.register_expr_prefix(TokenKind::NilLiteral, Rc::new(NilLiteralParselet));
         parser.register_expr_prefix(TokenKind::Identifier, Rc::new(IdentifierParselet));
         parser.register_expr_prefix(
             TokenKind::Minus,
@@ -245,7 +243,7 @@ impl Parser {
         parser.register_stmt_prefix(TokenKind::DeferKeyword, Rc::new(DeferParselet));
         parser.register_stmt_prefix(TokenKind::OpenBrace, Rc::new(BlockParselet));
         parser.register_stmt_prefix(TokenKind::IfKeyword, Rc::new(IfParselet));
-        parser.register_stmt_prefix(TokenKind::TryKeyword, Rc::new(TryParselet));
+        // parser.register_stmt_prefix(TokenKind::TryKeyword, Rc::new(TryParselet));
         parser.register_stmt_prefix(TokenKind::MatchKeyword, Rc::new(MatchParselet));
 
         // Register infix statement parselets
@@ -259,7 +257,7 @@ impl Parser {
         );
         parser.register_decl_prefix(TokenKind::TypeKeyword, Rc::new(TypeDeclParselet));
         parser.register_decl_prefix(TokenKind::ConstKeyword, Rc::new(ConstDeclParselet));
-        parser.register_decl_prefix(TokenKind::ImportKeyword, Rc::new(ImportDeclParselet));
+        parser.register_decl_prefix(TokenKind::UseKeyword, Rc::new(UseDeclParselet));
 
         parser
     }

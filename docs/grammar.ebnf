@@ -12,7 +12,7 @@ top_level_decl := mod_decl | function_decl | type_decl | use_decl | var_decl
 
 mod_decl       := 'mod' IDENT 
 use_decl       := 'use' use_block
-use_block      := '(' STRING+ ')'
+use_block      := '(' (IDENT? STRING)+ ')'
 
 function_decl  := 'fn' IDENT '(' param_list? ')' type_spec? block
 param_list     := param (',' param)*
