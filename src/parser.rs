@@ -434,7 +434,6 @@ mod tests {
         }
     }
 
-    /*
     #[test]
     fn parse_file_tests() {
         let test_dir = Path::new("tests/src");
@@ -527,5 +526,4 @@ mod tests {
             );
         }
     }
-    */
 }
