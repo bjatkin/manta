@@ -13,10 +13,10 @@ pub fn parse_expression(
 
     let prefix_opt = parser.prefix_expr_parselets.get(&token.kind);
     if prefix_opt.is_none() {
-        return Err(ParseError::UnexpectedToken(format!(
-            "No prefix parselet for token kind: {:?}",
-            token.kind
-        )));
+        return Err(ParseError::UnexpectedToken(
+            token.clone(),
+            format!("No prefix parselet for token kind: {:?}", token.kind),
+        ));
     };
 
     let prefix = prefix_opt.unwrap().clone();
@@ -56,7 +56,7 @@ pub fn parse_expression(
 mod tests {
     use super::*;
     use crate::ast::{
-        BinaryExpr, BinaryOp, CallExpr, Expr, FieldAccessExpr, FreeExpr, IdentifierExpr, IndexExpr,
+        BinaryExpr, BinaryOp, CallExpr, DotAccessExpr, Expr, FreeExpr, IdentifierExpr, IndexExpr,
         NewExpr, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
@@ -587,10 +587,10 @@ mod tests {
         },
         parse_expression_field_access {
             input: "person.name",
-            want_var: Expr::FieldAccess(expr),
+            want_var: Expr::DotAccess(expr),
             want_value: assert_eq!(
                 expr,
-                FieldAccessExpr {
+                DotAccessExpr {
                     target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                         name: "person".to_string(),
                     }))),
@@ -602,11 +602,11 @@ mod tests {
         },
         parse_expression_field_access_nested {
             input: "company.ceo.name",
-            want_var: Expr::FieldAccess(expr),
+            want_var: Expr::DotAccess(expr),
             want_value: assert_eq!(
                 expr,
-                FieldAccessExpr {
-                    target: Some(Box::new(Expr::FieldAccess(FieldAccessExpr {
+                DotAccessExpr {
+                    target: Some(Box::new(Expr::DotAccess(DotAccessExpr {
                         target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                             name: "company".to_string(),
                         }))),
@@ -622,10 +622,10 @@ mod tests {
         },
         parse_expression_field_access_index {
             input: "users[0].email",
-            want_var: Expr::FieldAccess(expr),
+            want_var: Expr::DotAccess(expr),
             want_value: assert_eq!(
                 expr,
-                FieldAccessExpr {
+                DotAccessExpr {
                     target: Some(Box::new(Expr::Index(IndexExpr {
                         target: Box::new(Expr::Identifier(IdentifierExpr {
                             name: "users".to_string(),
@@ -640,12 +640,12 @@ mod tests {
         },
         parse_expression_field_access_call {
             input: "config.getDatabase().host",
-            want_var: Expr::FieldAccess(expr),
+            want_var: Expr::DotAccess(expr),
             want_value: assert_eq!(
                 expr,
-                FieldAccessExpr {
+                DotAccessExpr {
                     target: Some(Box::new(Expr::Call(CallExpr {
-                        func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                        func: Box::new(Expr::DotAccess(DotAccessExpr {
                             target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                 name: "config".to_string(),
                             }))),
@@ -718,7 +718,7 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 CallExpr {
-                    func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                    func: Box::new(Expr::DotAccess(DotAccessExpr {
                         target: Some(Box::new(Expr::New(NewExpr {
                             type_spec: TypeSpec::Int32,
                             len: None,
@@ -750,8 +750,8 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 FreeExpr {
-                    expr: Box::new(Expr::FieldAccess(FieldAccessExpr {
-                        target: Some(Box::new(Expr::FieldAccess(FieldAccessExpr {
+                    expr: Box::new(Expr::DotAccess(DotAccessExpr {
+                        target: Some(Box::new(Expr::DotAccess(DotAccessExpr {
                             target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                 name: "data".to_string(),
                             }))),
@@ -768,10 +768,10 @@ mod tests {
         },
         parse_expression_enum_variant {
             input: ".Ok",
-            want_var: Expr::FieldAccess(expr),
+            want_var: Expr::DotAccess(expr),
             want_value: assert_eq!(
                 expr,
-                FieldAccessExpr {
+                DotAccessExpr {
                     target: None,
                     field: Box::new(IdentifierExpr {
                         name: "Ok".to_string(),
@@ -789,7 +789,7 @@ mod tests {
                         name: "ret".to_string(),
                     })),
                     operator: BinaryOp::Equal,
-                    right: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                    right: Box::new(Expr::DotAccess(DotAccessExpr {
                         target: None,
                         field: Box::new(IdentifierExpr {
                             name: "Err".to_string(),

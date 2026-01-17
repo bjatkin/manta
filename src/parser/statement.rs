@@ -17,7 +17,10 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
         // Consume trailing semicolon for prefix statements
         let matched = parser.match_token(TokenKind::Semicolon)?;
         if !matched {
-            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+            return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
+                "missing ';'".to_string(),
+            ));
         }
 
         return Ok(stmt);
@@ -38,14 +41,20 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
 
         let matched = parser.match_token(TokenKind::Semicolon)?;
         if !matched {
-            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+            return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
+                "missing ';'".to_string(),
+            ));
         }
 
         Ok(stmt)
     } else {
         let matched = parser.match_token(TokenKind::Semicolon)?;
         if !matched {
-            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+            return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
+                "missing ';'".to_string(),
+            ));
         }
 
         Ok(Stmt::Expr(ExprStmt { expr }))
@@ -53,6 +62,8 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
 }
 
 pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
+    println!("parsing_block");
+
     let mut statements = vec![];
 
     loop {
@@ -61,9 +72,10 @@ pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
             break;
         }
 
-        let matches = parser.match_token(TokenKind::Eof)?;
-        if matches {
+        let eof_token = parser.lookahead(0)?;
+        if eof_token.kind == TokenKind::Eof {
             return Err(ParseError::UnexpectedToken(
+                eof_token.clone(),
                 "missing closing '}' in block".to_string(),
             ));
         }
@@ -114,6 +126,7 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
                         })
                     } else {
                         Err(ParseError::UnexpectedToken(
+                            parser.lookahead(0)?.clone(),
                             "invalid type pattern match".to_string(),
                         ))
                     }
@@ -158,6 +171,7 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
             parse_enum_pattern(parser, None)
         }
         _ => Err(ParseError::UnexpectedToken(
+            parser.lookahead(0)?.clone(),
             "Not a valid pattern".to_string(),
         )),
     }
@@ -170,6 +184,7 @@ fn parse_enum_pattern(
     let ident = parser.lookahead(0)?;
     if ident.kind != TokenKind::Identifier {
         return Err(ParseError::UnexpectedToken(
+            ident.clone(),
             "Not a valid pattern".to_string(),
         ));
     }
@@ -182,6 +197,7 @@ fn parse_enum_pattern(
         let payload = parser.lookahead(0)?;
         if payload.kind != TokenKind::Identifier {
             return Err(ParseError::UnexpectedToken(
+                payload.clone(),
                 "Not a valid pattern".to_string(),
             ));
         }
@@ -203,9 +219,9 @@ fn parse_enum_pattern(
 mod test {
     use super::*;
     use crate::ast::{
-        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, EnumVariant, Expr,
-        FieldAccessExpr, FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm, MatchStmt,
-        NewExpr, Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
+        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, DotAccessExpr,
+        EnumVariant, Expr, FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm,
+        MatchStmt, NewExpr, Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
@@ -315,7 +331,7 @@ mod test {
                 ReturnStmt {
                     value: Some(Expr::Index(IndexExpr {
                         target: Box::new(Expr::Call(CallExpr {
-                            func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                            func: Box::new(Expr::DotAccess(DotAccessExpr {
                                 target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                     name: "builder".to_string(),
                                 }))),
@@ -493,7 +509,7 @@ mod test {
                         name: "name".to_string(),
                     }),
                     rvalue: Expr::Call(CallExpr {
-                        func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                        func: Box::new(Expr::DotAccess(DotAccessExpr {
                             target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                 name: "person".to_string()
                             }))),
@@ -612,7 +628,7 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 ReturnStmt {
-                    value: Some(Expr::FieldAccess(FieldAccessExpr {
+                    value: Some(Expr::DotAccess(DotAccessExpr {
                         target: None,
                         field: Box::new(IdentifierExpr {
                             name: "Ok".to_string(),
@@ -760,7 +776,7 @@ mod test {
                     except: Some(BlockStmt {
                         statements: vec![Stmt::Return(ReturnStmt {
                             value: Some(Expr::Call(CallExpr {
-                                func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                                func: Box::new(Expr::DotAccess(DotAccessExpr {
                                     target: None,
                                     field: Box::new(IdentifierExpr {
                                         name: "Err".to_string()

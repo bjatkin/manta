@@ -5,12 +5,12 @@ pub mod parselets;
 pub mod statement;
 pub mod types;
 
-use crate::ast::{BinaryOp, Decl, Expr, ModDecl, UnaryOp};
+use crate::ast::{BinaryOp, Decl, Expr, UnaryOp};
 use crate::parser::parselets::{BlockParselet, InfixStmtParselet, PrefixDeclParselet};
 use lexer::{Lexer, Token, TokenKind};
 use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, ConstDeclParselet,
-    DeferParselet, FieldAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet,
+    DeferParselet, DotAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet,
     IfParselet, IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet,
     LetParselet, MatchParselet, ModDeclParselet, Precedence, PrefixExprParselet,
     PrefixStmtParselet, ReturnParselet, StringLiteralParselet, TypeDeclParselet,
@@ -23,13 +23,10 @@ use std::rc::Rc;
 #[derive(Debug, Clone)]
 pub enum ParseError {
     Custom(String),
-    UnexpectedToken(String),
-    UnexpectedEof(String),
+    UnexpectedToken(Token, String),
     MissingExpression(String),
     InvalidTypeSpec(String),
     InvalidArguments(String),
-    InvalidExpression(String),
-    UnknownStatement(String),
 }
 
 impl ParseError {
@@ -234,7 +231,7 @@ impl Parser {
         );
         parser.register_expr_infix(TokenKind::OpenParen, Rc::new(CallParselet {}));
         parser.register_expr_infix(TokenKind::OpenSquare, Rc::new(IndexParselet {}));
-        parser.register_expr_infix(TokenKind::Dot, Rc::new(FieldAccessParselet {}));
+        parser.register_expr_infix(TokenKind::Dot, Rc::new(DotAccessParselet {}));
 
         // Register prefix statement parselets
         parser.register_stmt_prefix(TokenKind::LetKeyword, Rc::new(LetParselet));
@@ -347,7 +344,7 @@ impl Parser {
     fn get_precedence(&self, kind: &TokenKind) -> Result<Precedence, ParseError> {
         match self.infix_expr_parselets.get(kind) {
             Some(parselet) => Ok(parselet.precedence()),
-            None => Err(ParseError::UnexpectedToken(format!(
+            None => Err(ParseError::Custom(format!(
                 "Unknown token precedence for kind: {:?}",
                 kind
             ))),
@@ -427,7 +424,7 @@ mod tests {
         let result = parser.parse_expression();
         assert!(result.is_err());
         match result.unwrap_err() {
-            ParseError::UnexpectedToken(msg) => {
+            ParseError::UnexpectedToken(_, msg) => {
                 assert!(msg.contains("No prefix parselet"));
             }
             _ => panic!("Expected UnexpectedToken error"),
@@ -470,6 +467,8 @@ mod tests {
             // Skip over non-manta files
             return;
         }
+
+        println!("Parse File: {}", path.to_str().unwrap());
 
         let file_name = path
             .file_stem()

@@ -8,10 +8,10 @@ pub fn parse_declaration(parser: &mut Parser) -> Result<Decl, ParseError> {
 
     let prefix_opt = parser.prefix_decl_parselets.get(&token.kind);
     if prefix_opt.is_none() {
-        return Err(ParseError::UnexpectedToken(format!(
-            "Unexpected token at top level: {:?}",
-            token.kind
-        )));
+        return Err(ParseError::UnexpectedToken(
+            token.clone(),
+            format!("Unexpected token at top level: {:?}", token.kind),
+        ));
     }
 
     let prefix = prefix_opt.unwrap().clone();
@@ -20,10 +20,10 @@ pub fn parse_declaration(parser: &mut Parser) -> Result<Decl, ParseError> {
     // expect a semicolon after declarations
     let matched = parser.match_token(TokenKind::Semicolon)?;
     if !matched {
-        return Err(ParseError::UnexpectedToken(format!(
-            "Missing semicolon, got {:?}",
-            parser.lookahead(0),
-        )));
+        return Err(ParseError::UnexpectedToken(
+            parser.lookahead(0)?.clone(),
+            format!("Missing semicolon, got {:?}", parser.lookahead(0),),
+        ));
     }
 
     Ok(decl)

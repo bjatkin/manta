@@ -247,7 +247,7 @@ pub enum Expr {
     Index(IndexExpr),
 
     // Accessing a field for a struct or enum
-    FieldAccess(FieldAccessExpr),
+    DotAccess(DotAccessExpr),
 
     // Memory operations
     New(NewExpr),
@@ -325,7 +325,7 @@ pub struct IndexExpr {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct FieldAccessExpr {
+pub struct DotAccessExpr {
     // this is an option because this can be infered in some contexts
     pub target: Option<Box<Expr>>,
     pub field: Box<IdentifierExpr>,
