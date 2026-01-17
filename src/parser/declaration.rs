@@ -313,7 +313,7 @@ mod tests {
             ),
         },
         parse_decl_enum {
-            input: "type Result enum {\n\tOk(MyType)\n\tError\n}",
+            input: "type Result enum {\n\tOk(m::MyType)\n\tError\n}",
             want_var: Decl::Type(decl),
             want_value: assert_eq!(
                 decl,
@@ -325,7 +325,10 @@ mod tests {
                         variants: vec![
                             EnumVariant {
                                 name: "Ok".to_string(),
-                                payload: Some(TypeSpec::Named("MyType".to_string())),
+                                payload: Some(TypeSpec::Named {
+                                    module: Some("m".to_string()),
+                                    name: "MyType".to_string()
+                                }),
                             },
                             EnumVariant {
                                 name: "Error".to_string(),
@@ -349,9 +352,10 @@ mod tests {
                         variants: vec![
                             EnumVariant {
                                 name: "Some".to_string(),
-                                payload: Some(TypeSpec::Pointer(Box::new(TypeSpec::Named(
-                                    "Node".to_string()
-                                )))),
+                                payload: Some(TypeSpec::Pointer(Box::new(TypeSpec::Named {
+                                    module: None,
+                                    name: "Node".to_string()
+                                }))),
                             },
                             EnumVariant {
                                 name: "None".to_string(),

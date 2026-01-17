@@ -62,8 +62,6 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
 }
 
 pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
-    println!("parsing_block");
-
     let mut statements = vec![];
 
     loop {
@@ -116,7 +114,10 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
                             "f64" => TypeSpec::Float64,
                             "str" => TypeSpec::String,
                             "bool" => TypeSpec::Bool,
-                            s => TypeSpec::Named(s.to_string()),
+                            s => TypeSpec::Named {
+                                module: None,
+                                name: s.to_string(),
+                            },
                         };
 
                         parser.match_token(TokenKind::CloseParen)?;
@@ -219,9 +220,9 @@ fn parse_enum_pattern(
 mod test {
     use super::*;
     use crate::ast::{
-        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, DotAccessExpr,
-        EnumVariant, Expr, FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm,
-        MatchStmt, NewExpr, Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
+        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, DotAccessExpr, Expr,
+        FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm, MatchStmt,
+        ModuleAccessExpr, NewExpr, Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
@@ -294,7 +295,10 @@ mod test {
                 stmt,
                 LetStmt {
                     pattern: Pattern::TypeSpec {
-                        type_spec: TypeSpec::Named("Person".to_string()),
+                        type_spec: TypeSpec::Named {
+                            module: None,
+                            name: "Person".to_string()
+                        },
                         payload_binding: "jill".to_string(),
                     },
                     value: Expr::Call(CallExpr {
@@ -970,6 +974,60 @@ mod test {
                             },
                         },
                     ],
+                }
+            ),
+        },
+        parse_stmt_module_access_identifier {
+            input: "fmt::println",
+            want_var: Stmt::Expr(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ExprStmt {
+                    expr: Expr::ModuleAccess(ModuleAccessExpr {
+                        module: Box::new(IdentifierExpr {
+                            name: "fmt".to_string(),
+                        }),
+                        expr: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "println".to_string(),
+                        })),
+                    }),
+                }
+            ),
+        },
+        parse_stmt_module_access_call {
+            input: "fmt::println(\"hello\")",
+            want_var: Stmt::Expr(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ExprStmt {
+                    expr: Expr::ModuleAccess(ModuleAccessExpr {
+                        module: Box::new(IdentifierExpr {
+                            name: "fmt".to_string(),
+                        }),
+                        expr: Box::new(Expr::Call(CallExpr {
+                            func: Box::new(Expr::Identifier(IdentifierExpr {
+                                name: "println".to_string(),
+                            })),
+                            args: vec![Expr::StringLiteral("hello".to_string())],
+                        })),
+                    }),
+                }
+            ),
+        },
+        parse_stmt_module_access_type {
+            input: "math::vec3",
+            want_var: Stmt::Expr(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ExprStmt {
+                    expr: Expr::ModuleAccess(ModuleAccessExpr {
+                        module: Box::new(IdentifierExpr {
+                            name: "math".to_string(),
+                        }),
+                        expr: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "vec3".to_string(),
+                        })),
+                    }),
                 }
             ),
         },

@@ -90,7 +90,10 @@ pub enum TypeSpec {
     String,
     Bool,
     // User-defined types
-    Named(String),
+    Named {
+        module: Option<String>,
+        name: String,
+    },
     // Composite types
     Pointer(Box<TypeSpec>),
     Slice(Box<TypeSpec>),
