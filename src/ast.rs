@@ -249,6 +249,9 @@ pub enum Expr {
     // Accessing a field for a struct or enum
     DotAccess(DotAccessExpr),
 
+    // Accessing a member of a module
+    ModuleAccess(ModuleAccessExpr),
+
     // Memory operations
     New(NewExpr),
     Free(FreeExpr),
@@ -329,6 +332,12 @@ pub struct DotAccessExpr {
     // this is an option because this can be infered in some contexts
     pub target: Option<Box<Expr>>,
     pub field: Box<IdentifierExpr>,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct ModuleAccessExpr {
+    pub module: Box<IdentifierExpr>,
+    pub expr: Box<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

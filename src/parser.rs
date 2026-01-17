@@ -12,9 +12,9 @@ use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, ConstDeclParselet,
     DeferParselet, DotAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet,
     IfParselet, IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet,
-    LetParselet, MatchParselet, ModDeclParselet, Precedence, PrefixExprParselet,
-    PrefixStmtParselet, ReturnParselet, StringLiteralParselet, TypeDeclParselet,
-    UnaryOperatorParselet, UseDeclParselet,
+    LetParselet, MatchParselet, ModDeclParselet, ModuleAccessParselet, Precedence,
+    PrefixExprParselet, PrefixStmtParselet, ReturnParselet, StringLiteralParselet,
+    TypeDeclParselet, UnaryOperatorParselet, UseDeclParselet,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -27,6 +27,7 @@ pub enum ParseError {
     MissingExpression(String),
     InvalidTypeSpec(String),
     InvalidArguments(String),
+    InvalidExpression(Token, String),
 }
 
 impl ParseError {
@@ -232,6 +233,7 @@ impl Parser {
         parser.register_expr_infix(TokenKind::OpenParen, Rc::new(CallParselet {}));
         parser.register_expr_infix(TokenKind::OpenSquare, Rc::new(IndexParselet {}));
         parser.register_expr_infix(TokenKind::Dot, Rc::new(DotAccessParselet {}));
+        parser.register_expr_infix(TokenKind::ColonColon, Rc::new(ModuleAccessParselet {}));
 
         // Register prefix statement parselets
         parser.register_stmt_prefix(TokenKind::LetKeyword, Rc::new(LetParselet));
