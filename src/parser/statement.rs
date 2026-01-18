@@ -86,19 +86,23 @@ pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
 }
 
 pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
-    let token = parser.lookahead(0)?;
+    let token_kind = parser.lookahead(0)?.kind;
 
-    match token.kind {
+    match token_kind {
         TokenKind::Identifier => {
-            let token = parser.consume()?;
-            let next = parser.lookahead(0)?;
+            let next = parser.lookahead(1)?;
             match next.kind {
                 TokenKind::Dot => {
-                    parser.consume()?;
+                    let token = parser.consume()?;
                     parse_enum_pattern(parser, Some(token.lexeme))
                 }
+                TokenKind::ColonColon => {
+                    todo!("todo this is a module type I think");
+                    let token = parser.consume()?;
+                }
                 TokenKind::OpenParen => {
-                    parser.consume()?;
+                    todo!("Just parse a type here");
+                    let token = parser.consume()?;
                     if parser.lookahead(0)?.kind == TokenKind::Identifier {
                         let payload_binding = parser.consume()?.lexeme;
                         let type_spec = match token.lexeme.as_str() {
@@ -133,6 +137,7 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
                     }
                 }
                 _ => {
+                    let token = parser.consume()?;
                     if token.lexeme == "_" {
                         Ok(Pattern::Default)
                     } else {

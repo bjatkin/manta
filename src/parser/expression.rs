@@ -56,8 +56,8 @@ pub fn parse_expression(
 mod tests {
     use super::*;
     use crate::ast::{
-        BinaryExpr, BinaryOp, CallExpr, DotAccessExpr, Expr, FreeExpr, IdentifierExpr, IndexExpr,
-        NewExpr, TypeSpec, UnaryExpr, UnaryOp,
+        ArrayType, BinaryExpr, BinaryOp, CallExpr, DotAccessExpr, Expr, FreeExpr, IdentifierExpr,
+        IndexExpr, MetaTypeExpr, NewExpr, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
@@ -796,6 +796,45 @@ mod tests {
                         }),
                     })),
                 },
+            ),
+        },
+        parse_expression_meta_type {
+            input: "@i32",
+            want_var: Expr::MetaType(expr),
+            want_value: assert_eq!(
+                expr,
+                MetaTypeExpr {
+                    type_spec: TypeSpec::Int32,
+                },
+            ),
+        },
+        parse_expression_slice_meta_type {
+            input: "@[]Vec3",
+            want_var: Expr::MetaType(expr),
+            want_value: assert_eq!(
+                expr,
+                MetaTypeExpr {
+                    type_spec: TypeSpec::Slice(Box::new(TypeSpec::Named {
+                        module: None,
+                        name: "Vec3".to_string()
+                    }))
+                },
+            ),
+        },
+        parse_expression_array_module_type {
+            input: "@[25]@io::file",
+            want_var: Expr::MetaType(expr),
+            want_value: assert_eq!(
+                expr,
+                MetaTypeExpr {
+                    type_spec: TypeSpec::Array(ArrayType {
+                        type_spec: Box::new(TypeSpec::Named {
+                            module: Some("io".to_string()),
+                            name: "file".to_string(),
+                        }),
+                        size: 25,
+                    })
+                }
             ),
         },
     );

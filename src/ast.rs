@@ -102,6 +102,12 @@ pub enum TypeSpec {
     Enum(EnumType),
 }
 
+/// MetaType
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct MetaTypeExpr {
+    pub type_spec: TypeSpec,
+}
+
 /// Array type with size
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ArrayType {
@@ -254,6 +260,9 @@ pub enum Expr {
 
     // Accessing a member of a module
     ModuleAccess(ModuleAccessExpr),
+
+    // Mete Type expression
+    MetaType(MetaTypeExpr),
 
     // Memory operations
     New(NewExpr),

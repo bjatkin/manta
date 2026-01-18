@@ -12,8 +12,8 @@ use parselets::{
     AssignParselet, BinaryOperatorParselet, BoolLiteralParselet, CallParselet, ConstDeclParselet,
     DeferParselet, DotAccessParselet, FloatLiteralParselet, GroupParselet, IdentifierParselet,
     IfParselet, IndexParselet, InferedVariantParselet, InfixExprParselet, IntLiteralParselet,
-    LetParselet, MatchParselet, ModDeclParselet, ModuleAccessParselet, Precedence,
-    PrefixExprParselet, PrefixStmtParselet, ReturnParselet, StringLiteralParselet,
+    LetParselet, MatchParselet, MetaTypeParselet, ModDeclParselet, ModuleAccessParselet,
+    Precedence, PrefixExprParselet, PrefixStmtParselet, ReturnParselet, StringLiteralParselet,
     TypeDeclParselet, UnaryOperatorParselet, UseDeclParselet,
 };
 use std::collections::HashMap;
@@ -116,6 +116,7 @@ impl Parser {
         );
         parser.register_expr_prefix(TokenKind::OpenParen, Rc::new(GroupParselet {}));
         parser.register_expr_prefix(TokenKind::Dot, Rc::new(InferedVariantParselet {}));
+        parser.register_expr_prefix(TokenKind::At, Rc::new(MetaTypeParselet {}));
 
         // Register infix parselets for binary operators
         parser.register_expr_infix(
