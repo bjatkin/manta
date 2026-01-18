@@ -39,3 +39,8 @@ I like this construction a lot and use it often it go.
 `Manta` uses the `match` keyword so that would need to be changed.
 There are several changes that would need to be made to the `.ebnf` file as well as the language spec and AST spec.
 I'm gonna put that work off for now while I work on finishing the AST spec.
+
+### Explicit Lifetimes
+
+The `lifetimes.manta` file provides an interesting idea for how manual memory management could be achieved.
+It uses explicitly defined lifetimes to make managing memory "manual" but also making borrow checking easier.

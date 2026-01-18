@@ -17,7 +17,10 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
         // Consume trailing semicolon for prefix statements
         let matched = parser.match_token(TokenKind::Semicolon)?;
         if !matched {
-            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+            return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
+                "missing ';'".to_string(),
+            ));
         }
 
         return Ok(stmt);
@@ -38,14 +41,20 @@ pub fn parse_statement(parser: &mut Parser) -> Result<Stmt, ParseError> {
 
         let matched = parser.match_token(TokenKind::Semicolon)?;
         if !matched {
-            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+            return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
+                "missing ';'".to_string(),
+            ));
         }
 
         Ok(stmt)
     } else {
         let matched = parser.match_token(TokenKind::Semicolon)?;
         if !matched {
-            return Err(ParseError::UnexpectedToken("missing ';'".to_string()));
+            return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
+                "missing ';'".to_string(),
+            ));
         }
 
         Ok(Stmt::Expr(ExprStmt { expr }))
@@ -61,9 +70,10 @@ pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
             break;
         }
 
-        let matches = parser.match_token(TokenKind::Eof)?;
-        if matches {
+        let eof_token = parser.lookahead(0)?;
+        if eof_token.kind == TokenKind::Eof {
             return Err(ParseError::UnexpectedToken(
+                eof_token.clone(),
                 "missing closing '}' in block".to_string(),
             ));
         }
@@ -76,19 +86,23 @@ pub fn parse_block(parser: &mut Parser) -> Result<BlockStmt, ParseError> {
 }
 
 pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
-    let token = parser.lookahead(0)?;
+    let token_kind = parser.lookahead(0)?.kind;
 
-    match token.kind {
+    match token_kind {
         TokenKind::Identifier => {
-            let token = parser.consume()?;
-            let next = parser.lookahead(0)?;
+            let next = parser.lookahead(1)?;
             match next.kind {
                 TokenKind::Dot => {
-                    parser.consume()?;
+                    let token = parser.consume()?;
                     parse_enum_pattern(parser, Some(token.lexeme))
                 }
+                TokenKind::ColonColon => {
+                    todo!("todo this is a module type I think");
+                    let token = parser.consume()?;
+                }
                 TokenKind::OpenParen => {
-                    parser.consume()?;
+                    todo!("Just parse a type here");
+                    let token = parser.consume()?;
                     if parser.lookahead(0)?.kind == TokenKind::Identifier {
                         let payload_binding = parser.consume()?.lexeme;
                         let type_spec = match token.lexeme.as_str() {
@@ -104,7 +118,10 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
                             "f64" => TypeSpec::Float64,
                             "str" => TypeSpec::String,
                             "bool" => TypeSpec::Bool,
-                            s => TypeSpec::Named(s.to_string()),
+                            s => TypeSpec::Named {
+                                module: None,
+                                name: s.to_string(),
+                            },
                         };
 
                         parser.match_token(TokenKind::CloseParen)?;
@@ -114,11 +131,13 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
                         })
                     } else {
                         Err(ParseError::UnexpectedToken(
+                            parser.lookahead(0)?.clone(),
                             "invalid type pattern match".to_string(),
                         ))
                     }
                 }
                 _ => {
+                    let token = parser.consume()?;
                     if token.lexeme == "_" {
                         Ok(Pattern::Default)
                     } else {
@@ -158,6 +177,7 @@ pub fn parse_pattern(parser: &mut Parser) -> Result<Pattern, ParseError> {
             parse_enum_pattern(parser, None)
         }
         _ => Err(ParseError::UnexpectedToken(
+            parser.lookahead(0)?.clone(),
             "Not a valid pattern".to_string(),
         )),
     }
@@ -170,6 +190,7 @@ fn parse_enum_pattern(
     let ident = parser.lookahead(0)?;
     if ident.kind != TokenKind::Identifier {
         return Err(ParseError::UnexpectedToken(
+            ident.clone(),
             "Not a valid pattern".to_string(),
         ));
     }
@@ -182,6 +203,7 @@ fn parse_enum_pattern(
         let payload = parser.lookahead(0)?;
         if payload.kind != TokenKind::Identifier {
             return Err(ParseError::UnexpectedToken(
+                payload.clone(),
                 "Not a valid pattern".to_string(),
             ));
         }
@@ -203,9 +225,9 @@ fn parse_enum_pattern(
 mod test {
     use super::*;
     use crate::ast::{
-        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, EnumVariant, Expr,
-        FieldAccessExpr, FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm, MatchStmt,
-        NewExpr, Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
+        AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, DotAccessExpr, Expr,
+        FreeExpr, IdentifierExpr, IfStmt, IndexExpr, LetStmt, MatchArm, MatchStmt,
+        ModuleAccessExpr, NewExpr, Pattern, ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
@@ -278,7 +300,10 @@ mod test {
                 stmt,
                 LetStmt {
                     pattern: Pattern::TypeSpec {
-                        type_spec: TypeSpec::Named("Person".to_string()),
+                        type_spec: TypeSpec::Named {
+                            module: None,
+                            name: "Person".to_string()
+                        },
                         payload_binding: "jill".to_string(),
                     },
                     value: Expr::Call(CallExpr {
@@ -315,7 +340,7 @@ mod test {
                 ReturnStmt {
                     value: Some(Expr::Index(IndexExpr {
                         target: Box::new(Expr::Call(CallExpr {
-                            func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                            func: Box::new(Expr::DotAccess(DotAccessExpr {
                                 target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                     name: "builder".to_string(),
                                 }))),
@@ -493,7 +518,7 @@ mod test {
                         name: "name".to_string(),
                     }),
                     rvalue: Expr::Call(CallExpr {
-                        func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                        func: Box::new(Expr::DotAccess(DotAccessExpr {
                             target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                 name: "person".to_string()
                             }))),
@@ -612,7 +637,7 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 ReturnStmt {
-                    value: Some(Expr::FieldAccess(FieldAccessExpr {
+                    value: Some(Expr::DotAccess(DotAccessExpr {
                         target: None,
                         field: Box::new(IdentifierExpr {
                             name: "Ok".to_string(),
@@ -760,7 +785,7 @@ mod test {
                     except: Some(BlockStmt {
                         statements: vec![Stmt::Return(ReturnStmt {
                             value: Some(Expr::Call(CallExpr {
-                                func: Box::new(Expr::FieldAccess(FieldAccessExpr {
+                                func: Box::new(Expr::DotAccess(DotAccessExpr {
                                     target: None,
                                     field: Box::new(IdentifierExpr {
                                         name: "Err".to_string()
@@ -954,6 +979,60 @@ mod test {
                             },
                         },
                     ],
+                }
+            ),
+        },
+        parse_stmt_module_access_identifier {
+            input: "fmt::println",
+            want_var: Stmt::Expr(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ExprStmt {
+                    expr: Expr::ModuleAccess(ModuleAccessExpr {
+                        module: Box::new(IdentifierExpr {
+                            name: "fmt".to_string(),
+                        }),
+                        expr: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "println".to_string(),
+                        })),
+                    }),
+                }
+            ),
+        },
+        parse_stmt_module_access_call {
+            input: "fmt::println(\"hello\")",
+            want_var: Stmt::Expr(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ExprStmt {
+                    expr: Expr::ModuleAccess(ModuleAccessExpr {
+                        module: Box::new(IdentifierExpr {
+                            name: "fmt".to_string(),
+                        }),
+                        expr: Box::new(Expr::Call(CallExpr {
+                            func: Box::new(Expr::Identifier(IdentifierExpr {
+                                name: "println".to_string(),
+                            })),
+                            args: vec![Expr::StringLiteral("hello".to_string())],
+                        })),
+                    }),
+                }
+            ),
+        },
+        parse_stmt_module_access_type {
+            input: "math::vec3",
+            want_var: Stmt::Expr(stmt),
+            want_value: assert_eq!(
+                stmt,
+                ExprStmt {
+                    expr: Expr::ModuleAccess(ModuleAccessExpr {
+                        module: Box::new(IdentifierExpr {
+                            name: "math".to_string(),
+                        }),
+                        expr: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "vec3".to_string(),
+                        })),
+                    }),
                 }
             ),
         },

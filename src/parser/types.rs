@@ -81,7 +81,27 @@ pub fn parse_type(parser: &mut Parser) -> Result<TypeSpec, ParseError> {
                 "f32" => TypeSpec::Float32,
                 "str" => TypeSpec::String,
                 "bool" => TypeSpec::Bool,
-                other => TypeSpec::Named(other.to_string()),
+                other => match parser.lookahead(0)?.kind {
+                    TokenKind::ColonColon => {
+                        parser.consume()?;
+                        let type_name = parser.consume()?;
+                        if type_name.kind != TokenKind::Identifier {
+                            return Err(ParseError::UnexpectedToken(
+                                type_name,
+                                "type name must be an identifier".to_string(),
+                            ));
+                        } else {
+                            TypeSpec::Named {
+                                module: Some(other.to_string()),
+                                name: type_name.lexeme,
+                            }
+                        }
+                    }
+                    _ => TypeSpec::Named {
+                        module: None,
+                        name: other.to_string(),
+                    },
+                },
             };
             Ok(tyspec)
         }
@@ -118,7 +138,10 @@ mod tests {
         },
         parse_type_named_type {
             input: "MyType",
-            want: TypeSpec::Named("MyType".to_string()),
+            want: TypeSpec::Named {
+                module: None,
+                name: "MyType".to_string()
+            },
         },
         parse_type_pointer_type {
             input: "*i32",

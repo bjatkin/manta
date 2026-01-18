@@ -46,6 +46,7 @@ impl InfixExprParselet for CallParselet {
         let matched = parser.match_token(TokenKind::CloseParen)?;
         if !matched {
             return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
                 "expected ')' after function arguments".to_string(),
             ));
         }
@@ -95,6 +96,7 @@ impl CallParselet {
 
         if !parser.match_token(TokenKind::CloseParen)? {
             return Err(ParseError::UnexpectedToken(
+                parser.lookahead(0)?.clone(),
                 "expected ')' after new(...)".to_string(),
             ));
         }

@@ -90,13 +90,22 @@ pub enum TypeSpec {
     String,
     Bool,
     // User-defined types
-    Named(String),
+    Named {
+        module: Option<String>,
+        name: String,
+    },
     // Composite types
     Pointer(Box<TypeSpec>),
     Slice(Box<TypeSpec>),
     Array(ArrayType),
     Struct(StructType),
     Enum(EnumType),
+}
+
+/// MetaType
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct MetaTypeExpr {
+    pub type_spec: TypeSpec,
 }
 
 /// Array type with size
@@ -247,7 +256,13 @@ pub enum Expr {
     Index(IndexExpr),
 
     // Accessing a field for a struct or enum
-    FieldAccess(FieldAccessExpr),
+    DotAccess(DotAccessExpr),
+
+    // Accessing a member of a module
+    ModuleAccess(ModuleAccessExpr),
+
+    // Mete Type expression
+    MetaType(MetaTypeExpr),
 
     // Memory operations
     New(NewExpr),
@@ -325,10 +340,16 @@ pub struct IndexExpr {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct FieldAccessExpr {
+pub struct DotAccessExpr {
     // this is an option because this can be infered in some contexts
     pub target: Option<Box<Expr>>,
     pub field: Box<IdentifierExpr>,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct ModuleAccessExpr {
+    pub module: Box<IdentifierExpr>,
+    pub expr: Box<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
