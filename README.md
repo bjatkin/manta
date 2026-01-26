@@ -59,28 +59,45 @@ Note: the above commands are illustrative; please check `src/main.rs` and the CL
 
 Manta has full Tree-sitter syntax highlighting, indentation, and code folding support for Neovim (0.9+).
 
+**Features:**
+- ✨ Syntax highlighting for all Manta constructs (keywords, types, operators, literals)
+- 📐 Automatic indentation for functions, blocks, and control structures
+- 🔖 Code folding for functions, types, and control structures
+- 🔍 Scope tracking and variable/function awareness
+- ⌨️ Text objects and incremental selection
+
 **Quick Setup:**
 
-Copy the plugin to your Neovim config:
-
+1. **Copy the plugin to your Neovim config:**
 ```bash
 mkdir -p ~/.config/nvim/pack/manta/start
 cp -r nvim/manta-nvim ~/.config/nvim/pack/manta/start/
 ```
 
-Then install the Tree-sitter grammar:
-
+2. **Install the Tree-sitter grammar in Neovim:**
 ```vim
 :TSInstall manta
 ```
 
-See `nvim/manta-nvim/README.md` for detailed installation instructions and configuration options.
+3. **Verify installation:**
+```vim
+:checkhealth nvim_treesitter
+```
 
-**Features:**
-- ✨ Syntax highlighting for all Manta constructs
-- 📐 Automatic indentation
-- 🔖 Code folding for functions, types, and control structures
-- 🔍 Scope tracking and variable/function awareness
+For detailed installation instructions including lazy.nvim, packer.nvim, and vim-plug setup, see the [manta-nvim plugin README](nvim/manta-nvim/README.md).
+
+### Grammar Documentation
+
+The Tree-sitter grammar for Manta is maintained in the `tree-sitter/` directory. It supports all language constructs including modules, type declarations (structs and enums), functions, control flow, and expressions.
+
+See [tree-sitter/README.md](tree-sitter/README.md) for:
+- Grammar structure and design
+- How to rebuild the grammar
+- Development guidelines for extending the grammar
+
+### Testing
+
+For comprehensive information on testing the Tree-sitter grammar and Neovim plugin, see [TESTING_TREESITTER.md](TESTING_TREESITTER.md).
 
 ## Project Structure
 

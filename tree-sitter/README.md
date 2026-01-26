@@ -111,6 +111,43 @@ tree-sitter generate  # Rebuild parser
 # Use the parser in Neovim or with tree-sitter command
 ```
 
+## Testing
+
+The grammar has been tested with the example Manta files included in the repository:
+
+- `examples/defer_free.manta` - Tests defer blocks, memory management, and error handling
+- `examples/try_catch.manta` - Tests error propagation patterns with enum variants
+- `examples/option_match.manta` - Tests match expressions and pattern matching
+- `examples/allocate_memory.manta` - Tests memory allocation patterns and type declarations
+
+To verify the grammar works with these examples:
+
+1. Ensure the grammar is built:
+```bash
+cd tree-sitter
+tree-sitter generate
+```
+
+2. The grammar correctly parses all example files without errors
+3. All language constructs (keywords, types, operators) are properly recognized
+
+### Testing in Neovim
+
+Once installed in Neovim, test the highlighting by opening any `.manta` file:
+
+```bash
+nvim examples/try_catch.manta
+```
+
+Verify:
+- Keywords (`fn`, `let`, `mod`, `use`, `match`, `if`, `for`, `loop`, `defer`) are highlighted
+- Types are properly colored
+- Enum variants (`.Ok`, `.Err`) are highlighted distinctly
+- Comments start with `//` and are properly highlighted
+- Strings and numbers are recognized
+- Indentation is automatic and correct
+- Code folding works (`:set foldmethod=expr`)
+
 ## Integration with Neovim
 
 The grammar is used by the Neovim Tree-sitter plugin system. See `../nvim/manta-nvim/` for Neovim-specific configuration including:
