@@ -30,8 +30,8 @@ Add Tree-sitter grammar support for Manta so Neovim users can get proper syntax 
 
 ### Phase 1: Tree-sitter Grammar
 
-- [ ] Create `/tree-sitter/` directory structure at repo root
-- [ ] Create `tree-sitter/grammar.js` with core grammar rules:
+- [x] Create `/tree-sitter/` directory structure at repo root
+- [x] Create `tree-sitter/grammar.js` with core grammar rules:
   - Program structure (module, use, declarations)
   - Type declarations (struct, enum)
   - Function declarations with parameters and return types
@@ -42,12 +42,12 @@ Add Tree-sitter grammar support for Manta so Neovim users can get proper syntax 
   - Error handling (or, wrap, !)
   - Comments
   - String and number literals
-- [ ] Handle operator precedence and associativity
-- [ ] Test grammar generation with Tree-sitter CLI
+- [x] Handle operator precedence and associativity
+- [x] Test grammar generation with Tree-sitter CLI
 
 ### Phase 2: Neovim Plugin
 
-- [ ] Create `/nvim/manta-nvim/` plugin directory structure:
+- [x] Create `/nvim/manta-nvim/` plugin directory structure:
   ```
   nvim/manta-nvim/
   ├── plugin/
@@ -60,7 +60,7 @@ Add Tree-sitter grammar support for Manta so Neovim users can get proper syntax 
   │   │   └── locals.scm
   └── README.md
   ```
-- [ ] Create `highlights.scm` with syntax highlighting rules:
+- [x] Create `highlights.scm` with syntax highlighting rules:
   - Keywords (different colors)
   - Types and type constructors
   - Functions and function calls
@@ -68,11 +68,11 @@ Add Tree-sitter grammar support for Manta so Neovim users can get proper syntax 
   - String/number literals
   - Error handling constructs
   - Built-in operators
-- [ ] Create `indents.scm` for automatic indentation
-- [ ] Create `folds.scm` for code folding support
-- [ ] Create `locals.scm` for scope tracking (optional but useful)
-- [ ] Write `plugin/manta.lua` to register the language
-- [ ] Create comprehensive README with installation instructions
+- [x] Create `indents.scm` for automatic indentation
+- [x] Create `folds.scm` for code folding support
+- [x] Create `locals.scm` for scope tracking (optional but useful)
+- [x] Write `plugin/manta.lua` to register the language
+- [x] Create comprehensive README with installation instructions
 
 ### Phase 3: Testing & Documentation
 
