@@ -15,7 +15,7 @@ fn write_and_cleanup(path string) ErrWrite {
     let .Ok(f) = os::open_file(path) wrap .OpenErr
     defer { close(f) }
 
-    let buf = new([]u8, 256)
+    let buf = alloc(@[]u8, 256)
     defer { free(buf) }
 
     let .Ok(n) = os::write_file(f, buf, 256) wrap .WriteErr

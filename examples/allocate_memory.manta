@@ -3,12 +3,13 @@
 use (
     "mem"
     "fmt"
+    "unsafe"
 )
 
-type MaybeAlloc struct {
-    .Ok(*i32)
-    .AllocErr(unsafe::ptr)
-    .None
+type MaybeAlloc enum {
+    Ok(*i32)
+    AllocErr(unsafe::ptr)
+    None
 }
 
 fn maybe_alloc(cond bool) MaybeAlloc {
