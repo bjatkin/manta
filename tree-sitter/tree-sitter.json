@@ -1,0 +1,7 @@
+{
+  "file-types": ["manta"],
+  "first-line-regex": "^#!/usr/bin/env manta",
+  "metadata": {
+    "version": "0.1.0"
+  }
+}

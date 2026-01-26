@@ -1,0 +1,17 @@
+{
+  "name": "tree-sitter-manta",
+  "version": "0.1.0",
+  "description": "Tree-sitter grammar for the Manta programming language",
+  "main": "grammar.js",
+  "keywords": [
+    "manta",
+    "parser",
+    "tree-sitter"
+  ],
+  "author": "Manta Contributors",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.8"
+  }
+}
