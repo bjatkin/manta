@@ -53,6 +53,35 @@ cargo build --release
 
 Note: the above commands are illustrative; please check `src/main.rs` and the CLI help for the current, accurate flags.
 
+## Editor Support
+
+### Neovim with Tree-sitter
+
+Manta has full Tree-sitter syntax highlighting, indentation, and code folding support for Neovim (0.9+).
+
+**Quick Setup:**
+
+Copy the plugin to your Neovim config:
+
+```bash
+mkdir -p ~/.config/nvim/pack/manta/start
+cp -r nvim/manta-nvim ~/.config/nvim/pack/manta/start/
+```
+
+Then install the Tree-sitter grammar:
+
+```vim
+:TSInstall manta
+```
+
+See `nvim/manta-nvim/README.md` for detailed installation instructions and configuration options.
+
+**Features:**
+- ✨ Syntax highlighting for all Manta constructs
+- 📐 Automatic indentation
+- 🔖 Code folding for functions, types, and control structures
+- 🔍 Scope tracking and variable/function awareness
+
 ## Project Structure
 
 `parser.rs` and `src/parser` contains the source code lexer and parser code.
