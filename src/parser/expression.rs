@@ -1111,5 +1111,95 @@ mod tests {
                 }
             ),
         },
+        parse_expression_grouped_int {
+            input: "(42)",
+            want_var: Expr::IntLiteral(42),
+            want_value: (),
+        },
+        parse_expression_grouped_binary_operation {
+            input: "(2 + 3)",
+            want_var: Expr::Binary(expr),
+            want_value: assert_eq!(
+                expr,
+                BinaryExpr {
+                    left: Box::new(Expr::IntLiteral(2)),
+                    operator: BinaryOp::Add,
+                    right: Box::new(Expr::IntLiteral(3)),
+                }
+            ),
+        },
+        parse_expression_grouped_with_precedence {
+            input: "2 * (3 + 4)",
+            want_var: Expr::Binary(expr),
+            want_value: assert_eq!(
+                expr,
+                BinaryExpr {
+                    left: Box::new(Expr::IntLiteral(2)),
+                    operator: BinaryOp::Multiply,
+                    right: Box::new(Expr::Binary(BinaryExpr {
+                        left: Box::new(Expr::IntLiteral(3)),
+                        operator: BinaryOp::Add,
+                        right: Box::new(Expr::IntLiteral(4)),
+                    })),
+                }
+            ),
+        },
+        parse_expression_nested_groups {
+            input: "((42))",
+            want_var: Expr::IntLiteral(42),
+            want_value: (),
+        },
+        parse_expression_grouped_identifier {
+            input: "(myVar)",
+            want_var: Expr::Identifier(ident),
+            want_value: assert_eq!(ident.name, "myVar"),
+        },
+        parse_expression_alloc_single_arg {
+            input: "alloc(@i32)",
+            want_var: Expr::Alloc(expr),
+            want_value: assert_eq!(
+                expr,
+                AllocExpr {
+                    meta_type: Box::new(Expr::MetaType(MetaTypeExpr {
+                        type_spec: TypeSpec::Int32,
+                    })),
+                    options: vec![],
+                }
+            ),
+        },
+        parse_expression_alloc_with_options {
+            input: "alloc(@i32, true, 10)",
+            want_var: Expr::Alloc(expr),
+            want_value: assert_eq!(
+                expr,
+                AllocExpr {
+                    meta_type: Box::new(Expr::MetaType(MetaTypeExpr {
+                        type_spec: TypeSpec::Int32,
+                    })),
+                    options: vec![
+                        Expr::BoolLiteral(true),
+                        Expr::IntLiteral(10),
+                    ],
+                }
+            ),
+        },
+        parse_expression_call_chained {
+            input: "foo(bar(5))",
+            want_var: Expr::Call(expr),
+            want_value: assert_eq!(
+                expr,
+                CallExpr {
+                    func: Box::new(Expr::Identifier(IdentifierExpr {
+                        name: "foo".to_string(),
+                    })),
+                    args: vec![Expr::Call(CallExpr {
+                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                            name: "bar".to_string(),
+                        })),
+                        args: vec![Expr::IntLiteral(5)],
+                    })],
+                }
+            ),
+        },
     );
 }

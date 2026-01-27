@@ -19,5 +19,3 @@ impl PrefixExprParselet for IdentifierParselet {
         Ok(Expr::Identifier(IdentifierExpr { name }))
     }
 }
-
-// TODO: add test cases for the identifier parselet

@@ -40,5 +40,3 @@ impl InfixPatternParselet for PayloadPatternParselet {
         }
     }
 }
-
-// TODO: add tests for this parselet in the pattern.rs test suite
