@@ -32,5 +32,3 @@ impl InfixPatternParselet for ModPatternParselet {
         }
     }
 }
-
-// TODO: add tests for the parselet in the pattern.rs test suite

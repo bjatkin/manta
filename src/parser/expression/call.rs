@@ -94,5 +94,3 @@ impl InfixExprParselet for CallParselet {
         Precedence::Call
     }
 }
-
-// TODO: add test cases here

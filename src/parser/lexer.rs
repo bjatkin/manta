@@ -121,7 +121,6 @@ impl<'a> Lexer<'a> {
         lexer
     }
 
-    // TODO: add tests for this function
     pub fn lexeme(&self, token: Token) -> String {
         match token.kind {
             TokenKind::Str => self.source[token.span.start + 1..token.span.end - 1].to_string(),
@@ -315,9 +314,6 @@ impl<'a> Lexer<'a> {
 
     fn read_ident_or_keyword(&mut self) -> Token {
         let start = self.pos;
-        // TODO: this should probably just be a simple loop
-        // having this method that takes a closure is overkill
-        // I think. I want to wait till I can test things again though
         let lex = self.eat_while(is_ident_continue);
         let end = self.pos;
 
@@ -393,8 +389,6 @@ impl<'a> Lexer<'a> {
                         self.bump();
                     }
                 }
-
-                // TODO: this should probably just be a simple loop
 
                 // digits of the exponent
                 self.eat_while(|c| c.is_ascii_digit() || c == '_');
@@ -866,5 +860,21 @@ free(p)
                 Token { kind: TokenKind::Eof, span: Span::new(7, 7) },
             ],
         },
+    }
+
+    #[test]
+    fn test_lexeme_with_string() {
+        let source = r#""hello world""#;
+        let lexer = Lexer::new(source);
+        let token = lexer.peek();
+        assert_eq!(lexer.lexeme(token), "hello world");
+    }
+
+    #[test]
+    fn test_lexeme_with_identifier() {
+        let source = "myVariable";
+        let lexer = Lexer::new(source);
+        let token = lexer.peek();
+        assert_eq!(lexer.lexeme(token), "myVariable");
     }
 }

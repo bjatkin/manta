@@ -113,7 +113,7 @@ impl PatternParser {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::ast::{ArrayType, DotAccessPat, IdentifierPat, Pattern, PayloadPat, TypeSpec};
+    use crate::ast::{ArrayType, DotAccessPat, IdentifierPat, ModuleAccesPat, Pattern, PayloadPat, TypeSpec};
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
 
@@ -256,6 +256,87 @@ mod test {
                     name: "Ok".to_string()
                 },
             },),
+        },
+        parse_expression_module_access_identifier {
+            input: "math::Vec3 =",
+            want: Pattern::ModuleAccess(ModuleAccesPat {
+                module: Box::new(IdentifierPat {
+                    name: "math".to_string()
+                }),
+                pat: Box::new(Pattern::Identifier(IdentifierPat {
+                    name: "Vec3".to_string()
+                })),
+            }),
+        },
+        parse_expression_module_access_dot_variant {
+            input: "result::Ret.Ok =",
+            want: Pattern::ModuleAccess(ModuleAccesPat {
+                module: Box::new(IdentifierPat {
+                    name: "result".to_string()
+                }),
+                pat: Box::new(Pattern::DotAccess(DotAccessPat {
+                    target: Some(Box::new(Pattern::Identifier(IdentifierPat {
+                        name: "Ret".to_string()
+                    }))),
+                    field: IdentifierPat {
+                        name: "Ok".to_string()
+                    },
+                })),
+            }),
+        },
+        parse_expression_module_access_payload {
+            input: "std::Option.Some(x) {",
+            want: Pattern::ModuleAccess(ModuleAccesPat {
+                module: Box::new(IdentifierPat {
+                    name: "std".to_string()
+                }),
+                pat: Box::new(Pattern::Payload(PayloadPat {
+                    pat: Box::new(Pattern::DotAccess(DotAccessPat {
+                        target: Some(Box::new(Pattern::Identifier(IdentifierPat {
+                            name: "Option".to_string()
+                        }))),
+                        field: IdentifierPat {
+                            name: "Some".to_string()
+                        },
+                    })),
+                    payload: "x".to_string(),
+                })),
+            }),
+        },
+        parse_expression_pattern_payload_simple {
+            input: "Result(err) =",
+            want: Pattern::Payload(PayloadPat {
+                pat: Box::new(Pattern::Identifier(IdentifierPat {
+                    name: "Result".to_string(),
+                })),
+                payload: "err".to_string(),
+            }),
+        },
+        parse_expression_pattern_payload_dot_access {
+            input: "Ret.Ok(value) {",
+            want: Pattern::Payload(PayloadPat {
+                pat: Box::new(Pattern::DotAccess(DotAccessPat {
+                    target: Some(Box::new(Pattern::Identifier(IdentifierPat {
+                        name: "Ret".to_string()
+                    }))),
+                    field: IdentifierPat {
+                        name: "Ok".to_string()
+                    },
+                })),
+                payload: "value".to_string(),
+            }),
+        },
+        parse_expression_pattern_payload_dot_inferred {
+            input: ".Some(item) =",
+            want: Pattern::Payload(PayloadPat {
+                pat: Box::new(Pattern::DotAccess(DotAccessPat {
+                    target: None,
+                    field: IdentifierPat {
+                        name: "Some".to_string()
+                    },
+                })),
+                payload: "item".to_string(),
+            }),
         },
     );
 

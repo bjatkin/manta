@@ -37,5 +37,3 @@ impl PrefixExprParselet for GroupParselet {
         Ok(expr)
     }
 }
-
-// TODO: add test cases to make sure the group parselet is working
