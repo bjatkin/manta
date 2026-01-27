@@ -1176,10 +1176,7 @@ mod tests {
                     meta_type: Box::new(Expr::MetaType(MetaTypeExpr {
                         type_spec: TypeSpec::Int32,
                     })),
-                    options: vec![
-                        Expr::BoolLiteral(true),
-                        Expr::IntLiteral(10),
-                    ],
+                    options: vec![Expr::BoolLiteral(true), Expr::IntLiteral(10),],
                 }
             ),
         },
