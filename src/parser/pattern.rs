@@ -113,7 +113,9 @@ impl PatternParser {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::ast::{ArrayType, DotAccessPat, IdentifierPat, ModuleAccesPat, Pattern, PayloadPat, TypeSpec};
+    use crate::ast::{
+        ArrayType, DotAccessPat, IdentifierPat, ModuleAccesPat, Pattern, PayloadPat, TypeSpec,
+    };
     use crate::parser::lexer::Lexer;
     use pretty_assertions::assert_eq;
 
