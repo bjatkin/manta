@@ -1,7 +1,10 @@
 mod ast;
+mod checker;
+mod compiler;
 mod parser;
 
 use clap::{Parser, Subcommand};
+use compiler::Compiler;
 use std::error::Error;
 use std::path::PathBuf;
 
@@ -62,6 +65,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match &cli.command {
         Commands::Build { out_dir, args } => {
+            let complier = Compiler::new();
+            let _result = complier.compile("mod main".to_string());
+
             println!(
                 "stub: build -> workspace={:?}, out_dir={:?}, args={:?}, verbose={}",
                 workspace, out_dir, args, cli.verbose
