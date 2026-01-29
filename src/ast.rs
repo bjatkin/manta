@@ -94,6 +94,8 @@ pub enum TypeSpec {
     UnsizedInt,
     UnsizedFloat,
 
+    None,
+
     Int32,
     Int16,
     Int8,
@@ -310,9 +312,6 @@ pub enum Expr {
     // Memory operations
     Alloc(AllocExpr),
     Free(FreeExpr),
-
-    // Type casting expressions
-    Cast(CastExpr),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -398,12 +397,6 @@ pub struct AssignmentExpr {
     // target is any l-value expression (identifier, deref, index, field access)
     pub target: Box<Expr>,
     pub value: Box<Expr>,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct CastExpr {
-    expr: Box<Expr>,
-    target_type: TypeSpec,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
