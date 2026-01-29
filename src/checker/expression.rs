@@ -1,17 +1,18 @@
-use crate::ast::{Expr, TypeSpec};
+use crate::ast::{Expr, TypeSpec, UnaryOp};
 use crate::checker::ErrorStore;
 use crate::checker::sym_table::SymTable;
-
-use super::sym_table::Type;
 
 pub struct ExprChecker;
 
 impl ExprChecker {
     pub fn is_l_value(&mut self, expr: Expr) -> bool {
-        // TODO: return true if the expression represents an assignable value
-        // with an actual location in memory
-
-        false
+        match expr {
+            Expr::Identifier(_) => true,
+            Expr::Index(_) => true,
+            Expr::Unary(expr) => expr.operator == UnaryOp::Dereference,
+            Expr::DotAccess(_) => true,
+            _ => false,
+        }
     }
 
     pub fn check(

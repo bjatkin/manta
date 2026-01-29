@@ -1,8 +1,9 @@
+mod binder;
 mod expression;
 mod statement;
 mod sym_table;
 
-use crate::ast::{Decl, Expr, Stmt, TypeSpec};
+use crate::ast::Decl;
 
 use expression::ExprChecker;
 use statement::StmtChecker;

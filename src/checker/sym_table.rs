@@ -1,4 +1,5 @@
 use crate::ast::TypeSpec;
+use crate::checker::CheckerError;
 
 pub struct Type {
     pub name: String,
@@ -31,6 +32,8 @@ impl Scope {
 }
 
 pub struct SymTable {
+    module: Option<String>,
+    use_modules: Option<Vec<String>>,
     scopes: Vec<Scope>,
     current_scope: ScopeID,
 }
@@ -38,8 +41,35 @@ pub struct SymTable {
 impl SymTable {
     pub fn new() -> Self {
         SymTable {
+            module: None,
+            use_modules: None,
             scopes: vec![],
             current_scope: 0,
+        }
+    }
+
+    pub fn set_module(&mut self, module: String) -> Result<(), CheckerError> {
+        match &self.module {
+            Some(module) => Err(CheckerError::new(format!(
+                "module is already named {:?}",
+                module
+            ))),
+            None => {
+                self.module = Some(module);
+                Ok(())
+            }
+        }
+    }
+
+    pub fn add_use_modules(&mut self, modules: Vec<String>) -> Result<(), CheckerError> {
+        match &self.use_modules {
+            Some(_) => Err(CheckerError::new(
+                "only 1 use block allowed per file".to_string(),
+            )),
+            None => {
+                self.use_modules = Some(modules);
+                Ok(())
+            }
         }
     }
 
