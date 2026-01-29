@@ -1,4 +1,5 @@
 // examples/nil_refs.manta
+mod main
 
 use (
     "mem"

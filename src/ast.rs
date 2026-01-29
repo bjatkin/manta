@@ -90,6 +90,13 @@ pub struct ModDecl {
 /// Type specification
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypeSpec {
+    // used for type inference of constants/ literals
+    UnsizedInt,
+    UnsizedFloat,
+
+    // use for expressions that don't actually return a value
+    None,
+
     Int32,
     Int16,
     Int8,
@@ -113,6 +120,9 @@ pub enum TypeSpec {
     Array(ArrayType),
     Struct(StructType),
     Enum(EnumType),
+
+    // used when type checking fails
+    InvalidType,
 }
 
 /// MetaType
@@ -274,11 +284,9 @@ pub enum Expr {
     FloatLiteral(f64),
     StringLiteral(String),
     BoolLiteral(bool),
-    NilLiteral,
 
     // Identifiers and references
     Identifier(IdentifierExpr),
-    EnumConstructor(EnumConstructorExpr),
 
     // Operations
     Binary(BinaryExpr),
@@ -308,22 +316,11 @@ pub enum Expr {
     // Memory operations
     Alloc(AllocExpr),
     Free(FreeExpr),
-
-    // Type casting expressions
-    Cast(CastExpr),
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IdentifierExpr {
     pub name: String,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct EnumConstructorExpr {
-    // TODO: should these be IdentifierExpr?
-    type_name: Option<String>,
-    variant: String,
-    payload: Option<Box<Expr>>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -404,12 +401,6 @@ pub struct AssignmentExpr {
     // target is any l-value expression (identifier, deref, index, field access)
     pub target: Box<Expr>,
     pub value: Box<Expr>,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct CastExpr {
-    expr: Box<Expr>,
-    target_type: TypeSpec,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
