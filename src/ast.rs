@@ -94,6 +94,7 @@ pub enum TypeSpec {
     UnsizedInt,
     UnsizedFloat,
 
+    // use for expressions that don't actually return a value
     None,
 
     Int32,
@@ -119,6 +120,9 @@ pub enum TypeSpec {
     Array(ArrayType),
     Struct(StructType),
     Enum(EnumType),
+
+    // used when type checking fails
+    InvalidType,
 }
 
 /// MetaType

@@ -2,9 +2,18 @@ use crate::ast::{Expr, TypeSpec};
 use crate::checker::ErrorStore;
 use crate::checker::sym_table::SymTable;
 
+use super::sym_table::Type;
+
 pub struct ExprChecker;
 
 impl ExprChecker {
+    pub fn is_l_value(&mut self, expr: Expr) -> bool {
+        // TODO: return true if the expression represents an assignable value
+        // with an actual location in memory
+
+        false
+    }
+
     pub fn check(
         &mut self,
         error_store: &mut ErrorStore,
@@ -36,7 +45,13 @@ impl ExprChecker {
             }
             Expr::Unary(expr) => self.check(error_store, sym_table, *expr.operand),
             Expr::Call(expr) => todo!("need to implement"),
-            Expr::Assignment(expr) => todo!("should this actually be an expression"),
+            Expr::Assignment(expr) => {
+                // I'm not 100% sold that assignment needs to be an expression
+                // I did it to make propogating errors easier but I need to explore
+                // this decision more deeply. Ultimately, I might end up moving this
+                // into the Stmt enum
+                TypeSpec::None
+            }
             Expr::Index(expr) => {
                 let target_type = self.check(error_store, sym_table, *expr.target);
                 match target_type {
@@ -44,7 +59,7 @@ impl ExprChecker {
                     TypeSpec::Array(t) => *t.type_spec,
                     _ => {
                         error_store.push("can not index this expression".to_string());
-                        todo!("what type should I return here")
+                        TypeSpec::InvalidType
                     }
                 }
             }
