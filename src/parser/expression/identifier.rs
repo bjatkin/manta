@@ -12,10 +12,10 @@ impl PrefixExprParselet for IdentifierParselet {
     fn parse(
         &self,
         _parser: &ExprParser,
-        lexer: &mut Lexer,
+        _lexer: &mut Lexer,
         token: Token,
     ) -> Result<Expr, ParseError> {
-        let name = lexer.lexeme(token);
+        let name = token.lexeme_id;
         Ok(Expr::Identifier(IdentifierExpr { name }))
     }
 }

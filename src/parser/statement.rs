@@ -178,11 +178,12 @@ mod test {
     use super::*;
     use crate::ast::{
         AllocExpr, AssignStmt, BinaryExpr, BinaryOp, BlockStmt, CallExpr, DeferStmt, DotAccessExpr,
-        DotAccessPat, Expr, FreeExpr, IdentifierExpr, IdentifierPat, IfStmt, IndexExpr, LetStmt,
-        MatchArm, MatchStmt, MetaTypeExpr, ModuleAccessExpr, Pattern, PayloadPat, ReturnStmt, Stmt,
-        TypeSpec, UnaryExpr, UnaryOp,
+        DotAccessPat, Expr, FreeExpr, IdentifierExpr, IdentifierPat, IfStmt, IndexExpr, LetExcept,
+        LetStmt, MatchArm, MatchStmt, MetaTypeExpr, ModuleAccessExpr, Pattern, PayloadPat,
+        ReturnStmt, Stmt, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
+    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_statement {
@@ -190,7 +191,8 @@ mod test {
             $(
                 #[test]
                 fn $case() {
-                    let mut lexer = Lexer::new($input);
+                    let mut str_store = StrStore::new();
+                    let mut lexer = Lexer::new($input, &mut str_store);
                     let parser = StmtParser::new();
 
                     let stmt = parser.parse(&mut lexer).unwrap();
@@ -210,12 +212,9 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 LetStmt {
-                    pattern: Pattern::Identifier(IdentifierPat {
-                        name: "x".to_string()
-                    }),
+                    pattern: Pattern::Identifier(IdentifierPat { name: 1 }),
                     value: Expr::IntLiteral(10),
-                    or_binding: None,
-                    except: None,
+                    except: LetExcept::None,
                 }
             ),
         },
@@ -226,14 +225,11 @@ mod test {
                 stmt,
                 LetStmt {
                     pattern: Pattern::Payload(PayloadPat {
-                        pat: Box::new(Pattern::Identifier(IdentifierPat {
-                            name: "bool".to_string()
-                        })),
-                        payload: "y".to_string()
+                        pat: Box::new(Pattern::Identifier(IdentifierPat { name: 1 })),
+                        payload: 3
                     }),
                     value: Expr::BoolLiteral(true),
-                    or_binding: None,
-                    except: None,
+                    except: LetExcept::None,
                 },
             ),
         },
@@ -243,12 +239,9 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 LetStmt {
-                    pattern: Pattern::Identifier(IdentifierPat {
-                        name: "pi".to_string()
-                    }),
+                    pattern: Pattern::Identifier(IdentifierPat { name: 1 }),
                     value: Expr::FloatLiteral(3.45),
-                    or_binding: None,
-                    except: None,
+                    except: LetExcept::None,
                 },
             ),
         },
@@ -259,19 +252,14 @@ mod test {
                 stmt,
                 LetStmt {
                     pattern: Pattern::Payload(PayloadPat {
-                        pat: Box::new(Pattern::Identifier(IdentifierPat {
-                            name: "Person".to_string(),
-                        })),
-                        payload: "jill".to_string()
+                        pat: Box::new(Pattern::Identifier(IdentifierPat { name: 1 })),
+                        payload: 3
                     }),
                     value: Expr::Call(CallExpr {
-                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "new_person".to_string()
-                        })),
+                        func: Box::new(Expr::Identifier(IdentifierExpr { name: 6 })),
                         args: vec![],
                     }),
-                    or_binding: None,
-                    except: None,
+                    except: LetExcept::None,
                 },
             ),
         },
@@ -300,11 +288,9 @@ mod test {
                         target: Box::new(Expr::Call(CallExpr {
                             func: Box::new(Expr::DotAccess(DotAccessExpr {
                                 target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "builder".to_string(),
+                                    name: 1
                                 }))),
-                                field: IdentifierExpr {
-                                    name: "string".to_string()
-                                },
+                                field: IdentifierExpr { name: 3 },
                             })),
                             args: vec![Expr::BoolLiteral(true)],
                         })),
@@ -332,9 +318,7 @@ mod test {
                     block: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Free(FreeExpr {
-                                expr: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "ptr".to_string()
-                                })),
+                                expr: Box::new(Expr::Identifier(IdentifierExpr { name: 4 })),
                             })
                         })]
                     }
@@ -351,14 +335,10 @@ mod test {
                         statements: vec![
                             Stmt::Expr(ExprStmt {
                                 expr: Expr::Call(CallExpr {
-                                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "print".to_string()
-                                    })),
+                                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                                     args: vec![
-                                        Expr::StringLiteral("done:".to_string()),
-                                        Expr::Identifier(IdentifierExpr {
-                                            name: "err".to_string(),
-                                        })
+                                        Expr::StringLiteral(4),
+                                        Expr::Identifier(IdentifierExpr { name: 6 })
                                     ],
                                 })
                             }),
@@ -387,60 +367,32 @@ mod test {
                 BlockStmt {
                     statements: vec![
                         Stmt::Let(LetStmt {
-                            pattern: Pattern::Identifier(IdentifierPat {
-                                name: "a".to_string()
-                            }),
+                            pattern: Pattern::Identifier(IdentifierPat { name: 2 }),
                             value: Expr::IntLiteral(10),
-                            or_binding: None,
-                            except: None,
+                            except: LetExcept::None,
                         }),
                         Stmt::Let(LetStmt {
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
-                                    field: IdentifierPat {
-                                        name: "Ok".to_string()
-                                    },
+                                    field: IdentifierPat { name: 7 },
                                 })),
-                                payload: "b".to_string()
+                                payload: 9
                             }),
                             value: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "maybe_int".to_string()
-                                })),
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 11 })),
                                 args: vec![Expr::IntLiteral(42)],
                             }),
-                            or_binding: Some(IdentifierExpr {
-                                name: "e".to_string()
-                            }),
-                            except: Some(BlockStmt {
-                                statements: vec![Stmt::Expr(ExprStmt {
-                                    expr: Expr::Call(CallExpr {
-                                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "panic".to_string()
-                                        })),
-                                        args: vec![Expr::Identifier(IdentifierExpr {
-                                            name: "e".to_string(),
-                                        })],
-                                    })
-                                })],
-                            }),
+                            except: LetExcept::Panic,
                         }),
                         Stmt::Let(LetStmt {
-                            pattern: Pattern::Identifier(IdentifierPat {
-                                name: "c".to_string()
-                            }),
+                            pattern: Pattern::Identifier(IdentifierPat { name: 14 }),
                             value: Expr::Binary(BinaryExpr {
-                                left: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "a".to_string()
-                                })),
+                                left: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                                 operator: BinaryOp::Add,
-                                right: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "b".to_string()
-                                })),
+                                right: Box::new(Expr::Identifier(IdentifierExpr { name: 9 })),
                             }),
-                            or_binding: None,
-                            except: None,
+                            except: LetExcept::None,
                         }),
                     ]
                 }
@@ -452,9 +404,7 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 AssignStmt {
-                    lvalue: Expr::Identifier(IdentifierExpr {
-                        name: "x".to_string(),
-                    }),
+                    lvalue: Expr::Identifier(IdentifierExpr { name: 0 }),
                     rvalue: Expr::IntLiteral(10),
                 },
             ),
@@ -467,9 +417,7 @@ mod test {
                 AssignStmt {
                     lvalue: Expr::Unary(UnaryExpr {
                         operator: UnaryOp::Dereference,
-                        operand: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "p".to_string(),
-                        })),
+                        operand: Box::new(Expr::Identifier(IdentifierExpr { name: 1 })),
                     }),
                     rvalue: Expr::IntLiteral(42),
                 },
@@ -481,29 +429,19 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 AssignStmt {
-                    lvalue: Expr::Identifier(IdentifierExpr {
-                        name: "name".to_string(),
-                    }),
+                    lvalue: Expr::Identifier(IdentifierExpr { name: 0 }),
                     rvalue: Expr::Call(CallExpr {
                         func: Box::new(Expr::DotAccess(DotAccessExpr {
-                            target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                                name: "person".to_string()
-                            }))),
-                            field: IdentifierExpr {
-                                name: "name".to_string()
-                            },
+                            target: Some(Box::new(Expr::Identifier(IdentifierExpr { name: 2 }))),
+                            field: IdentifierExpr { name: 0 },
                         })),
                         args: vec![
-                            Expr::Identifier(IdentifierExpr {
-                                name: "a".to_string(),
-                            }),
+                            Expr::Identifier(IdentifierExpr { name: 5 }),
                             Expr::Binary(BinaryExpr {
                                 left: Box::new(Expr::IntLiteral(1)),
                                 operator: BinaryOp::Add,
                                 right: Box::new(Expr::Call(CallExpr {
-                                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "two".to_string(),
-                                    })),
+                                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 9 })),
                                     args: vec![],
                                 })),
                             })
@@ -519,9 +457,7 @@ mod test {
                 stmt,
                 AssignStmt {
                     lvalue: Expr::Index(IndexExpr {
-                        target: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "a".to_string()
-                        })),
+                        target: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                         index: Box::new(Expr::IntLiteral(0)),
                     }),
                     rvalue: Expr::IntLiteral(10),
@@ -540,10 +476,8 @@ mod test {
                     success: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "print".to_string(),
-                                })),
-                                args: vec![Expr::StringLiteral("ok".to_string())],
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
+                                args: vec![Expr::StringLiteral(5)],
                             })
                         })],
                     },
@@ -562,34 +496,26 @@ mod test {
                 stmt,
                 IfStmt {
                     check: Box::new(Expr::Binary(BinaryExpr {
-                        left: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "a".to_string(),
-                        })),
+                        left: Box::new(Expr::Identifier(IdentifierExpr { name: 1 })),
                         operator: BinaryOp::LessThan,
                         right: Box::new(Expr::IntLiteral(13)),
                     })),
                     success: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "print".to_string(),
-                                })),
-                                args: vec![Expr::StringLiteral("ok".to_string())],
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
+                                args: vec![Expr::StringLiteral(7)],
                             }),
                         })],
                     },
                     fail: Some(BlockStmt {
                         statements: vec![Stmt::Assign(AssignStmt {
-                            lvalue: Expr::Identifier(IdentifierExpr {
-                                name: "a".to_string(),
-                            }),
+                            lvalue: Expr::Identifier(IdentifierExpr { name: 1 }),
                             rvalue: Expr::Binary(BinaryExpr {
                                 left: Box::new(Expr::IntLiteral(10)),
                                 operator: BinaryOp::Add,
                                 right: Box::new(Expr::Call(CallExpr {
-                                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "number".to_string(),
-                                    })),
+                                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 15 })),
                                     args: vec![Expr::FloatLiteral(3.45)],
                                 })),
                             })
@@ -606,9 +532,7 @@ mod test {
                 ReturnStmt {
                     value: Some(Expr::DotAccess(DotAccessExpr {
                         target: None,
-                        field: IdentifierExpr {
-                            name: "Ok".to_string(),
-                        },
+                        field: IdentifierExpr { name: 2 },
                     })),
                 }
             ),
@@ -621,35 +545,17 @@ mod test {
                 LetStmt {
                     pattern: Pattern::DotAccess(DotAccessPat {
                         target: None,
-                        field: IdentifierPat {
-                            name: "Ok".to_string(),
-                        },
+                        field: IdentifierPat { name: 2 },
                     }),
                     value: Expr::Call(CallExpr {
-                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "call".to_string()
-                        })),
+                        func: Box::new(Expr::Identifier(IdentifierExpr { name: 4 })),
                         args: vec![],
                     }),
-                    or_binding: Some(IdentifierExpr {
-                        name: "e".to_string()
-                    }),
-                    except: Some(BlockStmt {
-                        statements: vec![Stmt::Expr(ExprStmt {
-                            expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "panic".to_string()
-                                })),
-                                args: vec![Expr::Identifier(IdentifierExpr {
-                                    name: "e".to_string()
-                                })],
-                            }),
-                        })],
-                    }),
+                    except: LetExcept::Panic,
                 },
             ),
         },
-        parse_stmt_try_simple_catch {
+        parse_stmt_let_simple_catch {
             input: r#"let Ret.Valid(v) = validate("data") or {
     print("invalid!")
 }"#,
@@ -659,36 +565,30 @@ mod test {
                 LetStmt {
                     pattern: Pattern::Payload(PayloadPat {
                         pat: Box::new(Pattern::DotAccess(DotAccessPat {
-                            target: Some(Box::new(Pattern::Identifier(IdentifierPat {
-                                name: "Ret".to_string(),
-                            }))),
-                            field: IdentifierPat {
-                                name: "Valid".to_string(),
-                            },
+                            target: Some(Box::new(Pattern::Identifier(IdentifierPat { name: 1 }))),
+                            field: IdentifierPat { name: 3 },
                         })),
-                        payload: "v".to_string()
+                        payload: 5,
                     }),
                     value: Expr::Call(CallExpr {
-                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "validate".to_string()
-                        })),
-                        args: vec![Expr::StringLiteral("data".to_string())],
+                        func: Box::new(Expr::Identifier(IdentifierExpr { name: 8 })),
+                        args: vec![Expr::StringLiteral(9)],
                     }),
-                    or_binding: None,
-                    except: Some(BlockStmt {
-                        statements: vec![Stmt::Expr(ExprStmt {
-                            expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "print".to_string(),
-                                })),
-                                args: vec![Expr::StringLiteral("invalid!".to_string())],
-                            }),
-                        })],
-                    }),
+                    except: LetExcept::Or {
+                        binding: None,
+                        body: BlockStmt {
+                            statements: vec![Stmt::Expr(ExprStmt {
+                                expr: Expr::Call(CallExpr {
+                                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 12 })),
+                                    args: vec![Expr::StringLiteral(13)],
+                                }),
+                            })],
+                        }
+                    }
                 },
             ),
         },
-        parse_stmt_try_catch_binding {
+        parse_stmt_let_catch_binding {
             input: r#"let .Err = build_item(name, false) or(i) {
     print("built item")
     return i
@@ -699,41 +599,33 @@ mod test {
                 LetStmt {
                     pattern: Pattern::DotAccess(DotAccessPat {
                         target: None,
-                        field: IdentifierPat {
-                            name: "Err".to_string()
-                        },
+                        field: IdentifierPat { name: 2 },
                     }),
                     value: Expr::Call(CallExpr {
-                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "build_item".to_string(),
-                        })),
+                        func: Box::new(Expr::Identifier(IdentifierExpr { name: 4 })),
                         args: vec![
-                            Expr::Identifier(IdentifierExpr {
-                                name: "name".to_string()
-                            }),
+                            Expr::Identifier(IdentifierExpr { name: 6 }),
                             Expr::BoolLiteral(false),
                         ],
                     }),
-                    or_binding: Some(IdentifierExpr {
-                        name: "i".to_string()
-                    }),
-                    except: Some(BlockStmt {
-                        statements: vec![
-                            Stmt::Expr(ExprStmt {
-                                expr: Expr::Call(CallExpr {
-                                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "print".to_string()
-                                    })),
-                                    args: vec![Expr::StringLiteral("built item".to_string())],
-                                })
-                            }),
-                            Stmt::Return(ReturnStmt {
-                                value: Some(Expr::Identifier(IdentifierExpr {
-                                    name: "i".to_string()
-                                })),
-                            }),
-                        ],
-                    }),
+                    except: LetExcept::Or {
+                        binding: Some(11),
+                        body: BlockStmt {
+                            statements: vec![
+                                Stmt::Expr(ExprStmt {
+                                    expr: Expr::Call(CallExpr {
+                                        func: Box::new(Expr::Identifier(IdentifierExpr {
+                                            name: 13
+                                        })),
+                                        args: vec![Expr::StringLiteral(14)],
+                                    })
+                                }),
+                                Stmt::Return(ReturnStmt {
+                                    value: Some(Expr::Identifier(IdentifierExpr { name: 11 })),
+                                }),
+                            ],
+                        },
+                    }
                 }
             ),
         },
@@ -746,36 +638,18 @@ mod test {
                     pattern: Pattern::Payload(PayloadPat {
                         pat: Box::new(Pattern::DotAccess(DotAccessPat {
                             target: None,
-                            field: IdentifierPat {
-                                name: "Ok".to_string()
-                            },
+                            field: IdentifierPat { name: 2 },
                         })),
-                        payload: "d".to_string()
+                        payload: 4,
                     }),
                     value: Expr::Call(CallExpr {
-                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "div".to_string()
-                        })),
+                        func: Box::new(Expr::Identifier(IdentifierExpr { name: 7 })),
                         args: vec![],
                     }),
-                    or_binding: Some(IdentifierExpr {
-                        name: "e".to_string()
-                    }),
-                    except: Some(BlockStmt {
-                        statements: vec![Stmt::Return(ReturnStmt {
-                            value: Some(Expr::Call(CallExpr {
-                                func: Box::new(Expr::DotAccess(DotAccessExpr {
-                                    target: None,
-                                    field: IdentifierExpr {
-                                        name: "Err".to_string()
-                                    }
-                                })),
-                                args: vec![Expr::Identifier(IdentifierExpr {
-                                    name: "e".to_string()
-                                })],
-                            })),
-                        })],
-                    }),
+                    except: LetExcept::Wrap(Expr::DotAccess(DotAccessExpr {
+                        target: None,
+                        field: IdentifierExpr { name: 9 }
+                    })),
                 },
             ),
         },
@@ -788,29 +662,23 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 MatchStmt {
-                    target: Expr::Identifier(IdentifierExpr {
-                        name: "x".to_string(),
-                    }),
+                    target: Expr::Identifier(IdentifierExpr { name: 1 }),
                     arms: vec![
                         MatchArm {
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
-                                    field: IdentifierPat {
-                                        name: "Some".to_string()
-                                    },
+                                    field: IdentifierPat { name: 4 },
                                 })),
-                                payload: "v".to_string(),
+                                payload: 6,
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 8,
                                         })),
-                                        args: vec![Expr::Identifier(IdentifierExpr {
-                                            name: "v".to_string(),
-                                        })],
+                                        args: vec![Expr::Identifier(IdentifierExpr { name: 6 })],
                                     }),
                                 })],
                             },
@@ -818,17 +686,15 @@ mod test {
                         MatchArm {
                             pattern: Pattern::DotAccess(DotAccessPat {
                                 target: None,
-                                field: IdentifierPat {
-                                    name: "None".to_string()
-                                },
+                                field: IdentifierPat { name: 12 },
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 8
                                         })),
-                                        args: vec![Expr::StringLiteral("none".to_string())],
+                                        args: vec![Expr::StringLiteral(13)],
                                     }),
                                 })],
                             },
@@ -847,29 +713,23 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 MatchStmt {
-                    target: Expr::Identifier(IdentifierExpr {
-                        name: "result".to_string(),
-                    }),
+                    target: Expr::Identifier(IdentifierExpr { name: 1 }),
                     arms: vec![
                         MatchArm {
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
-                                    field: IdentifierPat {
-                                        name: "Success".to_string(),
-                                    },
+                                    field: IdentifierPat { name: 4 },
                                 })),
-                                payload: "val".to_string()
+                                payload: 6
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 8
                                         })),
-                                        args: vec![Expr::Identifier(IdentifierExpr {
-                                            name: "val".to_string(),
-                                        })],
+                                        args: vec![Expr::Identifier(IdentifierExpr { name: 6 })],
                                     }),
                                 })],
                             },
@@ -878,21 +738,17 @@ mod test {
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
-                                    field: IdentifierPat {
-                                        name: "Warning".to_string(),
-                                    },
+                                    field: IdentifierPat { name: 12 },
                                 })),
-                                payload: "msg".to_string()
+                                payload: 13
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 8
                                         })),
-                                        args: vec![Expr::Identifier(IdentifierExpr {
-                                            name: "msg".to_string(),
-                                        })],
+                                        args: vec![Expr::Identifier(IdentifierExpr { name: 13 })],
                                     }),
                                 })],
                             },
@@ -900,17 +756,15 @@ mod test {
                         MatchArm {
                             pattern: Pattern::DotAccess(DotAccessPat {
                                 target: None,
-                                field: IdentifierPat {
-                                    name: "Failed".to_string()
-                                },
+                                field: IdentifierPat { name: 14 },
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 8
                                         })),
-                                        args: vec![Expr::StringLiteral("error".to_string())],
+                                        args: vec![Expr::StringLiteral(15)],
                                     }),
                                 })],
                             },
@@ -928,24 +782,20 @@ mod test {
             want_value: assert_eq!(
                 stmt,
                 MatchStmt {
-                    target: Expr::Identifier(IdentifierExpr {
-                        name: "signal".to_string(),
-                    }),
+                    target: Expr::Identifier(IdentifierExpr { name: 1 }),
                     arms: vec![
                         MatchArm {
                             pattern: Pattern::DotAccess(DotAccessPat {
                                 target: None,
-                                field: IdentifierPat {
-                                    name: "Ready".to_string()
-                                },
+                                field: IdentifierPat { name: 4 },
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 5,
                                         })),
-                                        args: vec![Expr::StringLiteral("go".to_string())],
+                                        args: vec![Expr::StringLiteral(7)],
                                     }),
                                 })],
                             },
@@ -954,23 +804,19 @@ mod test {
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
-                                    field: IdentifierPat {
-                                        name: "Idle".to_string(),
-                                    },
+                                    field: IdentifierPat { name: 12 },
                                 })),
-                                payload: "ts".to_string()
+                                payload: 13
                             }),
                             body: BlockStmt {
                                 statements: vec![Stmt::Expr(ExprStmt {
                                     expr: Expr::Call(CallExpr {
                                         func: Box::new(Expr::Identifier(IdentifierExpr {
-                                            name: "print".to_string(),
+                                            name: 5
                                         })),
                                         args: vec![
-                                            Expr::StringLiteral("idle since".to_string()),
-                                            Expr::Identifier(IdentifierExpr {
-                                                name: "ts".to_string(),
-                                            }),
+                                            Expr::StringLiteral(14),
+                                            Expr::Identifier(IdentifierExpr { name: 13 }),
                                         ],
                                     }),
                                 })],
@@ -987,12 +833,8 @@ mod test {
                 stmt,
                 ExprStmt {
                     expr: Expr::ModuleAccess(ModuleAccessExpr {
-                        module: IdentifierExpr {
-                            name: "fmt".to_string(),
-                        },
-                        expr: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "println".to_string(),
-                        })),
+                        module: IdentifierExpr { name: 0 },
+                        expr: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                     }),
                 }
             ),
@@ -1004,14 +846,10 @@ mod test {
                 stmt,
                 ExprStmt {
                     expr: Expr::ModuleAccess(ModuleAccessExpr {
-                        module: IdentifierExpr {
-                            name: "fmt".to_string(),
-                        },
+                        module: IdentifierExpr { name: 0 },
                         expr: Box::new(Expr::Call(CallExpr {
-                            func: Box::new(Expr::Identifier(IdentifierExpr {
-                                name: "println".to_string(),
-                            })),
-                            args: vec![Expr::StringLiteral("hello".to_string())],
+                            func: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
+                            args: vec![Expr::StringLiteral(4)],
                         })),
                     }),
                 }
@@ -1024,12 +862,8 @@ mod test {
                 stmt,
                 ExprStmt {
                     expr: Expr::ModuleAccess(ModuleAccessExpr {
-                        module: IdentifierExpr {
-                            name: "math".to_string(),
-                        },
-                        expr: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "vec3".to_string(),
-                        })),
+                        module: IdentifierExpr { name: 0 },
+                        expr: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                     }),
                 }
             ),

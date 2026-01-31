@@ -24,7 +24,7 @@ impl DeclParselet for FunctionDeclParselet {
             ));
         }
 
-        let name = lexer.lexeme(token);
+        let name = token.lexeme_id;
 
         // Expect opening paren
         let token = lexer.next_token();
@@ -100,7 +100,7 @@ fn parse_parameters(lexer: &mut Lexer) -> Result<Vec<Parameter>, ParseError> {
             ));
         }
 
-        let name = lexer.lexeme(token);
+        let name = token.lexeme_id;
         param_names.push(name);
 
         // Keep collecting params separated by commas while we see: comma, identifier, comma/paren/type
@@ -119,7 +119,7 @@ fn parse_parameters(lexer: &mut Lexer) -> Result<Vec<Parameter>, ParseError> {
                 ));
             }
 
-            let name = lexer.lexeme(token);
+            let name = token.lexeme_id;
             param_names.push(name);
         }
 

@@ -13,21 +13,22 @@ pub struct LiteralPatternParselet;
 
 impl PrefixPatternParselet for LiteralPatternParselet {
     fn parse(&self, lexer: &mut Lexer, token: Token) -> Result<Pattern, ParseError> {
+        let lexeme = lexer.lexeme(token.lexeme_id);
         match token.kind {
             TokenKind::TrueLiteral => Ok(Pattern::BoolLiteral(true)),
             TokenKind::FalseLiteral => Ok(Pattern::BoolLiteral(false)),
-            TokenKind::Int => match lexer.lexeme(token).replace("_", "").parse() {
+            TokenKind::Int => match lexeme.replace("_", "").parse() {
                 Ok(n) => Ok(Pattern::IntLiteral(n)),
                 Err(e) => Err(ParseError::Custom(format!(
                     "Invalid integer pattern {:?}",
                     e
                 ))),
             },
-            TokenKind::Float => match lexer.lexeme(token).replace("_", "").parse() {
+            TokenKind::Float => match lexeme.replace("_", "").parse() {
                 Ok(f) => Ok(Pattern::FloatLiteral(f)),
                 Err(e) => Err(ParseError::Custom(format!("Invalid float pattern {:?}", e))),
             },
-            TokenKind::Str => Ok(Pattern::StringLiteral(lexer.lexeme(token))),
+            TokenKind::Str => Ok(Pattern::StringLiteral(token.lexeme_id)),
             _ => Err(ParseError::Custom("Invalid bool token".to_string())),
         }
     }

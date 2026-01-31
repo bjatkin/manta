@@ -1,30 +1,30 @@
 [
   {
     "Mod": {
-      "name": "main"
+      "name": 1
     }
   },
   {
     "Use": {
       "modules": [
-        "fmt"
+        5
       ]
     }
   },
   {
     "Type": {
       "name": {
-        "name": "Div"
+        "name": 8
       },
       "type_spec": {
         "Enum": {
           "variants": [
             {
-              "name": "Ok",
+              "name": 11,
               "payload": "Int32"
             },
             {
-              "name": "DivByZero",
+              "name": 13,
               "payload": null
             }
           ]
@@ -34,21 +34,21 @@
   },
   {
     "Function": {
-      "name": "div",
+      "name": 16,
       "params": [
         {
-          "name": "a",
+          "name": 17,
           "type_spec": "Int32"
         },
         {
-          "name": "b",
+          "name": 19,
           "type_spec": "Int32"
         }
       ],
       "return_type": {
         "Named": {
           "module": null,
-          "name": "Div"
+          "name": 8
         }
       },
       "body": {
@@ -59,7 +59,7 @@
                 "Binary": {
                   "left": {
                     "Identifier": {
-                      "name": "b"
+                      "name": 19
                     }
                   },
                   "operator": "Equal",
@@ -76,7 +76,7 @@
                         "DotAccess": {
                           "target": null,
                           "field": {
-                            "name": "DivByZero"
+                            "name": 13
                           }
                         }
                       }
@@ -95,7 +95,7 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 11
                       }
                     }
                   },
@@ -104,13 +104,13 @@
                       "Binary": {
                         "left": {
                           "Identifier": {
-                            "name": "a"
+                            "name": 17
                           }
                         },
                         "operator": "Divide",
                         "right": {
                           "Identifier": {
-                            "name": "b"
+                            "name": 19
                           }
                         }
                       }
@@ -126,7 +126,7 @@
   },
   {
     "Function": {
-      "name": "main",
+      "name": 1,
       "params": [],
       "return_type": null,
       "body": {
@@ -135,14 +135,14 @@
             "Let": {
               "pattern": {
                 "Identifier": {
-                  "name": "r"
+                  "name": 27
                 }
               },
               "value": {
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "div"
+                      "name": 16
                     }
                   },
                   "args": [
@@ -155,15 +155,14 @@
                   ]
                 }
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
             "Match": {
               "target": {
                 "Identifier": {
-                  "name": "r"
+                  "name": 27
                 }
               },
               "arms": [
@@ -174,11 +173,11 @@
                         "DotAccess": {
                           "target": null,
                           "field": {
-                            "name": "Ok"
+                            "name": 11
                           }
                         }
                       },
-                      "payload": "v"
+                      "payload": 32
                     }
                   },
                   "body": {
@@ -188,22 +187,22 @@
                           "expr": {
                             "ModuleAccess": {
                               "module": {
-                                "name": "fmt"
+                                "name": 5
                               },
                               "expr": {
                                 "Call": {
                                   "func": {
                                     "Identifier": {
-                                      "name": "println"
+                                      "name": 34
                                     }
                                   },
                                   "args": [
                                     {
-                                      "StringLiteral": "result: "
+                                      "StringLiteral": 35
                                     },
                                     {
                                       "Identifier": {
-                                        "name": "v"
+                                        "name": 32
                                       }
                                     }
                                   ]
@@ -221,7 +220,7 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "DivByZero"
+                        "name": 13
                       }
                     }
                   },
@@ -232,18 +231,18 @@
                           "expr": {
                             "ModuleAccess": {
                               "module": {
-                                "name": "fmt"
+                                "name": 5
                               },
                               "expr": {
                                 "Call": {
                                   "func": {
                                     "Identifier": {
-                                      "name": "println"
+                                      "name": 34
                                     }
                                   },
                                   "args": [
                                     {
-                                      "StringLiteral": "can not divide by zero"
+                                      "StringLiteral": 37
                                     }
                                   ]
                                 }

@@ -10,10 +10,10 @@ pub struct IdentifierPatternParselet;
 
 impl PrefixPatternParselet for IdentifierPatternParselet {
     fn parse(&self, lexer: &mut Lexer, token: Token) -> Result<Pattern, ParseError> {
-        let lexeme = lexer.lexeme(token);
-        match lexeme.as_str() {
+        let name = token.lexeme_id;
+        match lexer.lexeme(name).as_str() {
             "_" => Ok(Pattern::Default),
-            _ => Ok(Pattern::Identifier(IdentifierPat { name: lexeme })),
+            _ => Ok(Pattern::Identifier(IdentifierPat { name })),
         }
     }
 }

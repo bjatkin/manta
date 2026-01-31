@@ -22,6 +22,8 @@ pub type StrID = usize;
 pub struct StrStore<'a> {
     /// Map from string slices to their unique identifiers
     strings: HashMap<&'a str, StrID>,
+    /// Sequential list of strings for reverse lookup (index = StrID)
+    reverse_strings: Vec<&'a str>,
     /// Counter for generating the next unique ID
     next_id: usize,
 }
@@ -31,6 +33,7 @@ impl<'a> StrStore<'a> {
     pub fn new() -> Self {
         StrStore {
             strings: HashMap::new(),
+            reverse_strings: Vec::new(),
             next_id: 0,
         }
     }
@@ -48,9 +51,15 @@ impl<'a> StrStore<'a> {
                 let id = self.next_id;
                 self.next_id += 1;
                 self.strings.insert(s, id);
+                self.reverse_strings.push(s);
                 id
             }
         }
+    }
+
+    /// Look up the string for a given ID. Returns None if ID not found.
+    pub fn get_string(&self, id: StrID) -> Option<&'a str> {
+        self.reverse_strings.get(id).copied()
     }
 }
 

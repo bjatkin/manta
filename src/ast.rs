@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::str_store::StrID;
+
 /// Top-level declarations in a Manta program
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Decl {
@@ -21,7 +23,7 @@ pub enum Decl {
 /// ```
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDecl {
-    pub name: String,
+    pub name: StrID,
     pub params: Vec<Parameter>,
     pub return_type: Option<TypeSpec>,
     pub body: BlockStmt,
@@ -36,7 +38,7 @@ pub struct TypeDecl {
 /// Function parameter
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Parameter {
-    pub name: String,
+    pub name: StrID,
     pub type_spec: TypeSpec,
 }
 
@@ -48,7 +50,7 @@ pub struct Parameter {
 /// ```
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ConstDecl {
-    pub name: String,
+    pub name: StrID,
     pub value: Expr,
 }
 
@@ -60,7 +62,7 @@ pub struct ConstDecl {
 /// ```
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct VarDecl {
-    pub name: String,
+    pub name: StrID,
     pub value: Expr,
 }
 
@@ -73,7 +75,7 @@ pub struct VarDecl {
 /// ```
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct UseDecl {
-    pub modules: Vec<String>,
+    pub modules: Vec<StrID>,
 }
 
 /// Mod declaration
@@ -84,7 +86,7 @@ pub struct UseDecl {
 /// ```
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ModDecl {
-    pub name: String,
+    pub name: StrID,
 }
 
 /// Type specification
@@ -103,10 +105,7 @@ pub enum TypeSpec {
     String,
     Bool,
     // User-defined types
-    Named {
-        module: Option<String>,
-        name: String,
-    },
+    Named { module: Option<StrID>, name: StrID },
     // Composite types
     Pointer(Box<TypeSpec>),
     Slice(Box<TypeSpec>),
@@ -136,7 +135,7 @@ pub struct StructType {
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct StructField {
-    pub name: String,
+    pub name: StrID,
     pub type_spec: TypeSpec,
 }
 
@@ -148,7 +147,7 @@ pub struct EnumType {
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct EnumVariant {
-    pub name: String,
+    pub name: StrID,
     pub payload: Option<TypeSpec>,
 }
 
@@ -182,8 +181,18 @@ pub enum Stmt {
 pub struct LetStmt {
     pub pattern: Pattern,
     pub value: Expr,
-    pub or_binding: Option<IdentifierExpr>,
-    pub except: Option<BlockStmt>,
+    pub except: LetExcept,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum LetExcept {
+    Or {
+        binding: Option<StrID>,
+        body: BlockStmt,
+    },
+    Wrap(Expr),
+    Panic,
+    None,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -222,7 +231,7 @@ pub struct MatchArm {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Pattern {
     IntLiteral(i64),
-    StringLiteral(String),
+    StringLiteral(StrID),
     BoolLiteral(bool),
     FloatLiteral(f64),
 
@@ -251,19 +260,19 @@ pub struct DotAccessPat {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PayloadPat {
     pub pat: Box<Pattern>,
-    pub payload: String,
+    pub payload: StrID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct EnumVariantPat {
-    pub type_name: Option<String>,
-    pub name: String,
-    pub payload_binding: Option<String>,
+    pub type_name: Option<StrID>,
+    pub name: StrID,
+    pub payload_binding: Option<StrID>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IdentifierPat {
-    pub name: String,
+    pub name: StrID,
 }
 
 /// Expressions
@@ -272,7 +281,7 @@ pub enum Expr {
     // Literals
     IntLiteral(i64),
     FloatLiteral(f64),
-    StringLiteral(String),
+    StringLiteral(StrID),
     BoolLiteral(bool),
     NilLiteral,
 
@@ -314,7 +323,7 @@ pub enum Expr {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IdentifierExpr {
-    pub name: String,
+    pub name: StrID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

@@ -1,41 +1,41 @@
 [
   {
     "Mod": {
-      "name": "main"
+      "name": 1
     }
   },
   {
     "Use": {
       "modules": [
-        "fmt",
-        "mem"
+        5,
+        6
       ]
     }
   },
   {
     "Type": {
       "name": {
-        "name": "MaybeAlloc"
+        "name": 9
       },
       "type_spec": {
         "Enum": {
           "variants": [
             {
-              "name": "Ok",
+              "name": 12,
               "payload": {
                 "Pointer": "Int32"
               }
             },
             {
-              "name": "DidNotAlloc",
+              "name": 15,
               "payload": null
             },
             {
-              "name": "AllocFailed",
+              "name": 16,
               "payload": {
                 "Named": {
-                  "module": "mem",
-                  "name": "Alloc"
+                  "module": 6,
+                  "name": 18
                 }
               }
             }
@@ -46,17 +46,17 @@
   },
   {
     "Function": {
-      "name": "maybe_alloc",
+      "name": 21,
       "params": [
         {
-          "name": "cond",
+          "name": 22,
           "type_spec": "Bool"
         }
       ],
       "return_type": {
         "Named": {
           "module": null,
-          "name": "MaybeAlloc"
+          "name": 9
         }
       },
       "body": {
@@ -65,7 +65,7 @@
             "If": {
               "check": {
                 "Identifier": {
-                  "name": "cond"
+                  "name": 22
                 }
               },
               "success": {
@@ -76,10 +76,10 @@
                         "Payload": {
                           "pat": {
                             "Identifier": {
-                              "name": "i32"
+                              "name": 14
                             }
                           },
-                          "payload": "p"
+                          "payload": 26
                         }
                       },
                       "value": {
@@ -92,35 +92,15 @@
                           "options": []
                         }
                       },
-                      "or_binding": {
-                        "name": "e"
-                      },
                       "except": {
-                        "statements": [
-                          {
-                            "Return": {
-                              "value": {
-                                "Call": {
-                                  "func": {
-                                    "DotAccess": {
-                                      "target": null,
-                                      "field": {
-                                        "name": "AllocFailed"
-                                      }
-                                    }
-                                  },
-                                  "args": [
-                                    {
-                                      "Identifier": {
-                                        "name": "e"
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
+                        "Wrap": {
+                          "DotAccess": {
+                            "target": null,
+                            "field": {
+                              "name": 16
                             }
                           }
-                        ]
+                        }
                       }
                     }
                   },
@@ -131,7 +111,7 @@
                           "operator": "Dereference",
                           "operand": {
                             "Identifier": {
-                              "name": "p"
+                              "name": 26
                             }
                           }
                         }
@@ -149,14 +129,14 @@
                             "DotAccess": {
                               "target": null,
                               "field": {
-                                "name": "Ok"
+                                "name": 12
                               }
                             }
                           },
                           "args": [
                             {
                               "Identifier": {
-                                "name": "p"
+                                "name": 26
                               }
                             }
                           ]
@@ -175,7 +155,7 @@
                 "DotAccess": {
                   "target": null,
                   "field": {
-                    "name": "DidNotAlloc"
+                    "name": 15
                   }
                 }
               }
@@ -187,7 +167,7 @@
   },
   {
     "Function": {
-      "name": "main",
+      "name": 1,
       "params": [],
       "return_type": null,
       "body": {
@@ -198,7 +178,7 @@
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "maybe_alloc"
+                      "name": 21
                     }
                   },
                   "args": [
@@ -216,11 +196,11 @@
                         "DotAccess": {
                           "target": null,
                           "field": {
-                            "name": "Ok"
+                            "name": 12
                           }
                         }
                       },
-                      "payload": "p"
+                      "payload": 26
                     }
                   },
                   "body": {
@@ -230,13 +210,13 @@
                           "expr": {
                             "ModuleAccess": {
                               "module": {
-                                "name": "fmt"
+                                "name": 5
                               },
                               "expr": {
                                 "Call": {
                                   "func": {
                                     "Identifier": {
-                                      "name": "println"
+                                      "name": 36
                                     }
                                   },
                                   "args": [
@@ -245,7 +225,7 @@
                                         "operator": "Dereference",
                                         "operand": {
                                           "Identifier": {
-                                            "name": "p"
+                                            "name": 26
                                           }
                                         }
                                       }
@@ -265,7 +245,7 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "DidNotAlloc"
+                        "name": 15
                       }
                     }
                   },
@@ -276,18 +256,18 @@
                           "expr": {
                             "ModuleAccess": {
                               "module": {
-                                "name": "fmt"
+                                "name": 5
                               },
                               "expr": {
                                 "Call": {
                                   "func": {
                                     "Identifier": {
-                                      "name": "println"
+                                      "name": 36
                                     }
                                   },
                                   "args": [
                                     {
-                                      "StringLiteral": "no allocation"
+                                      "StringLiteral": 38
                                     }
                                   ]
                                 }

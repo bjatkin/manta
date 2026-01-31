@@ -18,7 +18,7 @@ impl InfixExprParselet for InfixDotAccessParselet {
     ) -> Result<Expr, ParseError> {
         let token = lexer.next_token();
         let name = match token.kind {
-            TokenKind::Identifier => lexer.lexeme(token),
+            TokenKind::Identifier => token.lexeme_id,
             _ => {
                 return Err(ParseError::UnexpectedToken(
                     token,
@@ -52,7 +52,7 @@ impl PrefixExprParselet for PrefixDotAccessParselet {
     ) -> Result<Expr, ParseError> {
         let token = lexer.next_token();
         let name = match token.kind {
-            TokenKind::Identifier => lexer.lexeme(token),
+            TokenKind::Identifier => token.lexeme_id,
             _ => {
                 return Err(ParseError::UnexpectedToken(
                     token,

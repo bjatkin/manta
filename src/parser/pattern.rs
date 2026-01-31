@@ -117,6 +117,7 @@ mod test {
         ArrayType, DotAccessPat, IdentifierPat, ModuleAccesPat, Pattern, PayloadPat, TypeSpec,
     };
     use crate::parser::lexer::Lexer;
+    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_patterns {
@@ -125,7 +126,8 @@ mod test {
                 #[test]
                 fn $case() {
                     let parser = PatternParser::new();
-                    let mut lexer = Lexer::new($input);
+                    let mut str_store = StrStore::new();
+                    let mut lexer = Lexer::new($input, &mut str_store);
                     let pattern = parser.parse(&mut lexer).unwrap();
                     assert_eq!(pattern, $want)
                 }
@@ -134,69 +136,65 @@ mod test {
     }
 
     test_parse_patterns!(
-        parse_expression_pattern_int_literal {
+        parse_pattern_int_literal {
             input: "42 {",
             want: Pattern::IntLiteral(42),
         },
-        parse_expression_pattern_string_literal {
+        parse_pattern_string_literal {
             input: r#""hello" {"#,
-            want: Pattern::StringLiteral("hello".to_string()),
+            want: Pattern::StringLiteral(0),
         },
-        parse_expression_pattern_float_literal {
+        parse_pattern_float_literal {
             input: "3.45 {",
             want: Pattern::FloatLiteral(3.45),
         },
-        parse_expression_pattern_true_literal {
+        parse_pattern_true_literal {
             input: "true {",
             want: Pattern::BoolLiteral(true),
         },
-        parse_expression_pattern_false_literal {
+        parse_pattern_false_literal {
             input: "false {",
             want: Pattern::BoolLiteral(false),
         },
-        parse_expression_pattern_default {
+        parse_pattern_default {
             input: "_ =",
             want: Pattern::Default,
         },
-        parse_expression_pattern_identifier {
+        parse_pattern_identifier {
             input: "my_var =",
-            want: Pattern::Identifier(IdentifierPat {
-                name: "my_var".to_string()
-            }),
+            want: Pattern::Identifier(IdentifierPat { name: 0 }),
         },
-        parse_expression_pattern_type_match {
+        parse_pattern_type_match {
             input: "f32(f) =",
             want: Pattern::Payload(PayloadPat {
-                pat: Box::new(Pattern::Identifier(IdentifierPat {
-                    name: "f32".to_string(),
-                })),
-                payload: "f".to_string(),
+                pat: Box::new(Pattern::Identifier(IdentifierPat { name: 0 })),
+                payload: 2,
             }),
         },
-        parse_expression_pointer {
+        parse_pattern_pointer {
             input: "*foo =",
             want: Pattern::TypeSpec(TypeSpec::Pointer(Box::new(TypeSpec::Named {
                 module: None,
-                name: "foo".to_string(),
+                name: 1,
             }))),
         },
-        parse_expression_double_pointer {
+        parse_pattern_double_pointer {
             input: "**bar {",
             want: Pattern::TypeSpec(TypeSpec::Pointer(Box::new(TypeSpec::Pointer(Box::new(
                 TypeSpec::Named {
                     module: None,
-                    name: "bar".to_string(),
+                    name: 1,
                 }
             ))))),
         },
-        parse_expression_slice {
+        parse_pattern_slice {
             input: "[]Vec2 =",
             want: Pattern::TypeSpec(TypeSpec::Slice(Box::new(TypeSpec::Named {
                 module: None,
-                name: "Vec2".to_string(),
+                name: 2,
             }))),
         },
-        parse_expression_3d_array {
+        parse_pattern_3d_array {
             input: "[10][11][12]bool =",
             want: Pattern::TypeSpec(TypeSpec::Array(ArrayType {
                 size: 10,
@@ -209,142 +207,107 @@ mod test {
                 })),
             }),),
         },
-        parse_expression_array_pointer_slice_pointer {
+        parse_pattern_array_pointer_slice_pointer {
             input: "[3]*[]*pet::Dog =",
             want: Pattern::TypeSpec(TypeSpec::Array(ArrayType {
                 size: 3,
                 type_spec: Box::new(TypeSpec::Pointer(Box::new(TypeSpec::Slice(Box::new(
                     TypeSpec::Pointer(Box::new(TypeSpec::Named {
-                        module: Some("pet".to_string()),
-                        name: "Dog".to_string(),
+                        module: Some(4),
+                        name: 6,
                     }))
                 ))))),
             }),),
         },
-        parse_expression_simple_identifier {
+        parse_pattern_simple_identifier {
             input: "foo {",
-            want: Pattern::Identifier(IdentifierPat {
-                name: "foo".to_string()
-            }),
+            want: Pattern::Identifier(IdentifierPat { name: 0 }),
         },
-        parse_expression_variable_name {
+        parse_pattern_variable_name {
             input: "my_variable {",
-            want: Pattern::Identifier(IdentifierPat {
-                name: "my_variable".to_string()
-            }),
+            want: Pattern::Identifier(IdentifierPat { name: 0 }),
         },
-        parse_expression_identifier_with_numbers {
+        parse_pattern_identifier_with_numbers {
             input: "var123 {",
-            want: Pattern::Identifier(IdentifierPat {
-                name: "var123".to_string()
-            }),
+            want: Pattern::Identifier(IdentifierPat { name: 0 }),
         },
-        parse_expression_dot_inferred_variant {
+        parse_pattern_dot_inferred_variant {
             input: ".Ok =",
             want: Pattern::DotAccess(DotAccessPat {
                 target: None,
-                field: IdentifierPat {
-                    name: "Ok".to_string()
-                },
+                field: IdentifierPat { name: 1 },
             }),
         },
-        parse_expression_dot_variant {
+        parse_pattern_dot_variant {
             input: "Ret.Ok {",
             want: Pattern::DotAccess(DotAccessPat {
-                target: Some(Box::new(Pattern::Identifier(IdentifierPat {
-                    name: "Ret".to_string()
-                }))),
-                field: IdentifierPat {
-                    name: "Ok".to_string()
-                },
+                target: Some(Box::new(Pattern::Identifier(IdentifierPat { name: 0 }))),
+                field: IdentifierPat { name: 2 },
             },),
         },
-        parse_expression_module_access_identifier {
+        parse_pattern_module_access_identifier {
             input: "math::Vec3 =",
             want: Pattern::ModuleAccess(ModuleAccesPat {
-                module: Box::new(IdentifierPat {
-                    name: "math".to_string()
-                }),
-                pat: Box::new(Pattern::Identifier(IdentifierPat {
-                    name: "Vec3".to_string()
-                })),
+                module: Box::new(IdentifierPat { name: 0 }),
+                pat: Box::new(Pattern::Identifier(IdentifierPat { name: 2 })),
             }),
         },
-        parse_expression_module_access_dot_variant {
+        parse_pattern_module_access_dot_variant {
             input: "result::Ret.Ok =",
             want: Pattern::ModuleAccess(ModuleAccesPat {
-                module: Box::new(IdentifierPat {
-                    name: "result".to_string()
-                }),
+                module: Box::new(IdentifierPat { name: 0 }),
                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
-                    target: Some(Box::new(Pattern::Identifier(IdentifierPat {
-                        name: "Ret".to_string()
-                    }))),
-                    field: IdentifierPat {
-                        name: "Ok".to_string()
-                    },
+                    target: Some(Box::new(Pattern::Identifier(IdentifierPat { name: 2 }))),
+                    field: IdentifierPat { name: 4 },
                 })),
             }),
         },
-        parse_expression_module_access_payload {
+        parse_pattern_module_access_payload {
             input: "std::Option.Some(x) {",
             want: Pattern::ModuleAccess(ModuleAccesPat {
-                module: Box::new(IdentifierPat {
-                    name: "std".to_string()
-                }),
+                module: Box::new(IdentifierPat { name: 0 }),
                 pat: Box::new(Pattern::Payload(PayloadPat {
                     pat: Box::new(Pattern::DotAccess(DotAccessPat {
-                        target: Some(Box::new(Pattern::Identifier(IdentifierPat {
-                            name: "Option".to_string()
-                        }))),
-                        field: IdentifierPat {
-                            name: "Some".to_string()
-                        },
+                        target: Some(Box::new(Pattern::Identifier(IdentifierPat { name: 2 }))),
+                        field: IdentifierPat { name: 4 },
                     })),
-                    payload: "x".to_string(),
+                    payload: 6,
                 })),
             }),
         },
-        parse_expression_pattern_payload_simple {
+        parse_pattern_payload_simple {
             input: "Result(err) =",
             want: Pattern::Payload(PayloadPat {
-                pat: Box::new(Pattern::Identifier(IdentifierPat {
-                    name: "Result".to_string(),
-                })),
-                payload: "err".to_string(),
+                pat: Box::new(Pattern::Identifier(IdentifierPat { name: 0 })),
+                payload: 2,
             }),
         },
-        parse_expression_pattern_payload_dot_access {
+        parse_pattern_payload_dot_access {
             input: "Ret.Ok(value) {",
             want: Pattern::Payload(PayloadPat {
                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
-                    target: Some(Box::new(Pattern::Identifier(IdentifierPat {
-                        name: "Ret".to_string()
-                    }))),
-                    field: IdentifierPat {
-                        name: "Ok".to_string()
-                    },
+                    target: Some(Box::new(Pattern::Identifier(IdentifierPat { name: 0 }))),
+                    field: IdentifierPat { name: 2 },
                 })),
-                payload: "value".to_string(),
+                payload: 4,
             }),
         },
-        parse_expression_pattern_payload_dot_inferred {
+        parse_pattern_payload_dot_inferred {
             input: ".Some(item) =",
             want: Pattern::Payload(PayloadPat {
                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                     target: None,
-                    field: IdentifierPat {
-                        name: "Some".to_string()
-                    },
+                    field: IdentifierPat { name: 1 },
                 })),
-                payload: "item".to_string(),
+                payload: 3,
             }),
         },
     );
 
     #[test]
-    fn parse_expression_pattern_invalid() {
-        let mut lexer = Lexer::new("+ ");
+    fn parse_pattern_invalid() {
+        let mut str_store = StrStore::new();
+        let mut lexer = Lexer::new("+ ", &mut str_store);
         let parser = PatternParser::new();
         let result = parser.parse(&mut lexer);
         assert!(result.is_err());

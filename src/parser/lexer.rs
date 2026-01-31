@@ -1,18 +1,9 @@
+use crate::str_store::{StrID, StrStore};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-/// Byte span in the source (start..end)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Span {
-    pub start: usize,
-    pub end: usize,
-}
-
-impl Span {
-    pub fn new(start: usize, end: usize) -> Self {
-        Span { start, end }
-    }
-}
+// SourceID is the uniqe identifier of the token in the source code
+pub type SourceID = usize;
 
 /// The kind of Token produced by the lexer.
 #[derive(Debug, Display, EnumString, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -91,7 +82,8 @@ pub enum TokenKind {
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct Token {
     pub kind: TokenKind,
-    pub span: Span,
+    pub source_id: SourceID,
+    pub lexeme_id: StrID,
 }
 
 /// Minimal lexer. Uses a byte cursor but iterates by `char`s for UTF-8 correctness.
@@ -101,11 +93,12 @@ pub struct Lexer<'a> {
     done: bool,
     prev_kind: TokenKind,
     next: Token,
+    str_store: &'a mut StrStore<'a>,
 }
 
 impl<'a> Lexer<'a> {
     /// Create a new lexer from source text.
-    pub fn new(source: &'a str) -> Self {
+    pub fn new(source: &'a str, str_store: &'a mut StrStore<'a>) -> Self {
         let mut lexer = Lexer {
             source,
             pos: 0,
@@ -113,18 +106,21 @@ impl<'a> Lexer<'a> {
             prev_kind: TokenKind::Identifier,
             next: Token {
                 kind: TokenKind::Identifier,
-                span: Span::new(0, 0),
+                source_id: 0,
+                lexeme_id: 0,
             },
+            str_store,
         };
         lexer.next_token();
 
         lexer
     }
 
-    pub fn lexeme(&self, token: Token) -> String {
-        match token.kind {
-            TokenKind::Str => self.source[token.span.start + 1..token.span.end - 1].to_string(),
-            _ => self.source[token.span.start..token.span.end].to_string(),
+    pub fn lexeme(&self, lexeme_id: StrID) -> String {
+        match self.str_store.get_string(lexeme_id) {
+            Some(s) => s.to_string(),
+            // TODO: should this hand back an option?
+            None => panic!("invalid str id"),
         }
     }
 
@@ -149,38 +145,43 @@ impl<'a> Lexer<'a> {
         // determine by first char
         let ch = self.current_char();
         if ch.is_none() {
-            let span = Span::new(self.pos, self.pos);
+            let lexeme_id = self.str_store.get_id(&self.source[self.pos..self.pos]);
             if self.is_end_of_statement() {
                 return Token {
                     kind: TokenKind::Semicolon,
-                    span,
+                    source_id: self.pos,
+                    lexeme_id,
                 };
             }
 
             return Token {
                 kind: TokenKind::Eof,
-                span,
+                source_id: self.pos,
+                lexeme_id,
             };
         }
         let ch = ch.unwrap();
 
         if ch == '\n' {
             // if this newline wasn't skipped it's because we need to insert a semicolon
-            let start = self.pos;
+            let source_id = self.pos;
             self.bump();
-            let end = self.pos;
+            let lexeme_id = self.str_store.get_id(&self.source[source_id..self.pos]);
 
             return Token {
                 kind: TokenKind::Semicolon,
-                span: Span::new(start, end),
+                source_id,
+                lexeme_id,
             };
         }
 
         if ch == '}' && self.is_end_of_statement() {
-            let pos = self.pos;
+            let lexeme_id = self.str_store.get_id(&self.source[self.pos..self.pos]);
+
             return Token {
                 kind: TokenKind::Semicolon,
-                span: Span::new(pos, pos),
+                source_id: self.pos,
+                lexeme_id,
             };
         }
 
@@ -345,9 +346,11 @@ impl<'a> Lexer<'a> {
             _ => TokenKind::Identifier,
         };
 
+        let lexeme_id = self.str_store.get_id(&self.source[start..end]);
         Token {
             kind,
-            span: Span::new(start, end),
+            source_id: start,
+            lexeme_id,
         }
     }
 
@@ -401,9 +404,11 @@ impl<'a> Lexer<'a> {
         } else {
             TokenKind::Int
         };
+        let lexeme_id = self.str_store.get_id(&self.source[start..end]);
         Token {
             kind,
-            span: Span::new(start, end),
+            source_id: start,
+            lexeme_id,
         }
     }
 
@@ -417,9 +422,12 @@ impl<'a> Lexer<'a> {
             self.bump();
             if ch == '"' {
                 let end = self.pos;
+                let string_content = &self.source[start + 1..end - 1];
+                let lexeme_id = self.str_store.get_id(string_content);
                 return Token {
                     kind: TokenKind::Str,
-                    span: Span::new(start, end),
+                    source_id: start,
+                    lexeme_id,
                 };
             }
             if ch == '\\' {
@@ -429,18 +437,26 @@ impl<'a> Lexer<'a> {
                         continue;
                     }
                     None => {
+                        let end = self.pos;
+                        let malformed_str = &self.source[start + 1..end - 1];
+                        let lexeme_id = self.str_store.get_id(malformed_str);
                         return Token {
                             kind: TokenKind::MalformedStr,
-                            span: Span::new(self.pos, self.pos),
+                            source_id: self.pos,
+                            lexeme_id,
                         };
                     }
                 }
             }
         }
 
+        let end = self.pos;
+        let malformed_str = &self.source[start + 1..end - 1];
+        let lexeme_id = self.str_store.get_id(malformed_str);
         Token {
             kind: TokenKind::MalformedStr,
-            span: Span::new(start, self.pos),
+            source_id: start,
+            lexeme_id,
         }
     }
 
@@ -468,9 +484,12 @@ impl<'a> Lexer<'a> {
 
             if let Some(kind) = kind {
                 self.bump();
+                let end = self.pos;
+                let lexeme_id = self.str_store.get_id(&self.source[start..end]);
                 return Token {
                     kind,
-                    span: Span::new(start, self.pos),
+                    source_id: start,
+                    lexeme_id,
                 };
             }
         }
@@ -504,28 +523,14 @@ impl<'a> Lexer<'a> {
             _ => panic!("Unknown character for single-char operator: {}", ch),
         };
 
+        let end = self.pos;
+        let lexeme_id = self.str_store.get_id(&self.source[start..end]);
         // otherwise treat as operator
         Token {
             kind,
-            span: Span::new(start, self.pos),
+            source_id: start,
+            lexeme_id,
         }
-    }
-}
-
-impl<'a> Iterator for Lexer<'a> {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.done {
-            return None;
-        }
-
-        let token = self.next_token();
-        if token.kind == TokenKind::Eof {
-            self.done = true;
-        }
-
-        Some(token)
     }
 }
 
@@ -587,8 +592,17 @@ mod tests {
             Err(_) => panic!("Failed to read {}", path.display()),
         };
 
-        let lexer = Lexer::new(&source);
-        let tokens: Vec<Token> = lexer.into_iter().collect();
+        let mut store = StrStore::new();
+        let mut lexer = Lexer::new(&source, &mut store);
+        let mut tokens = vec![];
+        loop {
+            let token = lexer.peek();
+            tokens.push(token);
+            if token.kind == TokenKind::Eof {
+                break;
+            }
+            lexer.next_token();
+        }
 
         let json_output =
             serde_json::to_string_pretty(&tokens).expect("Failed to serialize tokens to JSON");
@@ -629,9 +643,18 @@ mod tests {
             $(
                 #[test]
                 fn $case() {
-                    let toks: Vec<_> = Lexer::new($input)
-                        .into_iter()
-                        .collect();
+                    let source = $input;
+                    let mut store = StrStore::new();
+                    let mut lexer = Lexer::new(source, &mut store);
+                    let mut toks = vec![];
+                    loop {
+                        let token = lexer.peek();
+                        toks.push(token);
+                        if token.kind == TokenKind::Eof {
+                            break;
+                        }
+                        lexer.next_token();
+                    }
                     assert_eq!(toks, $want);
                 }
             )*
@@ -644,39 +667,40 @@ mod tests {
             want: vec![
                 Token{
                     kind: TokenKind::LetKeyword,
-                    span: Span::new(0, 3),
+                    source_id: 0,
+                    lexeme_id: 0,
                 },
-                Token{kind: TokenKind::Identifier, span: Span::new(4, 5)},
-                Token{kind: TokenKind::Equal,  span: Span::new(6, 7)},
-                Token{kind: TokenKind::Int, span: Span::new(8, 10)},
-                Token{kind: TokenKind::Semicolon, span: Span::new(10, 10)},
-                Token{kind: TokenKind::Eof, span: Span::new(10, 10)},
+                Token{kind: TokenKind::Identifier, source_id: 4, lexeme_id: 1},
+                Token{kind: TokenKind::Equal, source_id: 6, lexeme_id: 2},
+                Token{kind: TokenKind::Int, source_id: 8, lexeme_id: 3},
+                Token{kind: TokenKind::Semicolon, source_id: 10, lexeme_id: 4},
+                Token{kind: TokenKind::Eof, source_id: 10, lexeme_id: 4},
             ],
         },
         lex_input_assign_with_new_line{
             input: "x = 5\n",
             want: vec![
-                Token{kind: TokenKind::Identifier, span: Span::new(0,1)},
-                Token{kind: TokenKind::Equal, span: Span::new(2,3)},
-                Token{kind: TokenKind::Int, span: Span::new(4,5)},
-                Token{kind: TokenKind::Semicolon, span: Span::new(5,6)},
-                Token{kind: TokenKind::Eof, span: Span::new(6,6)},
+                Token{kind: TokenKind::Identifier, source_id: 0, lexeme_id: 0},
+                Token{kind: TokenKind::Equal, source_id: 2, lexeme_id: 1},
+                Token{kind: TokenKind::Int, source_id: 4, lexeme_id: 2},
+                Token{kind: TokenKind::Semicolon, source_id: 5, lexeme_id: 3},
+                Token{kind: TokenKind::Eof, source_id: 6, lexeme_id: 4},
             ],
         },
         lex_input_string_and_escape {
             input: "\"hello\\n\"",
             want: vec![
-                Token{kind: TokenKind::Str, span: Span::new(0, 9)},
-                Token{kind: TokenKind::Semicolon, span: Span::new(9, 9)},
-                Token{kind: TokenKind::Eof, span: Span::new(9, 9)},
+                Token{kind: TokenKind::Str, source_id: 0, lexeme_id: 0},
+                Token{kind: TokenKind::Semicolon, source_id: 9, lexeme_id: 1},
+                Token{kind: TokenKind::Eof, source_id: 9, lexeme_id: 1},
             ],
         },
         lex_input_int_with_semicolon {
             input: "20;",
             want: vec![
-                Token{kind: TokenKind::Int, span: Span::new(0, 2)},
-                Token{kind: TokenKind::Semicolon, span: Span::new(2, 3)},
-                Token{kind: TokenKind::Eof, span: Span::new(3, 3)},
+                Token{kind: TokenKind::Int, source_id: 0, lexeme_id: 0},
+                Token{kind: TokenKind::Semicolon, source_id: 2, lexeme_id: 1},
+                Token{kind: TokenKind::Eof, source_id: 3, lexeme_id: 2},
             ],
         },
         lex_input_comments_and_whitespace {
@@ -684,140 +708,148 @@ mod tests {
             want: vec![
                 Token{
                     kind: TokenKind::LetKeyword,
-                    span: Span::new(17, 20),
+                    source_id: 17,
+                    lexeme_id: 0,
                 },
-                Token{kind: TokenKind::Identifier, span: Span::new(30, 31)},
-                Token{kind: TokenKind::Equal, span: Span::new(32, 33)},
-                Token{kind: TokenKind::Int, span: Span::new(34, 35)},
-                Token{kind: TokenKind::Semicolon, span: Span::new(43, 43)},
-                Token{kind: TokenKind::Eof, span: Span::new(43, 43)},
+                Token{kind: TokenKind::Identifier, source_id: 30, lexeme_id: 1},
+                Token{kind: TokenKind::Equal, source_id: 32, lexeme_id: 2},
+                Token{kind: TokenKind::Int, source_id: 34, lexeme_id: 3},
+                Token{kind: TokenKind::Semicolon, source_id: 43, lexeme_id: 4},
+                Token{kind: TokenKind::Eof, source_id: 43, lexeme_id: 4},
             ],
         },
         lex_input_ints_and_floats {
             input: "3.14 1e10 2.5e-3 1_000",
             want: vec![
-                Token{kind: TokenKind::Float, span: Span::new(0, 4)},
-                Token{kind: TokenKind::Float, span: Span::new(5, 9)},
+                Token{kind: TokenKind::Float, source_id: 0, lexeme_id: 0},
+                Token{kind: TokenKind::Float, source_id: 5, lexeme_id: 1},
                 Token{
                     kind: TokenKind::Float,
-                    span: Span::new(10, 16),
+                    source_id: 10,
+                    lexeme_id: 2,
                 },
-                Token{kind: TokenKind::Int,span: Span::new(17, 22)},
-                Token{kind: TokenKind::Semicolon, span: Span::new(22, 22)},
-                Token{kind: TokenKind::Eof,span: Span::new(22, 22)},
+                Token{kind: TokenKind::Int, source_id: 17, lexeme_id: 3},
+                Token{kind: TokenKind::Semicolon, source_id: 22, lexeme_id: 4},
+                Token{kind: TokenKind::Eof, source_id: 22, lexeme_id: 4},
             ],
         },
         lex_input_multi_char_operations {
             input: "a == b && c != d <= e >= f  = += *",
             want: vec![
-                Token{kind: TokenKind::Identifier,  span: Span::new(0, 1)},
+                Token{kind: TokenKind::Identifier, source_id: 0, lexeme_id: 0},
                 Token{
                     kind: TokenKind::EqualEqual,
-                    span: Span::new(2, 4),
+                    source_id: 2,
+                    lexeme_id: 1,
                 },
-                Token{kind: TokenKind::Identifier, span: Span::new(5, 6)},
-                Token{kind: TokenKind::AndAnd, span: Span::new(7, 9)},
-                Token{kind: TokenKind::Identifier, span: Span::new(10, 11)},
+                Token{kind: TokenKind::Identifier, source_id: 5, lexeme_id: 2},
+                Token{kind: TokenKind::AndAnd, source_id: 7, lexeme_id: 3},
+                Token{kind: TokenKind::Identifier, source_id: 10, lexeme_id: 4},
                 Token{
                     kind: TokenKind::NotEqual,
-                    span: Span::new(12, 14),
+                    source_id: 12,
+                    lexeme_id: 5,
                 },
-                Token{kind: TokenKind::Identifier, span: Span::new(15, 16)},
+                Token{kind: TokenKind::Identifier, source_id: 15, lexeme_id: 6},
                 Token{
                     kind: TokenKind::LessOrEqual,
-                    span: Span::new(17, 19),
+                    source_id: 17,
+                    lexeme_id: 7,
                 },
-                Token{kind: TokenKind::Identifier, span: Span::new(20, 21)},
+                Token{kind: TokenKind::Identifier, source_id: 20, lexeme_id: 8},
                 Token{
                     kind: TokenKind::GreaterOrEqual,
-                    span: Span::new(22, 24),
+                    source_id: 22,
+                    lexeme_id: 9,
                 },
-                Token{kind: TokenKind::Identifier, span: Span::new(25, 26)},
+                Token{kind: TokenKind::Identifier, source_id: 25, lexeme_id: 10},
                 Token{
                     kind: TokenKind::Equal,
-                    span: Span::new(28, 29),
+                    source_id: 28,
+                    lexeme_id: 11,
                 },
                 Token{
                     kind: TokenKind::PlusEqual,
-                    span: Span::new(30, 32),
+                    source_id: 30,
+                    lexeme_id: 12,
                 },
                 Token{
                     kind: TokenKind::Star,
-                    span: Span::new(33, 34),
+                    source_id: 33,
+                    lexeme_id: 13,
                 },
-                Token{kind: TokenKind::Eof, span: Span::new(34, 34)},
+                Token{kind: TokenKind::Eof, source_id: 34, lexeme_id: 14},
             ],
-
         },
         lex_input_variants_and_assignemnt {
             input: ".Ok x = 1",
             want: vec![
-                Token { kind: TokenKind::Dot, span: Span::new(0, 1) },
-                Token { kind: TokenKind::Identifier, span: Span::new(1, 3) },
-                Token { kind: TokenKind::Identifier, span: Span::new(4, 5) },
-                Token { kind: TokenKind::Equal, span: Span::new(6, 7) },
-                Token { kind: TokenKind::Int, span: Span::new(8, 9) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(9, 9) },
-                Token { kind: TokenKind::Eof, span: Span::new(9, 9) },
+                Token { kind: TokenKind::Dot, source_id: 0, lexeme_id: 0 },
+                Token { kind: TokenKind::Identifier, source_id: 1, lexeme_id: 1 },
+                Token { kind: TokenKind::Identifier, source_id: 4, lexeme_id: 2 },
+                Token { kind: TokenKind::Equal, source_id: 6, lexeme_id: 3 },
+                Token { kind: TokenKind::Int, source_id: 8, lexeme_id: 4 },
+                Token { kind: TokenKind::Semicolon, source_id: 9, lexeme_id: 5 },
+                Token { kind: TokenKind::Eof, source_id: 9, lexeme_id: 5 },
             ],
         },
         lex_input_type_enum_tokens {
             input: "type ErrWrite enum { Ok; IOError }",
             want: vec![
-                Token { kind: TokenKind::TypeKeyword, span: Span::new(0, 4) },
-                Token { kind: TokenKind::Identifier, span: Span::new(5, 13) },
-                Token { kind: TokenKind::EnumKeyword, span: Span::new(14, 18) },
-                Token { kind: TokenKind::OpenBrace, span: Span::new(19, 20) },
-                Token { kind: TokenKind::Identifier, span: Span::new(21, 23) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(23, 24) },
-                Token { kind: TokenKind::Identifier, span: Span::new(25, 32) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(33, 33) },
-                Token { kind: TokenKind::CloseBrace, span: Span::new(33, 34) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(34, 34) },
-                Token { kind: TokenKind::Eof, span: Span::new(34, 34) },
+                Token { kind: TokenKind::TypeKeyword, source_id: 0, lexeme_id: 0 },
+                Token { kind: TokenKind::Identifier, source_id: 5, lexeme_id: 1 },
+                Token { kind: TokenKind::EnumKeyword, source_id: 14, lexeme_id: 2 },
+                Token { kind: TokenKind::OpenBrace, source_id: 19, lexeme_id: 3 },
+                Token { kind: TokenKind::Identifier, source_id: 21, lexeme_id: 4 },
+                Token { kind: TokenKind::Semicolon, source_id: 23, lexeme_id: 5 },
+                Token { kind: TokenKind::Identifier, source_id: 25, lexeme_id: 6 },
+                Token { kind: TokenKind::Semicolon, source_id: 33, lexeme_id: 7 },
+                Token { kind: TokenKind::CloseBrace, source_id: 33, lexeme_id: 8 },
+                Token { kind: TokenKind::Semicolon, source_id: 34, lexeme_id: 7 },
+                Token { kind: TokenKind::Eof, source_id: 34, lexeme_id: 7 },
             ],
         },
         lex_input_fn_decl {
             input: "fn write_and_cleanup(path str) WriteAndCleanup { }",
             want: vec![
-                Token { kind: TokenKind::FnKeyword, span: Span::new(0, 2) },
-                Token { kind: TokenKind::Identifier, span: Span::new(3, 20) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(20, 21) },
-                Token { kind: TokenKind::Identifier, span: Span::new(21, 25) },
-                Token { kind: TokenKind::Identifier, span: Span::new(26, 29) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(29, 30) },
-                Token { kind: TokenKind::Identifier, span: Span::new(31, 46) },
-                Token { kind: TokenKind::OpenBrace, span: Span::new(47, 48) },
-                Token { kind: TokenKind::CloseBrace, span: Span::new(49, 50) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(50, 50) },
-                Token { kind: TokenKind::Eof, span: Span::new(50, 50) },
+                Token { kind: TokenKind::FnKeyword, source_id: 0, lexeme_id: 0 },
+                Token { kind: TokenKind::Identifier, source_id: 3, lexeme_id: 1 },
+                Token { kind: TokenKind::OpenParen, source_id: 20, lexeme_id: 2 },
+                Token { kind: TokenKind::Identifier, source_id: 21, lexeme_id: 3 },
+                Token { kind: TokenKind::Identifier, source_id: 26, lexeme_id: 4 },
+                Token { kind: TokenKind::CloseParen, source_id: 29, lexeme_id: 5 },
+                Token { kind: TokenKind::Identifier, source_id: 31, lexeme_id: 6 },
+                Token { kind: TokenKind::OpenBrace, source_id: 47, lexeme_id: 7 },
+                Token { kind: TokenKind::CloseBrace, source_id: 49, lexeme_id: 8 },
+                Token { kind: TokenKind::Semicolon, source_id: 50, lexeme_id: 9 },
+                Token { kind: TokenKind::Eof, source_id: 50, lexeme_id: 9 },
             ],
         },
         lex_input_let_or {
             input: "let .Ok(f) = os::open(path) or { return .IOError }",
             want: vec![
-                Token { kind: TokenKind::LetKeyword, span: Span::new(0, 3) },
-                Token { kind: TokenKind::Dot, span: Span::new(4, 5) },
-                Token { kind: TokenKind::Identifier, span: Span::new(5, 7) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(7, 8) },
-                Token { kind: TokenKind::Identifier, span: Span::new(8, 9) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(9, 10) },
-                Token { kind: TokenKind::Equal, span: Span::new(11, 12) },
-                Token { kind: TokenKind::Identifier, span: Span::new(13, 15) },
-                Token { kind: TokenKind::ColonColon, span: Span::new(15, 17) },
-                Token { kind: TokenKind::Identifier, span: Span::new(17, 21) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(21, 22) },
-                Token { kind: TokenKind::Identifier, span: Span::new(22, 26) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(26, 27) },
-                Token { kind: TokenKind::OrKeyword, span: Span::new(28, 30) },
-                Token { kind: TokenKind::OpenBrace, span: Span::new(31, 32) },
-                Token { kind: TokenKind::ReturnKeyword, span: Span::new(33, 39) },
-                Token { kind: TokenKind::Dot, span: Span::new(40, 41) },
-                Token { kind: TokenKind::Identifier, span: Span::new(41, 48) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(49, 49) },
-                Token { kind: TokenKind::CloseBrace, span: Span::new(49, 50) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(50, 50) },
-                Token { kind: TokenKind::Eof, span: Span::new(50, 50) },
+                Token { kind: TokenKind::LetKeyword, source_id: 0, lexeme_id: 0 },
+                Token { kind: TokenKind::Dot, source_id: 4, lexeme_id: 1 },
+                Token { kind: TokenKind::Identifier, source_id: 5, lexeme_id: 2 },
+                Token { kind: TokenKind::OpenParen, source_id: 7, lexeme_id: 3 },
+                Token { kind: TokenKind::Identifier, source_id: 8, lexeme_id: 4 },
+                Token { kind: TokenKind::CloseParen, source_id: 9, lexeme_id: 5 },
+                Token { kind: TokenKind::Equal, source_id: 11, lexeme_id: 6 },
+                Token { kind: TokenKind::Identifier, source_id: 13, lexeme_id: 7 },
+                Token { kind: TokenKind::ColonColon, source_id: 15, lexeme_id: 8 },
+                Token { kind: TokenKind::Identifier, source_id: 17, lexeme_id: 9 },
+                Token { kind: TokenKind::OpenParen, source_id: 21, lexeme_id: 3 },
+                Token { kind: TokenKind::Identifier, source_id: 22, lexeme_id: 10 },
+                Token { kind: TokenKind::CloseParen, source_id: 26, lexeme_id: 5 },
+                Token { kind: TokenKind::OrKeyword, source_id: 28, lexeme_id: 11 },
+                Token { kind: TokenKind::OpenBrace, source_id: 31, lexeme_id: 12 },
+                Token { kind: TokenKind::ReturnKeyword, source_id: 33, lexeme_id: 13 },
+                Token { kind: TokenKind::Dot, source_id: 40, lexeme_id: 1 },
+                Token { kind: TokenKind::Identifier, source_id: 41, lexeme_id: 14 },
+                Token { kind: TokenKind::Semicolon, source_id: 49, lexeme_id: 15 },
+                Token { kind: TokenKind::CloseBrace, source_id: 49, lexeme_id: 16 },
+                Token { kind: TokenKind::Semicolon, source_id: 50, lexeme_id: 15 },
+                Token { kind: TokenKind::Eof, source_id: 50, lexeme_id: 15 },
             ],
         },
         lex_input_pointer {
@@ -826,55 +858,39 @@ print(*p)
 free(p)
 ",
             want: vec![
-                Token { kind: TokenKind::LetKeyword, span: Span::new(0, 3) },
-                Token { kind: TokenKind::Dot, span: Span::new(4, 5) },
-                Token { kind: TokenKind::Identifier, span: Span::new(5, 7) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(7, 8) },
-                Token { kind: TokenKind::Identifier, span: Span::new(8, 9) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(9, 10) },
-                Token { kind: TokenKind::Equal, span: Span::new(11, 12) },
-                Token { kind: TokenKind::Identifier, span: Span::new(13, 24) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(24, 25) },
-                Token { kind: TokenKind::FalseLiteral, span: Span::new(25, 30) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(30, 31) },
-                Token { kind: TokenKind::Bang, span: Span::new(32, 33) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(33, 34) },
-                Token { kind: TokenKind::Identifier, span: Span::new(34, 39) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(39, 40) },
-                Token { kind: TokenKind::Star, span: Span::new(40, 41) },
-                Token { kind: TokenKind::Identifier, span: Span::new(41, 42) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(42, 43) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(43, 44) },
-                Token { kind: TokenKind::Identifier, span: Span::new(44, 48) },
-                Token { kind: TokenKind::OpenParen, span: Span::new(48, 49) },
-                Token { kind: TokenKind::Identifier, span: Span::new(49, 50) },
-                Token { kind: TokenKind::CloseParen, span: Span::new(50, 51) },
-                Token { kind: TokenKind::Semicolon, span: Span::new(51, 52) },
-                Token { kind: TokenKind::Eof, span: Span::new(52, 52) },
+                Token { kind: TokenKind::LetKeyword, source_id: 0, lexeme_id: 0 },
+                Token { kind: TokenKind::Dot, source_id: 4, lexeme_id: 1 },
+                Token { kind: TokenKind::Identifier, source_id: 5, lexeme_id: 2 },
+                Token { kind: TokenKind::OpenParen, source_id: 7, lexeme_id: 3 },
+                Token { kind: TokenKind::Identifier, source_id: 8, lexeme_id: 4 },
+                Token { kind: TokenKind::CloseParen, source_id: 9, lexeme_id: 5 },
+                Token { kind: TokenKind::Equal, source_id: 11, lexeme_id: 6 },
+                Token { kind: TokenKind::Identifier, source_id: 13, lexeme_id: 7 },
+                Token { kind: TokenKind::OpenParen, source_id: 24, lexeme_id: 3 },
+                Token { kind: TokenKind::FalseLiteral, source_id: 25, lexeme_id: 8 },
+                Token { kind: TokenKind::CloseParen, source_id: 30, lexeme_id: 5 },
+                Token { kind: TokenKind::Bang, source_id: 32, lexeme_id: 9 },
+                Token { kind: TokenKind::Semicolon, source_id: 33, lexeme_id: 10 },
+                Token { kind: TokenKind::Identifier, source_id: 34, lexeme_id: 11 },
+                Token { kind: TokenKind::OpenParen, source_id: 39, lexeme_id: 3 },
+                Token { kind: TokenKind::Star, source_id: 40, lexeme_id: 12 },
+                Token { kind: TokenKind::Identifier, source_id: 41, lexeme_id: 4 },
+                Token { kind: TokenKind::CloseParen, source_id: 42, lexeme_id: 5 },
+                Token { kind: TokenKind::Semicolon, source_id: 43, lexeme_id: 10 },
+                Token { kind: TokenKind::Identifier, source_id: 44, lexeme_id: 13 },
+                Token { kind: TokenKind::OpenParen, source_id: 48, lexeme_id: 3 },
+                Token { kind: TokenKind::Identifier, source_id: 49, lexeme_id: 4 },
+                Token { kind: TokenKind::CloseParen, source_id: 50, lexeme_id: 5 },
+                Token { kind: TokenKind::Semicolon, source_id: 51, lexeme_id: 10 },
+                Token { kind: TokenKind::Eof, source_id: 52, lexeme_id: 14 },
             ],
         },
         lex_unterminated_string {
             input: r#""no end"#,
             want: vec![
-                Token { kind: TokenKind::MalformedStr, span: Span::new(0, 7) },
-                Token { kind: TokenKind::Eof, span: Span::new(7, 7) },
+                Token { kind: TokenKind::MalformedStr, source_id: 0, lexeme_id: 0 },
+                Token { kind: TokenKind::Eof, source_id: 7, lexeme_id: 1 },
             ],
         },
-    }
-
-    #[test]
-    fn test_lexeme_with_string() {
-        let source = r#""hello world""#;
-        let lexer = Lexer::new(source);
-        let token = lexer.peek();
-        assert_eq!(lexer.lexeme(token), "hello world");
-    }
-
-    #[test]
-    fn test_lexeme_with_identifier() {
-        let source = "myVariable";
-        let lexer = Lexer::new(source);
-        let token = lexer.peek();
-        assert_eq!(lexer.lexeme(token), "myVariable");
     }
 }

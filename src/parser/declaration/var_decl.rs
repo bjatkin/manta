@@ -23,7 +23,7 @@ impl DeclParselet for VarDeclParselet {
             ));
         }
 
-        let name = lexer.lexeme(token);
+        let name = token.lexeme_id;
 
         // Expect '='
         let token = lexer.next_token();

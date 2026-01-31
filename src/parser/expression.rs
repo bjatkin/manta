@@ -296,6 +296,7 @@ mod tests {
         IdentifierExpr, IndexExpr, MetaTypeExpr, TypeSpec, UnaryExpr, UnaryOp,
     };
     use crate::parser::lexer::Lexer;
+    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_expressions {
@@ -303,7 +304,8 @@ mod tests {
             $(
                 #[test]
                 fn $case() {
-                    let mut lexer = Lexer::new($input);
+                    let mut str_store = StrStore::new();
+                    let mut lexer = Lexer::new($input, &mut str_store);
                     let parser = ExprParser::new();
 
                     let expr = parser.parse(&mut lexer, Precedence::Base).unwrap();
@@ -345,7 +347,7 @@ mod tests {
         parse_expression_empty_string {
             input: r#""""#,
             want_var: Expr::StringLiteral(s),
-            want_value: assert_eq!(s, ""),
+            want_value: assert_eq!(s, 0),
         },
         parse_expression_int_literal {
             input: "42",
@@ -355,7 +357,7 @@ mod tests {
         parse_expression_string_literal {
             input: r#""hello world""#,
             want_var: Expr::StringLiteral(s),
-            want_value: assert_eq!(s, "hello world"),
+            want_value: assert_eq!(s, 0),
         },
         parse_expression_bool_true {
             input: "true",
@@ -370,12 +372,12 @@ mod tests {
         parse_expression_identifier {
             input: "myVariable",
             want_var: Expr::Identifier(ident),
-            want_value: assert_eq!(ident.name, "myVariable"),
+            want_value: assert_eq!(ident.name, 0),
         },
         parse_expression_identifier_single_char {
             input: "x",
             want_var: Expr::Identifier(ident),
-            want_value: assert_eq!(ident.name, "x"),
+            want_value: assert_eq!(ident.name, 0),
         },
         parse_expression_negative_int {
             input: "-42",
@@ -431,9 +433,7 @@ mod tests {
                 expr,
                 UnaryExpr {
                     operator: UnaryOp::Dereference,
-                    operand: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "ptr".to_string(),
-                    })),
+                    operand: Box::new(Expr::Identifier(IdentifierExpr { name: 1 })),
                 },
             ),
         },
@@ -444,9 +444,7 @@ mod tests {
                 expr,
                 UnaryExpr {
                     operator: UnaryOp::AddressOf,
-                    operand: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "abc".to_string(),
-                    })),
+                    operand: Box::new(Expr::Identifier(IdentifierExpr { name: 1 })),
                 },
             ),
         },
@@ -459,9 +457,7 @@ mod tests {
                     operator: UnaryOp::Dereference,
                     operand: Box::new(Expr::Unary(UnaryExpr {
                         operator: UnaryOp::Dereference,
-                        operand: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "ptr".to_string(),
-                        })),
+                        operand: Box::new(Expr::Identifier(IdentifierExpr { name: 1 })),
                     })),
                 },
             ),
@@ -475,9 +471,7 @@ mod tests {
                     operator: UnaryOp::Negate,
                     operand: Box::new(Expr::Unary(UnaryExpr {
                         operator: UnaryOp::Not,
-                        operand: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "x".to_string(),
-                        })),
+                        operand: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                     })),
                 },
             ),
@@ -489,9 +483,7 @@ mod tests {
                 expr,
                 UnaryExpr {
                     operator: UnaryOp::Negate,
-                    operand: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "x".to_string(),
-                    })),
+                    operand: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 },
             ),
         },
@@ -504,9 +496,7 @@ mod tests {
                     operator: UnaryOp::Negate,
                     operand: Box::new(Expr::Unary(UnaryExpr {
                         operator: UnaryOp::Not,
-                        operand: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "y".to_string(),
-                        })),
+                        operand: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
                     })),
                 }
             ),
@@ -609,13 +599,9 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 BinaryExpr {
-                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "a".to_string(),
-                    })),
+                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     operator: BinaryOp::Equal,
-                    right: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "b".to_string(),
-                    })),
+                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 }
             ),
         },
@@ -625,13 +611,9 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 BinaryExpr {
-                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "x".to_string(),
-                    })),
+                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     operator: BinaryOp::NotEqual,
-                    right: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "y".to_string(),
-                    })),
+                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 },
             ),
         },
@@ -643,9 +625,7 @@ mod tests {
                 BinaryExpr {
                     left: Box::new(Expr::IntLiteral(4)),
                     operator: BinaryOp::LessThan,
-                    right: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "b".to_string(),
-                    })),
+                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 },
             ),
         },
@@ -655,13 +635,9 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 BinaryExpr {
-                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "x".to_string(),
-                    })),
+                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     operator: BinaryOp::GreaterThan,
-                    right: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "y".to_string(),
-                    })),
+                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 },
             ),
         },
@@ -671,13 +647,9 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 BinaryExpr {
-                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "a".to_string(),
-                    })),
+                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     operator: BinaryOp::LessThanOrEqual,
-                    right: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "b".to_string(),
-                    })),
+                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 },
             ),
         },
@@ -687,9 +659,7 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 BinaryExpr {
-                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "x".to_string(),
-                    })),
+                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     operator: BinaryOp::GreaterThanOrEqual,
                     right: Box::new(Expr::IntLiteral(9)),
                 },
@@ -704,17 +674,13 @@ mod tests {
                     left: Box::new(Expr::Binary(BinaryExpr {
                         left: Box::new(Expr::FloatLiteral(3.45)),
                         operator: BinaryOp::Equal,
-                        right: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "b".to_string(),
-                        })),
+                        right: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                     })),
                     operator: BinaryOp::LogicalAnd,
                     right: Box::new(Expr::Binary(BinaryExpr {
                         left: Box::new(Expr::BoolLiteral(true)),
                         operator: BinaryOp::NotEqual,
-                        right: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "d".to_string()
-                        })),
+                        right: Box::new(Expr::Identifier(IdentifierExpr { name: 6 })),
                     })),
                 },
             ),
@@ -730,9 +696,7 @@ mod tests {
                     right: Box::new(Expr::Binary(BinaryExpr {
                         left: Box::new(Expr::IntLiteral(2)),
                         operator: BinaryOp::BitwiseAnd,
-                        right: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "b".to_string(),
-                        })),
+                        right: Box::new(Expr::Identifier(IdentifierExpr { name: 4 })),
                     })),
                 },
             ),
@@ -743,9 +707,7 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 CallExpr {
-                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "print".to_string(),
-                    })),
+                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     args: vec![],
                 },
             ),
@@ -756,14 +718,10 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 CallExpr {
-                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "sum".to_string(),
-                    })),
+                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     args: vec![
                         Expr::IntLiteral(1),
-                        Expr::Identifier(IdentifierExpr {
-                            name: "b".to_string()
-                        }),
+                        Expr::Identifier(IdentifierExpr { name: 4 }),
                         Expr::IntLiteral(3),
                     ],
                 },
@@ -775,9 +733,7 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 IndexExpr {
-                    target: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "arr".to_string(),
-                    })),
+                    target: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     index: Box::new(Expr::IntLiteral(5)),
                 },
             ),
@@ -788,13 +744,9 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 IndexExpr {
-                    target: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "matrix".to_string(),
-                    })),
+                    target: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     index: Box::new(Expr::Binary(BinaryExpr {
-                        left: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "i".to_string(),
-                        })),
+                        left: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                         operator: BinaryOp::Add,
                         right: Box::new(Expr::IntLiteral(1)),
                     })),
@@ -807,16 +759,10 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 IndexExpr {
-                    target: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "data".to_string(),
-                    })),
+                    target: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     index: Box::new(Expr::Index(IndexExpr {
-                        target: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "rows".to_string(),
-                        })),
-                        index: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "i".to_string(),
-                        })),
+                        target: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
+                        index: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
                     })),
                 },
             ),
@@ -829,20 +775,12 @@ mod tests {
                 IndexExpr {
                     target: Box::new(Expr::Index(IndexExpr {
                         target: Box::new(Expr::Index(IndexExpr {
-                            target: Box::new(Expr::Identifier(IdentifierExpr {
-                                name: "tensor".to_string()
-                            })),
-                            index: Box::new(Expr::Identifier(IdentifierExpr {
-                                name: "x".to_string(),
-                            })),
+                            target: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
+                            index: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                         })),
-                        index: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "y".to_string(),
-                        })),
+                        index: Box::new(Expr::Identifier(IdentifierExpr { name: 4 })),
                     })),
-                    index: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "z".to_string(),
-                    })),
+                    index: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
                 },
             ),
         },
@@ -852,12 +790,8 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 DotAccessExpr {
-                    target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "person".to_string(),
-                    }))),
-                    field: IdentifierExpr {
-                        name: "name".to_string(),
-                    },
+                    target: Some(Box::new(Expr::Identifier(IdentifierExpr { name: 0 }))),
+                    field: IdentifierExpr { name: 2 },
                 }
             ),
         },
@@ -868,16 +802,10 @@ mod tests {
                 expr,
                 DotAccessExpr {
                     target: Some(Box::new(Expr::DotAccess(DotAccessExpr {
-                        target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "company".to_string(),
-                        }))),
-                        field: IdentifierExpr {
-                            name: "ceo".to_string(),
-                        },
+                        target: Some(Box::new(Expr::Identifier(IdentifierExpr { name: 0 }))),
+                        field: IdentifierExpr { name: 2 },
                     }))),
-                    field: IdentifierExpr {
-                        name: "name".to_string(),
-                    },
+                    field: IdentifierExpr { name: 3 },
                 },
             ),
         },
@@ -888,14 +816,10 @@ mod tests {
                 expr,
                 DotAccessExpr {
                     target: Some(Box::new(Expr::Index(IndexExpr {
-                        target: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "users".to_string(),
-                        })),
+                        target: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                         index: Box::new(Expr::IntLiteral(0)),
                     }))),
-                    field: IdentifierExpr {
-                        name: "email".to_string(),
-                    },
+                    field: IdentifierExpr { name: 5 },
                 },
             ),
         },
@@ -907,18 +831,12 @@ mod tests {
                 DotAccessExpr {
                     target: Some(Box::new(Expr::Call(CallExpr {
                         func: Box::new(Expr::DotAccess(DotAccessExpr {
-                            target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                                name: "config".to_string(),
-                            }))),
-                            field: IdentifierExpr {
-                                name: "getDatabase".to_string(),
-                            },
+                            target: Some(Box::new(Expr::Identifier(IdentifierExpr { name: 0 }))),
+                            field: IdentifierExpr { name: 2 },
                         })),
                         args: vec![],
                     }))),
-                    field: IdentifierExpr {
-                        name: "host".to_string(),
-                    },
+                    field: IdentifierExpr { name: 5 },
                 },
             ),
         },
@@ -947,9 +865,7 @@ mod tests {
                     options: vec![Expr::Call(CallExpr {
                         func: Box::new(Expr::DotAccess(DotAccessExpr {
                             target: None,
-                            field: IdentifierExpr {
-                                name: "Len".to_string()
-                            },
+                            field: IdentifierExpr { name: 8 },
                         })),
                         args: vec![Expr::IntLiteral(10)],
                     })],
@@ -969,17 +885,13 @@ mod tests {
                         Expr::Call(CallExpr {
                             func: Box::new(Expr::DotAccess(DotAccessExpr {
                                 target: None,
-                                field: IdentifierExpr {
-                                    name: "Cap".to_string()
-                                },
+                                field: IdentifierExpr { name: 8 },
                             })),
                             args: vec![Expr::IntLiteral(15)],
                         }),
                         Expr::DotAccess(DotAccessExpr {
                             target: None,
-                            field: IdentifierExpr {
-                                name: "NoInit".to_string(),
-                            },
+                            field: IdentifierExpr { name: 11 },
                         })
                     ],
                 },
@@ -998,9 +910,7 @@ mod tests {
                             })),
                             options: vec![],
                         }))),
-                        field: IdentifierExpr {
-                            name: "method".to_string(),
-                        },
+                        field: IdentifierExpr { name: 6 },
                     })),
                     args: vec![],
                 }
@@ -1012,9 +922,7 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 FreeExpr {
-                    expr: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "ptr".to_string(),
-                    })),
+                    expr: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                 }
             ),
         },
@@ -1026,16 +934,10 @@ mod tests {
                 FreeExpr {
                     expr: Box::new(Expr::DotAccess(DotAccessExpr {
                         target: Some(Box::new(Expr::DotAccess(DotAccessExpr {
-                            target: Some(Box::new(Expr::Identifier(IdentifierExpr {
-                                name: "data".to_string(),
-                            }))),
-                            field: IdentifierExpr {
-                                name: "buffer".to_string(),
-                            },
+                            target: Some(Box::new(Expr::Identifier(IdentifierExpr { name: 2 }))),
+                            field: IdentifierExpr { name: 4 },
                         }))),
-                        field: IdentifierExpr {
-                            name: "ptr".to_string(),
-                        },
+                        field: IdentifierExpr { name: 5 },
                     })),
                 }
             ),
@@ -1047,9 +949,7 @@ mod tests {
                 expr,
                 DotAccessExpr {
                     target: None,
-                    field: IdentifierExpr {
-                        name: "Ok".to_string(),
-                    },
+                    field: IdentifierExpr { name: 1 },
                 },
             ),
         },
@@ -1059,15 +959,11 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 BinaryExpr {
-                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "ret".to_string(),
-                    })),
+                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     operator: BinaryOp::Equal,
                     right: Box::new(Expr::DotAccess(DotAccessExpr {
                         target: None,
-                        field: IdentifierExpr {
-                            name: "Err".to_string(),
-                        },
+                        field: IdentifierExpr { name: 3 },
                     })),
                 },
             ),
@@ -1090,7 +986,7 @@ mod tests {
                 MetaTypeExpr {
                     type_spec: TypeSpec::Slice(Box::new(TypeSpec::Named {
                         module: None,
-                        name: "Vec3".to_string()
+                        name: 3,
                     }))
                 },
             ),
@@ -1103,8 +999,8 @@ mod tests {
                 MetaTypeExpr {
                     type_spec: TypeSpec::Array(ArrayType {
                         type_spec: Box::new(TypeSpec::Named {
-                            module: Some("io".to_string()),
-                            name: "file".to_string(),
+                            module: Some(4),
+                            name: 6,
                         }),
                         size: 25,
                     })
@@ -1152,7 +1048,7 @@ mod tests {
         parse_expression_grouped_identifier {
             input: "(myVar)",
             want_var: Expr::Identifier(ident),
-            want_value: assert_eq!(ident.name, "myVar"),
+            want_value: assert_eq!(ident.name, 1),
         },
         parse_expression_alloc_single_arg {
             input: "alloc(@i32)",
@@ -1186,13 +1082,9 @@ mod tests {
             want_value: assert_eq!(
                 expr,
                 CallExpr {
-                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                        name: "foo".to_string(),
-                    })),
+                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 0 })),
                     args: vec![Expr::Call(CallExpr {
-                        func: Box::new(Expr::Identifier(IdentifierExpr {
-                            name: "bar".to_string(),
-                        })),
+                        func: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                         args: vec![Expr::IntLiteral(5)],
                     })],
                 }

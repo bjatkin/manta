@@ -1,45 +1,45 @@
 [
   {
     "Mod": {
-      "name": "main"
+      "name": 1
     }
   },
   {
     "Use": {
       "modules": [
-        "os",
-        "io",
-        "fmt"
+        5,
+        6,
+        7
       ]
     }
   },
   {
     "Type": {
       "name": {
-        "name": "ReadFile"
+        "name": 10
       },
       "type_spec": {
         "Enum": {
           "variants": [
             {
-              "name": "Ok",
+              "name": 13,
               "payload": "String"
             },
             {
-              "name": "OpenErr",
+              "name": 15,
               "payload": {
                 "Named": {
-                  "module": "os",
-                  "name": "Open"
+                  "module": 5,
+                  "name": 17
                 }
               }
             },
             {
-              "name": "ReadErr",
+              "name": 18,
               "payload": {
                 "Named": {
-                  "module": "io",
-                  "name": "ReadToString"
+                  "module": 6,
+                  "name": 19
                 }
               }
             }
@@ -50,17 +50,17 @@
   },
   {
     "Function": {
-      "name": "read_file",
+      "name": 22,
       "params": [
         {
-          "name": "path",
+          "name": 23,
           "type_spec": "String"
         }
       ],
       "return_type": {
         "Named": {
           "module": null,
-          "name": "ReadFile"
+          "name": 10
         }
       },
       "body": {
@@ -73,29 +73,29 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 13
                       }
                     }
                   },
-                  "payload": "f"
+                  "payload": 26
                 }
               },
               "value": {
                 "ModuleAccess": {
                   "module": {
-                    "name": "os"
+                    "name": 5
                   },
                   "expr": {
                     "Call": {
                       "func": {
                         "Identifier": {
-                          "name": "open"
+                          "name": 28
                         }
                       },
                       "args": [
                         {
                           "Identifier": {
-                            "name": "path"
+                            "name": 23
                           }
                         }
                       ]
@@ -103,35 +103,15 @@
                   }
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
               "except": {
-                "statements": [
-                  {
-                    "Return": {
-                      "value": {
-                        "Call": {
-                          "func": {
-                            "DotAccess": {
-                              "target": null,
-                              "field": {
-                                "name": "OpenErr"
-                              }
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": "e"
-                              }
-                            }
-                          ]
-                        }
-                      }
+                "Wrap": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": {
+                      "name": 15
                     }
                   }
-                ]
+                }
               }
             }
           },
@@ -144,19 +124,19 @@
                       "expr": {
                         "ModuleAccess": {
                           "module": {
-                            "name": "os"
+                            "name": 5
                           },
                           "expr": {
                             "Call": {
                               "func": {
                                 "Identifier": {
-                                  "name": "close"
+                                  "name": 31
                                 }
                               },
                               "args": [
                                 {
                                   "Identifier": {
-                                    "name": "f"
+                                    "name": 26
                                   }
                                 }
                               ]
@@ -178,29 +158,29 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 13
                       }
                     }
                   },
-                  "payload": "s"
+                  "payload": 33
                 }
               },
               "value": {
                 "ModuleAccess": {
                   "module": {
-                    "name": "io"
+                    "name": 6
                   },
                   "expr": {
                     "Call": {
                       "func": {
                         "Identifier": {
-                          "name": "read_to_string"
+                          "name": 34
                         }
                       },
                       "args": [
                         {
                           "Identifier": {
-                            "name": "f"
+                            "name": 26
                           }
                         }
                       ]
@@ -208,35 +188,15 @@
                   }
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
               "except": {
-                "statements": [
-                  {
-                    "Return": {
-                      "value": {
-                        "Call": {
-                          "func": {
-                            "DotAccess": {
-                              "target": null,
-                              "field": {
-                                "name": "ReadErr"
-                              }
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": "e"
-                              }
-                            }
-                          ]
-                        }
-                      }
+                "Wrap": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": {
+                      "name": 18
                     }
                   }
-                ]
+                }
               }
             }
           },
@@ -248,14 +208,14 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 13
                       }
                     }
                   },
                   "args": [
                     {
                       "Identifier": {
-                        "name": "s"
+                        "name": 33
                       }
                     }
                   ]
@@ -269,7 +229,7 @@
   },
   {
     "Function": {
-      "name": "main",
+      "name": 1,
       "params": [],
       "return_type": null,
       "body": {
@@ -282,68 +242,70 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 13
                       }
                     }
                   },
-                  "payload": "content"
+                  "payload": 36
                 }
               },
               "value": {
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "read_file"
+                      "name": 22
                     }
                   },
                   "args": [
                     {
-                      "StringLiteral": "/tmp/x.txt"
+                      "StringLiteral": 37
                     }
                   ]
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
               "except": {
-                "statements": [
-                  {
-                    "Expr": {
-                      "expr": {
-                        "ModuleAccess": {
-                          "module": {
-                            "name": "fmt"
-                          },
+                "Or": {
+                  "binding": 39,
+                  "body": {
+                    "statements": [
+                      {
+                        "Expr": {
                           "expr": {
-                            "Call": {
-                              "func": {
-                                "Identifier": {
-                                  "name": "printfln"
-                                }
+                            "ModuleAccess": {
+                              "module": {
+                                "name": 7
                               },
-                              "args": [
-                                {
-                                  "StringLiteral": "read failed: "
-                                },
-                                {
-                                  "Identifier": {
-                                    "name": "e"
-                                  }
+                              "expr": {
+                                "Call": {
+                                  "func": {
+                                    "Identifier": {
+                                      "name": 40
+                                    }
+                                  },
+                                  "args": [
+                                    {
+                                      "StringLiteral": 41
+                                    },
+                                    {
+                                      "Identifier": {
+                                        "name": 39
+                                      }
+                                    }
+                                  ]
                                 }
-                              ]
+                              }
                             }
                           }
                         }
+                      },
+                      {
+                        "Return": {
+                          "value": null
+                        }
                       }
-                    }
-                  },
-                  {
-                    "Return": {
-                      "value": null
-                    }
+                    ]
                   }
-                ]
+                }
               }
             }
           },
@@ -352,19 +314,19 @@
               "expr": {
                 "ModuleAccess": {
                   "module": {
-                    "name": "fmt"
+                    "name": 7
                   },
                   "expr": {
                     "Call": {
                       "func": {
                         "Identifier": {
-                          "name": "println"
+                          "name": 43
                         }
                       },
                       "args": [
                         {
                           "Identifier": {
-                            "name": "content"
+                            "name": 36
                           }
                         }
                       ]
@@ -382,54 +344,28 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 13
                       }
                     }
                   },
-                  "payload": "content"
+                  "payload": 36
                 }
               },
               "value": {
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "read_file"
+                      "name": 22
                     }
                   },
                   "args": [
                     {
-                      "StringLiteral": "/tmp/missing.txt"
+                      "StringLiteral": 44
                     }
                   ]
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
-              "except": {
-                "statements": [
-                  {
-                    "Expr": {
-                      "expr": {
-                        "Call": {
-                          "func": {
-                            "Identifier": {
-                              "name": "panic"
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": "e"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
+              "except": "Panic"
             }
           }
         ]

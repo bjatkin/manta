@@ -1,31 +1,31 @@
 [
   {
     "Mod": {
-      "name": "main"
+      "name": 1
     }
   },
   {
     "Use": {
       "modules": [
-        "math",
-        "fmt"
+        5,
+        6
       ]
     }
   },
   {
     "Type": {
       "name": {
-        "name": "Shape"
+        "name": 9
       },
       "type_spec": {
         "Enum": {
           "variants": [
             {
-              "name": "Circle",
+              "name": 12,
               "payload": "Int32"
             },
             {
-              "name": "Square",
+              "name": 14,
               "payload": "Int32"
             }
           ]
@@ -35,14 +35,14 @@
   },
   {
     "Function": {
-      "name": "area",
+      "name": 17,
       "params": [
         {
-          "name": "s",
+          "name": 18,
           "type_spec": {
             "Named": {
               "module": null,
-              "name": "Shape"
+              "name": 9
             }
           }
         }
@@ -54,7 +54,7 @@
             "Match": {
               "target": {
                 "Identifier": {
-                  "name": "s"
+                  "name": 18
                 }
               },
               "arms": [
@@ -65,11 +65,11 @@
                         "DotAccess": {
                           "target": null,
                           "field": {
-                            "name": "Circle"
+                            "name": 12
                           }
                         }
                       },
-                      "payload": "r"
+                      "payload": 21
                     }
                   },
                   "body": {
@@ -84,18 +84,18 @@
                                     "DotAccess": {
                                       "target": {
                                         "Identifier": {
-                                          "name": "math"
+                                          "name": 5
                                         }
                                       },
                                       "field": {
-                                        "name": "PI"
+                                        "name": 23
                                       }
                                     }
                                   },
                                   "operator": "Multiply",
                                   "right": {
                                     "Identifier": {
-                                      "name": "r"
+                                      "name": 21
                                     }
                                   }
                                 }
@@ -103,7 +103,7 @@
                               "operator": "Multiply",
                               "right": {
                                 "Identifier": {
-                                  "name": "r"
+                                  "name": 21
                                 }
                               }
                             }
@@ -120,11 +120,11 @@
                         "DotAccess": {
                           "target": null,
                           "field": {
-                            "name": "Square"
+                            "name": 14
                           }
                         }
                       },
-                      "payload": "s"
+                      "payload": 18
                     }
                   },
                   "body": {
@@ -135,13 +135,13 @@
                             "Binary": {
                               "left": {
                                 "Identifier": {
-                                  "name": "s"
+                                  "name": 18
                                 }
                               },
                               "operator": "Multiply",
                               "right": {
                                 "Identifier": {
-                                  "name": "s"
+                                  "name": 18
                                 }
                               }
                             }
@@ -160,7 +160,7 @@
   },
   {
     "Function": {
-      "name": "main",
+      "name": 1,
       "params": [],
       "return_type": null,
       "body": {
@@ -169,7 +169,7 @@
             "Let": {
               "pattern": {
                 "Identifier": {
-                  "name": "square"
+                  "name": 27
                 }
               },
               "value": {
@@ -178,11 +178,11 @@
                     "DotAccess": {
                       "target": {
                         "Identifier": {
-                          "name": "Shape"
+                          "name": 9
                         }
                       },
                       "field": {
-                        "name": "Square"
+                        "name": 14
                       }
                     }
                   },
@@ -193,35 +193,33 @@
                   ]
                 }
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
             "Let": {
               "pattern": {
                 "Identifier": {
-                  "name": "square_area"
+                  "name": 30
                 }
               },
               "value": {
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "area"
+                      "name": 17
                     }
                   },
                   "args": [
                     {
                       "Identifier": {
-                        "name": "square"
+                        "name": 27
                       }
                     }
                   ]
                 }
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
@@ -229,19 +227,19 @@
               "expr": {
                 "ModuleAccess": {
                   "module": {
-                    "name": "fmt"
+                    "name": 6
                   },
                   "expr": {
                     "Call": {
                       "func": {
                         "Identifier": {
-                          "name": "println"
+                          "name": 32
                         }
                       },
                       "args": [
                         {
                           "Identifier": {
-                            "name": "square_area"
+                            "name": 30
                           }
                         }
                       ]
@@ -257,10 +255,10 @@
                 "Payload": {
                   "pat": {
                     "Identifier": {
-                      "name": "Shape"
+                      "name": 9
                     }
                   },
-                  "payload": "circle"
+                  "payload": 33
                 }
               },
               "value": {
@@ -269,7 +267,7 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Circle"
+                        "name": 12
                       }
                     }
                   },
@@ -280,35 +278,33 @@
                   ]
                 }
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
             "Let": {
               "pattern": {
                 "Identifier": {
-                  "name": "circle_area"
+                  "name": 35
                 }
               },
               "value": {
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "area"
+                      "name": 17
                     }
                   },
                   "args": [
                     {
                       "Identifier": {
-                        "name": "circle"
+                        "name": 33
                       }
                     }
                   ]
                 }
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
@@ -316,19 +312,19 @@
               "expr": {
                 "ModuleAccess": {
                   "module": {
-                    "name": "fmt"
+                    "name": 6
                   },
                   "expr": {
                     "Call": {
                       "func": {
                         "Identifier": {
-                          "name": "println"
+                          "name": 32
                         }
                       },
                       "args": [
                         {
                           "Identifier": {
-                            "name": "circle"
+                            "name": 33
                           }
                         }
                       ]

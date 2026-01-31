@@ -16,7 +16,7 @@ impl PrefixPatternParselet for PrefixDotPatternParselet {
             TokenKind::Identifier => Ok(Pattern::DotAccess(DotAccessPat {
                 target: None,
                 field: IdentifierPat {
-                    name: lexer.lexeme(field_token),
+                    name: field_token.lexeme_id,
                 },
             })),
             _ => Err(ParseError::UnexpectedToken(
@@ -46,7 +46,7 @@ impl InfixPatternParselet for InfixDotPatternParselet {
             TokenKind::Identifier => Ok(Pattern::DotAccess(DotAccessPat {
                 target: Some(Box::new(left)),
                 field: IdentifierPat {
-                    name: lexer.lexeme(field_token),
+                    name: field_token.lexeme_id,
                 },
             })),
             _ => Err(ParseError::UnexpectedToken(
