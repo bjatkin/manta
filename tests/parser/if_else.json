@@ -1,19 +1,19 @@
 [
   {
     "Mod": {
-      "name": "main"
+      "name": 1
     }
   },
   {
     "Use": {
       "modules": [
-        "fmt"
+        5
       ]
     }
   },
   {
     "Function": {
-      "name": "main",
+      "name": 1,
       "params": [],
       "return_type": null,
       "body": {
@@ -22,21 +22,20 @@
             "Let": {
               "pattern": {
                 "Identifier": {
-                  "name": "check_this"
+                  "name": 10
                 }
               },
               "value": {
                 "BoolLiteral": true
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
             "If": {
               "check": {
                 "Identifier": {
-                  "name": "check_this"
+                  "name": 10
                 }
               },
               "success": {
@@ -46,18 +45,18 @@
                       "expr": {
                         "ModuleAccess": {
                           "module": {
-                            "name": "fmt"
+                            "name": 5
                           },
                           "expr": {
                             "Call": {
                               "func": {
                                 "Identifier": {
-                                  "name": "println"
+                                  "name": 15
                                 }
                               },
                               "args": [
                                 {
-                                  "StringLiteral": "yes"
+                                  "StringLiteral": 16
                                 }
                               ]
                             }
@@ -75,14 +74,13 @@
             "Let": {
               "pattern": {
                 "Identifier": {
-                  "name": "nine"
+                  "name": 18
                 }
               },
               "value": {
                 "IntLiteral": 9
               },
-              "or_binding": null,
-              "except": null
+              "except": "None"
             }
           },
           {
@@ -91,7 +89,7 @@
                 "Binary": {
                   "left": {
                     "Identifier": {
-                      "name": "nine"
+                      "name": 18
                     }
                   },
                   "operator": "GreaterThan",
@@ -107,18 +105,18 @@
                       "expr": {
                         "ModuleAccess": {
                           "module": {
-                            "name": "fmt"
+                            "name": 5
                           },
                           "expr": {
                             "Call": {
                               "func": {
                                 "Identifier": {
-                                  "name": "println"
+                                  "name": 15
                                 }
                               },
                               "args": [
                                 {
-                                  "StringLiteral": "no"
+                                  "StringLiteral": 22
                                 }
                               ]
                             }
@@ -136,18 +134,18 @@
                       "expr": {
                         "ModuleAccess": {
                           "module": {
-                            "name": "fmt"
+                            "name": 5
                           },
                           "expr": {
                             "Call": {
                               "func": {
                                 "Identifier": {
-                                  "name": "println"
+                                  "name": 15
                                 }
                               },
                               "args": [
                                 {
-                                  "StringLiteral": "yes"
+                                  "StringLiteral": 16
                                 }
                               ]
                             }

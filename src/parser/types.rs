@@ -37,7 +37,7 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                     // any constant expression will technically work her.
                     // That's gonna cause some problems once the refactor is done
                     let size_tok = lexer.next_token(); // Int
-                    let lex = lexer.lexeme(size_tok).replace('_', "");
+                    let lex = lexer.lexeme(size_tok.lexeme_id).replace('_', "");
                     let size = match lex.parse::<usize>() {
                         Ok(n) => n,
                         Err(_) => {
@@ -73,7 +73,7 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
         }
 
         TokenKind::Identifier => {
-            let name = lexer.lexeme(token);
+            let name = lexer.lexeme(token.lexeme_id);
             let tyspec = match name.as_str() {
                 "i32" => TypeSpec::Int32,
                 "i16" => TypeSpec::Int16,
@@ -87,7 +87,7 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                 "f32" => TypeSpec::Float32,
                 "str" => TypeSpec::String,
                 "bool" => TypeSpec::Bool,
-                other => match lexer.peek().kind {
+                _ => match lexer.peek().kind {
                     TokenKind::ColonColon => {
                         lexer.next_token();
                         let type_name = lexer.next_token();
@@ -98,14 +98,14 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                             ));
                         } else {
                             TypeSpec::Named {
-                                module: Some(other.to_string()),
-                                name: lexer.lexeme(type_name),
+                                module: Some(token.lexeme_id),
+                                name: type_name.lexeme_id,
                             }
                         }
                     }
                     _ => TypeSpec::Named {
                         module: None,
-                        name: other.to_string(),
+                        name: token.lexeme_id,
                     },
                 },
             };
@@ -119,34 +119,19 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
     }
 }
 
-pub fn is_type_keyword(ident: &str) -> bool {
-    matches!(
-        ident,
-        "i8" | "i16"
-            | "i32"
-            | "i64"
-            | "u8"
-            | "u16"
-            | "u32"
-            | "u64"
-            | "f32"
-            | "f64"
-            | "str"
-            | "bool"
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::parser::lexer::Lexer;
+    use crate::str_store::StrStore;
 
     macro_rules! test_parse_type_spec {
         ($( $case:ident { input: $input:expr, want: $want:expr, }),*, ) => {
            $(
                 #[test]
                 fn $case() {
-                    let mut lexer = Lexer::new($input);
+                    let mut str_store = StrStore::new();
+                    let mut lexer = Lexer::new($input, &mut str_store);
                     let token = lexer.next_token();
                     let type_spec = parse_type(&mut lexer, token).unwrap();
                     assert_eq!(type_spec, $want);
@@ -164,7 +149,7 @@ mod tests {
             input: "MyType",
             want: TypeSpec::Named {
                 module: None,
-                name: "MyType".to_string()
+                name: 0,
             },
         },
         parse_type_pointer_type {

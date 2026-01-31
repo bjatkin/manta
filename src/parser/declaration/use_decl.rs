@@ -2,6 +2,7 @@ use crate::ast::{Decl, UseDecl};
 use crate::parser::ParseError;
 use crate::parser::declaration::{DeclParselet, DeclParser};
 use crate::parser::lexer::{Lexer, Token, TokenKind};
+use crate::str_store::StrID;
 
 /// Parses top-level import declarations
 ///
@@ -40,7 +41,7 @@ impl DeclParselet for UseDeclParselet {
 /// Parse the list of module names in an import statement
 /// Syntax: STRING+
 /// Similar to Go imports, no commas needed
-fn parse_import_modules(lexer: &mut Lexer) -> Result<Vec<String>, ParseError> {
+fn parse_import_modules(lexer: &mut Lexer) -> Result<Vec<StrID>, ParseError> {
     let mut modules = vec![];
 
     // Parse module names until closing paren
@@ -50,7 +51,7 @@ fn parse_import_modules(lexer: &mut Lexer) -> Result<Vec<String>, ParseError> {
         }
 
         let token = lexer.next_token();
-        let module = lexer.lexeme(token);
+        let module = token.lexeme_id;
 
         let token = lexer.next_token();
         if token.kind != TokenKind::Semicolon {

@@ -6,6 +6,7 @@ pub mod statement;
 pub mod types;
 
 use crate::ast::Decl;
+use crate::str_store::StrStore;
 
 use declaration::DeclParser;
 use lexer::{Lexer, Token, TokenKind};
@@ -55,7 +56,8 @@ impl Parser {
     /// Parse a complete Manta program, returning a list of top-level declarations.
     pub fn parse_program(&self) -> Result<Vec<Decl>, ParseError> {
         let mut declarations = vec![];
-        let mut lexer = Lexer::new(&self.source);
+        let mut str_store = StrStore::new();
+        let mut lexer = Lexer::new(&self.source, &mut str_store);
 
         loop {
             let token_kind = lexer.peek().kind;

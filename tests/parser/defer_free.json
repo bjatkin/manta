@@ -1,43 +1,43 @@
 [
   {
     "Mod": {
-      "name": "main"
+      "name": 1
     }
   },
   {
     "Use": {
       "modules": [
-        "os"
+        5
       ]
     }
   },
   {
     "Type": {
       "name": {
-        "name": "WriteAndCleanup"
+        "name": 8
       },
       "type_spec": {
         "Enum": {
           "variants": [
             {
-              "name": "Ok",
+              "name": 11,
               "payload": null
             },
             {
-              "name": "OpenErr",
+              "name": 12,
               "payload": {
                 "Named": {
-                  "module": "os",
-                  "name": "Open"
+                  "module": 5,
+                  "name": 14
                 }
               }
             },
             {
-              "name": "WriteErr",
+              "name": 15,
               "payload": {
                 "Named": {
-                  "module": "os",
-                  "name": "Write"
+                  "module": 5,
+                  "name": 16
                 }
               }
             }
@@ -48,17 +48,17 @@
   },
   {
     "Function": {
-      "name": "write_and_cleanup",
+      "name": 19,
       "params": [
         {
-          "name": "path",
+          "name": 20,
           "type_spec": "String"
         }
       ],
       "return_type": {
         "Named": {
           "module": null,
-          "name": "WriteAndCleanup"
+          "name": 8
         }
       },
       "body": {
@@ -71,29 +71,29 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 11
                       }
                     }
                   },
-                  "payload": "f"
+                  "payload": 24
                 }
               },
               "value": {
                 "ModuleAccess": {
                   "module": {
-                    "name": "os"
+                    "name": 5
                   },
                   "expr": {
                     "Call": {
                       "func": {
                         "Identifier": {
-                          "name": "open"
+                          "name": 26
                         }
                       },
                       "args": [
                         {
                           "Identifier": {
-                            "name": "path"
+                            "name": 20
                           }
                         }
                       ]
@@ -101,35 +101,15 @@
                   }
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
               "except": {
-                "statements": [
-                  {
-                    "Return": {
-                      "value": {
-                        "Call": {
-                          "func": {
-                            "DotAccess": {
-                              "target": null,
-                              "field": {
-                                "name": "OpenErr"
-                              }
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": "e"
-                              }
-                            }
-                          ]
-                        }
-                      }
+                "Wrap": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": {
+                      "name": 12
                     }
                   }
-                ]
+                }
               }
             }
           },
@@ -142,19 +122,19 @@
                       "expr": {
                         "ModuleAccess": {
                           "module": {
-                            "name": "os"
+                            "name": 5
                           },
                           "expr": {
                             "Call": {
                               "func": {
                                 "Identifier": {
-                                  "name": "close"
+                                  "name": 29
                                 }
                               },
                               "args": [
                                 {
                                   "Identifier": {
-                                    "name": "f"
+                                    "name": 24
                                   }
                                 }
                               ]
@@ -177,7 +157,7 @@
                       "Slice": "UInt8"
                     }
                   },
-                  "payload": "buf"
+                  "payload": 34
                 }
               },
               "value": {
@@ -192,33 +172,7 @@
                   "options": []
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
-              "except": {
-                "statements": [
-                  {
-                    "Expr": {
-                      "expr": {
-                        "Call": {
-                          "func": {
-                            "Identifier": {
-                              "name": "panic"
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": "e"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
+              "except": "Panic"
             }
           },
           {
@@ -231,7 +185,7 @@
                         "Free": {
                           "expr": {
                             "Identifier": {
-                              "name": "buf"
+                              "name": 34
                             }
                           }
                         }
@@ -250,63 +204,43 @@
                     "DotAccess": {
                       "target": null,
                       "field": {
-                        "name": "Ok"
+                        "name": 11
                       }
                     }
                   },
-                  "payload": "n"
+                  "payload": 39
                 }
               },
               "value": {
                 "Call": {
                   "func": {
                     "Identifier": {
-                      "name": "write"
+                      "name": 40
                     }
                   },
                   "args": [
                     {
                       "Identifier": {
-                        "name": "f"
+                        "name": 24
                       }
                     },
                     {
                       "Identifier": {
-                        "name": "buf"
+                        "name": 34
                       }
                     }
                   ]
                 }
               },
-              "or_binding": {
-                "name": "e"
-              },
               "except": {
-                "statements": [
-                  {
-                    "Return": {
-                      "value": {
-                        "Call": {
-                          "func": {
-                            "DotAccess": {
-                              "target": null,
-                              "field": {
-                                "name": "WriteErr"
-                              }
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": "e"
-                              }
-                            }
-                          ]
-                        }
-                      }
+                "Wrap": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": {
+                      "name": 15
                     }
                   }
-                ]
+                }
               }
             }
           },
@@ -316,7 +250,7 @@
                 "DotAccess": {
                   "target": null,
                   "field": {
-                    "name": "Ok"
+                    "name": 11
                   }
                 }
               }

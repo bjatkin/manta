@@ -1,4 +1,6 @@
-use crate::ast::{BlockStmt, CallExpr, Expr, ExprStmt, IdentifierExpr, LetStmt, ReturnStmt, Stmt};
+use crate::ast::{
+    BlockStmt, CallExpr, Expr, ExprStmt, IdentifierExpr, LetExcept, LetStmt, ReturnStmt, Stmt,
+};
 use crate::parser::ParseError;
 use crate::parser::lexer::{Lexer, Token, TokenKind};
 use crate::parser::statement::{PrefixStmtParselet, StmtParser};
@@ -34,7 +36,7 @@ impl PrefixStmtParselet for LetParselet {
             TokenKind::OrKeyword => {
                 lexer.next_token();
                 let next = lexer.peek();
-                let or_binding = if next.kind == TokenKind::OpenParen {
+                let binding = if next.kind == TokenKind::OpenParen {
                     lexer.next_token();
                     let catch_ident = lexer.next_token();
                     if catch_ident.kind != TokenKind::Identifier {
@@ -52,9 +54,7 @@ impl PrefixStmtParselet for LetParselet {
                         ));
                     }
 
-                    Some(IdentifierExpr {
-                        name: lexer.lexeme(catch_ident),
-                    })
+                    Some(catch_ident.lexeme_id)
                 } else {
                     None
                 };
@@ -67,36 +67,13 @@ impl PrefixStmtParselet for LetParselet {
                     ));
                 }
 
-                let except = Some(parser.parse_block(lexer)?);
+                let body = parser.parse_block(lexer)?;
+                let except = LetExcept::Or { binding, body };
 
                 Ok(Stmt::Let(LetStmt {
                     pattern,
                     value,
-                    or_binding,
                     except,
-                }))
-            }
-            TokenKind::Bang => {
-                lexer.next_token();
-
-                Ok(Stmt::Let(LetStmt {
-                    pattern,
-                    value,
-                    or_binding: Some(IdentifierExpr {
-                        name: "e".to_string(),
-                    }),
-                    except: Some(BlockStmt {
-                        statements: vec![Stmt::Expr(ExprStmt {
-                            expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "panic".to_string(),
-                                })),
-                                args: vec![Expr::Identifier(IdentifierExpr {
-                                    name: "e".to_string(),
-                                })],
-                            }),
-                        })],
-                    }),
                 }))
             }
             TokenKind::WrapKeyword => {
@@ -107,30 +84,26 @@ impl PrefixStmtParselet for LetParselet {
                 Ok(Stmt::Let(LetStmt {
                     pattern,
                     value,
-                    or_binding: Some(IdentifierExpr {
-                        name: "e".to_string(),
-                    }),
-                    except: Some(BlockStmt {
-                        statements: vec![Stmt::Return(ReturnStmt {
-                            value: Some(Expr::Call(CallExpr {
-                                func: Box::new(expr),
-                                args: vec![Expr::Identifier(IdentifierExpr {
-                                    name: "e".to_string(),
-                                })],
-                            })),
-                        })],
-                    }),
+                    except: LetExcept::Wrap(expr),
+                }))
+            }
+            TokenKind::Bang => {
+                lexer.next_token();
+
+                Ok(Stmt::Let(LetStmt {
+                    pattern,
+                    value,
+                    except: LetExcept::Panic,
                 }))
             }
             TokenKind::Semicolon => Ok(Stmt::Let(LetStmt {
                 pattern,
                 value,
-                or_binding: None,
-                except: None,
+                except: LetExcept::None,
             })),
             _ => Err(ParseError::UnexpectedToken(
-                next.clone(),
-                format!("invalid token after try/catch {:?}", next,),
+                next,
+                format!("invalid token after let expr {:?}", next),
             )),
         }
     }

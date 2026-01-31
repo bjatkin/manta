@@ -30,7 +30,7 @@ impl InfixPatternParselet for PayloadPatternParselet {
 
                 Ok(Pattern::Payload(PayloadPat {
                     pat: Box::new(left),
-                    payload: lexer.lexeme(ident),
+                    payload: ident.lexeme_id,
                 }))
             }
             _ => Err(ParseError::UnexpectedToken(

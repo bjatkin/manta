@@ -37,7 +37,7 @@ impl DeclParselet for TypeDeclParselet {
 }
 
 fn parse_enum(lexer: &mut Lexer, name: Token) -> Result<Decl, ParseError> {
-    let name = lexer.lexeme(name);
+    let name = name.lexeme_id;
 
     let token = lexer.next_token();
     if token.kind != TokenKind::OpenBrace {
@@ -83,7 +83,7 @@ fn parse_enum_variants(lexer: &mut Lexer) -> Result<Vec<EnumVariant>, ParseError
                 "Expected variant name".to_string(),
             ));
         }
-        let variant_name = lexer.lexeme(token);
+        let variant_name = token.lexeme_id;
 
         // Check for optional payload
         let payload = if lexer.peek().kind == TokenKind::OpenParen {
@@ -139,7 +139,7 @@ fn parse_enum_variants(lexer: &mut Lexer) -> Result<Vec<EnumVariant>, ParseError
 
 /// Parse struct declaration after 'type' keyword has been consumed
 fn parse_struct(lexer: &mut Lexer, name: Token) -> Result<Decl, ParseError> {
-    let name = lexer.lexeme(name);
+    let name = name.lexeme_id;
 
     // Expect opening brace
     let token = lexer.next_token();
@@ -185,7 +185,7 @@ fn parse_struct_fields(lexer: &mut Lexer) -> Result<Vec<StructField>, ParseError
                 "Expected field name".to_string(),
             ));
         }
-        let name = lexer.lexeme(token);
+        let name = token.lexeme_id;
 
         let token = lexer.next_token();
         let type_spec = types::parse_type(lexer, token)?;

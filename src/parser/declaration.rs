@@ -73,7 +73,7 @@ impl DeclParser {
         if token.kind != TokenKind::Semicolon {
             Err(ParseError::UnexpectedToken(
                 token,
-                "Missing semicolon".to_string(),
+                "missing semicolon".to_string(),
             ))
         } else {
             Ok(decl)
@@ -98,6 +98,7 @@ mod tests {
         Stmt, StructField, StructType, TypeDecl, TypeSpec, UseDecl,
     };
     use crate::parser::lexer::Lexer;
+    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_declaration {
@@ -105,7 +106,8 @@ mod tests {
             $(
                 #[test]
                 fn $case() {
-                    let mut lexer = Lexer::new($input);
+                    let mut str_store = StrStore::new();
+                    let mut lexer = Lexer::new($input, &mut str_store);
                     let parser = DeclParser::new();
 
                     let decl = parser.parse(&mut lexer).unwrap();
@@ -127,14 +129,14 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "add".to_string(),
+                    name: 1,
                     params: vec![
                         Parameter {
-                            name: "a".to_string(),
+                            name: 3,
                             type_spec: TypeSpec::Int32,
                         },
                         Parameter {
-                            name: "b".to_string(),
+                            name: 5,
                             type_spec: TypeSpec::Int32,
                         }
                     ],
@@ -142,13 +144,9 @@ mod tests {
                     body: BlockStmt {
                         statements: vec![Stmt::Return(ReturnStmt {
                             value: Some(Expr::Binary(BinaryExpr {
-                                left: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "a".to_string(),
-                                })),
+                                left: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
                                 operator: BinaryOp::Add,
-                                right: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "b".to_string(),
-                                })),
+                                right: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
                             })),
                         })]
                     },
@@ -164,17 +162,15 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "main".to_string(),
+                    name: 1,
                     params: vec![],
                     return_type: None,
                     body: BlockStmt {
                         statements: vec![
                             Stmt::Expr(ExprStmt {
                                 expr: Expr::Call(CallExpr {
-                                    func: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "print".to_string()
-                                    })),
-                                    args: vec![Expr::StringLiteral("hello".to_string())],
+                                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
+                                    args: vec![Expr::StringLiteral(6)],
                                 }),
                             }),
                             Stmt::Return(ReturnStmt { value: None }),
@@ -191,14 +187,14 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "process".to_string(),
+                    name: 1,
                     params: vec![
                         Parameter {
-                            name: "x".to_string(),
+                            name: 3,
                             type_spec: TypeSpec::Int32,
                         },
                         Parameter {
-                            name: "msg".to_string(),
+                            name: 6,
                             type_spec: TypeSpec::String,
                         },
                     ],
@@ -219,21 +215,17 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "greet".to_string(),
+                    name: 1,
                     params: vec![Parameter {
-                        name: "name".to_string(),
+                        name: 3,
                         type_spec: TypeSpec::String,
                     }],
                     return_type: None,
                     body: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "print".to_string(),
-                                })),
-                                args: vec![Expr::Identifier(IdentifierExpr {
-                                    name: "name".to_string(),
-                                })],
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 7 })),
+                                args: vec![Expr::Identifier(IdentifierExpr { name: 3 })],
                             })
                         })],
                     },
@@ -251,14 +243,14 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "maybe_div".to_string(),
+                    name: 1,
                     params: vec![
                         Parameter {
-                            name: "a".to_string(),
+                            name: 3,
                             type_spec: TypeSpec::Int32,
                         },
                         Parameter {
-                            name: "b".to_string(),
+                            name: 5,
                             type_spec: TypeSpec::Int32,
                         },
                     ],
@@ -267,9 +259,7 @@ mod tests {
                         statements: vec![
                             Stmt::If(IfStmt {
                                 check: Box::new(Expr::Binary(BinaryExpr {
-                                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "b".to_string(),
-                                    })),
+                                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
                                     operator: BinaryOp::Equal,
                                     right: Box::new(Expr::IntLiteral(0)),
                                 })),
@@ -282,13 +272,9 @@ mod tests {
                             }),
                             Stmt::Return(ReturnStmt {
                                 value: Some(Expr::Binary(BinaryExpr {
-                                    left: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "a".to_string()
-                                    })),
+                                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
                                     operator: BinaryOp::Divide,
-                                    right: Box::new(Expr::Identifier(IdentifierExpr {
-                                        name: "b".to_string()
-                                    })),
+                                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
                                 }))
                             }),
                         ]
@@ -304,11 +290,11 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "my_alloc".to_string(),
+                    name: 1,
                     params: vec![],
                     return_type: Some(TypeSpec::Named {
-                        module: Some("unsafe".to_string()),
-                        name: "ptr".to_string(),
+                        module: Some(4),
+                        name: 6,
                     }),
                     body: BlockStmt {
                         statements: vec![Stmt::Return(ReturnStmt {
@@ -331,21 +317,17 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 FunctionDecl {
-                    name: "process_array".to_string(),
+                    name: 1,
                     params: vec![Parameter {
-                        name: "arr".to_string(),
+                        name: 3,
                         type_spec: TypeSpec::Slice(Box::new(TypeSpec::Int32))
                     }],
                     return_type: None,
                     body: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr {
-                                    name: "print".to_string(),
-                                })),
-                                args: vec![Expr::Identifier(IdentifierExpr {
-                                    name: "arr".to_string()
-                                })],
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 9 })),
+                                args: vec![Expr::Identifier(IdentifierExpr { name: 3 })],
                             }),
                         })],
                     },
@@ -353,22 +335,23 @@ mod tests {
             ),
         },
         parse_decl_struct {
-            input: "type Point struct {\n\tx i32\n\ty i32\n}",
+            input: r#"type Point struct {
+    x i32
+    y i32
+}"#,
             want_var: Decl::Type(decl),
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr {
-                        name: "Point".to_string()
-                    },
+                    name: IdentifierExpr { name: 1 },
                     type_spec: TypeSpec::Struct(StructType {
                         fields: vec![
                             StructField {
-                                name: "x".to_string(),
+                                name: 4,
                                 type_spec: TypeSpec::Int32,
                             },
                             StructField {
-                                name: "y".to_string(),
+                                name: 7,
                                 type_spec: TypeSpec::Int32,
                             },
                         ]
@@ -385,20 +368,18 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr {
-                        name: "Result".to_string()
-                    },
+                    name: IdentifierExpr { name: 1 },
                     type_spec: TypeSpec::Enum(EnumType {
                         variants: vec![
                             EnumVariant {
-                                name: "Ok".to_string(),
+                                name: 4,
                                 payload: Some(TypeSpec::Named {
-                                    module: Some("m".to_string()),
-                                    name: "MyType".to_string()
+                                    module: Some(6),
+                                    name: 8
                                 }),
                             },
                             EnumVariant {
-                                name: "Error".to_string(),
+                                name: 11,
                                 payload: None,
                             },
                         ],
@@ -412,20 +393,18 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr {
-                        name: "Node".to_string(),
-                    },
+                    name: IdentifierExpr { name: 1 },
                     type_spec: TypeSpec::Enum(EnumType {
                         variants: vec![
                             EnumVariant {
-                                name: "Some".to_string(),
+                                name: 4,
                                 payload: Some(TypeSpec::Pointer(Box::new(TypeSpec::Named {
                                     module: None,
-                                    name: "Node".to_string()
+                                    name: 1
                                 }))),
                             },
                             EnumVariant {
-                                name: "None".to_string(),
+                                name: 9,
                                 payload: None,
                             },
                         ],
@@ -439,9 +418,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr {
-                        name: "Empty".to_string(),
-                    },
+                    name: IdentifierExpr { name: 1 },
                     type_spec: TypeSpec::Struct(StructType { fields: vec![] }),
                 },
             ),
@@ -452,7 +429,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 ConstDecl {
-                    name: "PI".to_string(),
+                    name: 1,
                     value: Expr::FloatLiteral(3.45),
                 },
             ),
@@ -463,7 +440,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 ConstDecl {
-                    name: "MAX_SIZE".to_string(),
+                    name: 1,
                     value: Expr::IntLiteral(1024),
                 },
             ),
@@ -474,7 +451,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 ConstDecl {
-                    name: "DOUBLE".to_string(),
+                    name: 1,
                     value: Expr::Binary(BinaryExpr {
                         left: Box::new(Expr::IntLiteral(5)),
                         operator: BinaryOp::Add,
@@ -489,8 +466,8 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 ConstDecl {
-                    name: "VERSION".to_string(),
-                    value: Expr::StringLiteral("1.0.0".to_string()),
+                    name: 1,
+                    value: Expr::StringLiteral(3),
                 },
             ),
         },
@@ -499,12 +476,7 @@ mod tests {
                 "math"
             )"#,
             want_var: Decl::Use(decl),
-            want_value: assert_eq!(
-                decl,
-                UseDecl {
-                    modules: vec!["math".to_string()],
-                },
-            ),
+            want_value: assert_eq!(decl, UseDecl { modules: vec![2] }),
         },
         parse_decl_use_multiple {
             input: r#"use (
@@ -516,7 +488,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 UseDecl {
-                    modules: vec!["std".to_string(), "io".to_string(), "math".to_string()],
+                    modules: vec![2, 4, 5],
                 },
             ),
         },

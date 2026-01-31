@@ -24,7 +24,7 @@ impl DeclParselet for ModDeclParselet {
             ));
         }
 
-        let name = lexer.lexeme(token);
+        let name = token.lexeme_id;
         Ok(Decl::Mod(ModDecl { name }))
     }
 }

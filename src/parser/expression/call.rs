@@ -51,7 +51,8 @@ impl InfixExprParselet for CallParselet {
 
         match &left {
             Expr::Identifier(ident) => {
-                if ident.name == "free" {
+                let fn_name = lexer.lexeme(ident.name);
+                if fn_name == "free" {
                     if arguments.len() != 1 {
                         return Err(ParseError::InvalidArguments(
                             "free() expects exactly one argument".to_string(),
@@ -63,7 +64,7 @@ impl InfixExprParselet for CallParselet {
                     return Ok(Expr::Free(FreeExpr { expr }));
                 }
 
-                if ident.name == "alloc" {
+                if fn_name == "alloc" {
                     if arguments.is_empty() {
                         return Err(ParseError::InvalidArguments(
                             "alloc() expects at least on argument".to_string(),
