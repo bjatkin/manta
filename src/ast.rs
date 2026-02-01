@@ -2,6 +2,49 @@ use serde::{Deserialize, Serialize};
 
 use crate::str_store::StrID;
 
+/// A module in a manta program
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Module {
+    decls: Vec<Decl>,
+}
+
+impl Module {
+    pub fn new(decls: Vec<Decl>) -> Self {
+        Module { decls }
+    }
+}
+
+impl<'a> IntoIterator for &'a Module {
+    type Item = &'a Decl;
+    type IntoIter = ModuleIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ModuleIter {
+            fragment: self,
+            idx: 0,
+        }
+    }
+}
+
+pub struct ModuleIter<'a> {
+    fragment: &'a Module,
+    idx: usize,
+}
+
+impl<'a> Iterator for ModuleIter<'a> {
+    type Item = &'a Decl;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.fragment.decls.get(self.idx) {
+            Some(decl) => {
+                self.idx += 1;
+                Some(decl)
+            }
+            None => None,
+        }
+    }
+}
+
 /// Top-level declarations in a Manta program
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Decl {
@@ -31,7 +74,7 @@ pub struct FunctionDecl {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct TypeDecl {
-    pub name: IdentifierExpr,
+    pub name: StrID,
     pub type_spec: TypeSpec,
 }
 
