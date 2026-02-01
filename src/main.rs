@@ -1,11 +1,15 @@
 mod ast;
+mod complier;
+mod file_set;
 mod hir;
+mod noder;
 mod parser;
-mod str_store;
 
 use clap::{Parser, Subcommand};
 use std::error::Error;
 use std::path::PathBuf;
+
+use complier::Compiler;
 
 /// The CLI for the Manta programming language
 #[derive(Parser, Debug)]
@@ -68,6 +72,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 "stub: build -> workspace={:?}, out_dir={:?}, args={:?}, verbose={}",
                 workspace, out_dir, args, cli.verbose
             );
+            // TODO: actually compile stuff here
+            let tmp_compiler = Compiler::new("mod main".to_string());
+            tmp_compiler.compile();
         }
         Commands::Check {} => {
             println!(

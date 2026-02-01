@@ -1,6 +1,4 @@
-use crate::ast::{
-    Decl, EnumType, EnumVariant, IdentifierExpr, StructField, StructType, TypeDecl, TypeSpec,
-};
+use crate::ast::{Decl, EnumType, EnumVariant, StructField, StructType, TypeDecl, TypeSpec};
 use crate::parser::ParseError;
 use crate::parser::declaration::{DeclParselet, DeclParser};
 use crate::parser::lexer::{Lexer, Token, TokenKind};
@@ -59,7 +57,7 @@ fn parse_enum(lexer: &mut Lexer, name: Token) -> Result<Decl, ParseError> {
     }
 
     Ok(Decl::Type(TypeDecl {
-        name: IdentifierExpr { name },
+        name,
         type_spec: TypeSpec::Enum(EnumType { variants }),
     }))
 }
@@ -161,7 +159,7 @@ fn parse_struct(lexer: &mut Lexer, name: Token) -> Result<Decl, ParseError> {
     }
 
     Ok(Decl::Type(TypeDecl {
-        name: IdentifierExpr { name },
+        name,
         type_spec: TypeSpec::Struct(StructType { fields }),
     }))
 }

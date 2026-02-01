@@ -97,8 +97,8 @@ mod tests {
         Expr, ExprStmt, FunctionDecl, IdentifierExpr, IfStmt, MetaTypeExpr, Parameter, ReturnStmt,
         Stmt, StructField, StructType, TypeDecl, TypeSpec, UseDecl,
     };
+    use crate::file_set::{File, FileSet};
     use crate::parser::lexer::Lexer;
-    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_declaration {
@@ -106,8 +106,9 @@ mod tests {
             $(
                 #[test]
                 fn $case() {
-                    let mut str_store = StrStore::new();
-                    let mut lexer = Lexer::new($input, &mut str_store);
+                    let file = File::new_from_source("test.manta".to_string(), $input.to_string());
+                    let mut fset = FileSet::new(vec![file]);
+                    let mut lexer = Lexer::new(&mut fset);
                     let parser = DeclParser::new();
 
                     let decl = parser.parse(&mut lexer).unwrap();
@@ -343,7 +344,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr { name: 1 },
+                    name: 1,
                     type_spec: TypeSpec::Struct(StructType {
                         fields: vec![
                             StructField {
@@ -368,7 +369,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr { name: 1 },
+                    name: 1,
                     type_spec: TypeSpec::Enum(EnumType {
                         variants: vec![
                             EnumVariant {
@@ -393,7 +394,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr { name: 1 },
+                    name: 1,
                     type_spec: TypeSpec::Enum(EnumType {
                         variants: vec![
                             EnumVariant {
@@ -418,7 +419,7 @@ mod tests {
             want_value: assert_eq!(
                 decl,
                 TypeDecl {
-                    name: IdentifierExpr { name: 1 },
+                    name: 1,
                     type_spec: TypeSpec::Struct(StructType { fields: vec![] }),
                 },
             ),

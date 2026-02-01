@@ -5,8 +5,8 @@ pub mod pattern;
 pub mod statement;
 pub mod types;
 
-use crate::ast::Decl;
-use crate::str_store::StrStore;
+use crate::ast::Module;
+use crate::file_set::FileSet;
 
 use declaration::DeclParser;
 use lexer::{Lexer, Token, TokenKind};
@@ -40,24 +40,20 @@ impl ParseError {
 /// with lookahead and simple parselet registration. The parselet registries
 /// are intentionally simple (Vec-based) to avoid requiring `TokenKind: Hash`.
 pub struct Parser {
-    source: String,
     decl_parser: DeclParser,
 }
 
-impl Parser {
+impl<'a> Parser {
     /// Create a new parser for a piece of source code
-    pub fn new(source: String) -> Self {
-        Parser {
-            source,
-            decl_parser: DeclParser::new(),
-        }
+    pub fn new() -> Self {
+        let decl_parser = DeclParser::new();
+        Parser { decl_parser }
     }
 
     /// Parse a complete Manta program, returning a list of top-level declarations.
-    pub fn parse_program(&self) -> Result<Vec<Decl>, ParseError> {
+    pub fn parse_module(&'a self, fset: &'a mut FileSet<'a>) -> Result<Module, ParseError> {
         let mut declarations = vec![];
-        let mut str_store = StrStore::new();
-        let mut lexer = Lexer::new(&self.source, &mut str_store);
+        let mut lexer = Lexer::new(fset);
 
         loop {
             let token_kind = lexer.peek().kind;
@@ -68,14 +64,14 @@ impl Parser {
             declarations.push(decl);
         }
 
-        Ok(declarations)
+        Ok(Module::new(declarations))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::Decl;
+    use crate::file_set::File;
     use pretty_assertions::assert_eq;
     use std::fs;
     use std::path::Path;
@@ -117,30 +113,31 @@ mod tests {
             return;
         }
 
-        let file_name = path
+        let file_path = path
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown");
 
-        let source = match fs::read_to_string(&path) {
+        let source = match File::new_from_path(file_path.to_string()) {
             Ok(s) => s,
-            Err(_) => format!("Failed to read {}", path.display()),
+            Err(_) => panic!("Failed to read {}", path.display()),
         };
 
-        let parser = Parser::new(source);
-        let ast: Result<Vec<Decl>, ParseError> = parser.parse_program();
+        let mut fset = FileSet::new(vec![source]);
+        let parser = Parser::new();
+        let module = parser.parse_program(&mut fset);
 
-        let ast = match ast {
+        let module = match module {
             Ok(a) => a,
             Err(e) => {
-                panic!("Parser error for {}: {:?}", file_name, e);
+                panic!("Parser error for {}: {:?}", file_path, e);
             }
         };
 
         let json_output =
-            serde_json::to_string_pretty(&ast).expect("Failed to serialize AST to JSON");
+            serde_json::to_string_pretty(&module).expect("Failed to serialize AST to JSON");
 
-        let parser_file = parser_dir.join(format!("{}.json", file_name));
+        let parser_file = parser_dir.join(format!("{}.json", file_path));
 
         if parser_file.exists() {
             let expected_json = match fs::read_to_string(&parser_file) {
@@ -151,7 +148,7 @@ mod tests {
             assert_eq!(
                 json_output, expected_json,
                 "Parser output mismatch for {}",
-                file_name
+                file_path,
             );
         } else {
             // Create the parser directory if it doesn't exist

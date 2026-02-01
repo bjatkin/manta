@@ -116,8 +116,8 @@ mod test {
     use crate::ast::{
         ArrayType, DotAccessPat, IdentifierPat, ModuleAccesPat, Pattern, PayloadPat, TypeSpec,
     };
+    use crate::file_set::{File, FileSet};
     use crate::parser::lexer::Lexer;
-    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_patterns {
@@ -125,9 +125,11 @@ mod test {
             $(
                 #[test]
                 fn $case() {
+                    let file = File::new_from_source("test.manta".to_string(), $input.to_string());
+                    let mut fset = FileSet::new(vec![file]);
+
                     let parser = PatternParser::new();
-                    let mut str_store = StrStore::new();
-                    let mut lexer = Lexer::new($input, &mut str_store);
+                    let mut lexer = Lexer::new(&mut fset);
                     let pattern = parser.parse(&mut lexer).unwrap();
                     assert_eq!(pattern, $want)
                 }
@@ -306,8 +308,9 @@ mod test {
 
     #[test]
     fn parse_pattern_invalid() {
-        let mut str_store = StrStore::new();
-        let mut lexer = Lexer::new("+ ", &mut str_store);
+        let file = File::new_from_source("test.manta".to_string(), "+ ".to_string());
+        let mut fset = FileSet::new(vec![file]);
+        let mut lexer = Lexer::new(&mut fset);
         let parser = PatternParser::new();
         let result = parser.parse(&mut lexer);
         assert!(result.is_err());

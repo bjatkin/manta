@@ -1,8 +1,8 @@
 use crate::ast::{Decl, UseDecl};
+use crate::file_set::StrID;
 use crate::parser::ParseError;
 use crate::parser::declaration::{DeclParselet, DeclParser};
 use crate::parser::lexer::{Lexer, Token, TokenKind};
-use crate::str_store::StrID;
 
 /// Parses top-level import declarations
 ///

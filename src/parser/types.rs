@@ -122,16 +122,17 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::file_set::{File, FileSet};
     use crate::parser::lexer::Lexer;
-    use crate::str_store::StrStore;
 
     macro_rules! test_parse_type_spec {
         ($( $case:ident { input: $input:expr, want: $want:expr, }),*, ) => {
            $(
                 #[test]
                 fn $case() {
-                    let mut str_store = StrStore::new();
-                    let mut lexer = Lexer::new($input, &mut str_store);
+                    let file = File::new_from_source("test.manta".to_string(), $input.to_string());
+                    let mut fset = FileSet::new(vec![file]);
+                    let mut lexer = Lexer::new(&mut fset);
                     let token = lexer.next_token();
                     let type_spec = parse_type(&mut lexer, token).unwrap();
                     assert_eq!(type_spec, $want);

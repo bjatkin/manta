@@ -1,24 +1,41 @@
 use serde::{Deserialize, Serialize};
 
+use crate::ast::TypeSpec;
+use crate::file_set::StrID;
+
 // High-level Intermediate Representation (HIR)
 // This is a desugared, simplified version of the AST with a single node type.
 // It removes syntactic sugar and represents all code uniformly as a tree of nodes.
 
 /// NodeID is the unique identifier for a gien node in the HIR tree
-type NodeID = usize;
+pub type NodeID = usize;
 
-/// NodeStore contains all the nodes for a given tree as well as tracking the tree roots
-pub struct NodeStore {
+/// NodeTree contains all the nodes for a given tree as well as tracking the tree roots
+pub struct NodeTree {
+    module: Option<StrID>,
     nodes: Vec<Node>,
     roots: Vec<NodeID>,
 }
 
-impl NodeStore {
-    /// Create a new NodeStore
+type ModuleNameError = String;
+
+impl NodeTree {
+    /// Create a new NodeTree
     pub fn new() -> Self {
-        NodeStore {
+        NodeTree {
+            module: None,
             nodes: vec![],
             roots: vec![],
+        }
+    }
+
+    pub fn set_module_name(&mut self, name: StrID) -> Result<(), ModuleNameError> {
+        match self.module {
+            Some(_) => Err("can not rename module".to_string()),
+            None => {
+                self.module = Some(name);
+                Ok(())
+            }
         }
     }
 
@@ -48,38 +65,22 @@ pub enum Node {
         body: NodeID, // Always a Block
     },
     TypeDecl {
-        // TODO: update this to a StrID from the StrStore
-        name: String,
+        name: StrID,
         type_spec: TypeSpec,
     },
-    ConstDecl {
-        // TODO: update this to a StrID from the StrStore
-        name: String,
-        value: NodeID,
-    },
-    VarDecl {
-        // TODO: update this to a StrID from the StrStore
-        name: String,
-        value: NodeID,
-    },
     UseDecl {
-        // TODO: update this to a StrID from the StrStore
-        modules: Vec<String>,
+        modules: Vec<StrID>,
     },
     ModDecl {
-        // TODO: update this to a StrID from the StrStore
-        name: String,
+        name: StrID,
     },
-
-    // Statements
     Block {
         statements: Vec<NodeID>,
     },
-    Declaration {
-        // TODO: update this to a StrID from the StrStore
-        name: String,
-        // no value here because HIR just declares uninitalized variables
-        // the value comes from a later assignment
+    VarDecl {
+        name: StrID,
+        // no value here because HIR declares variables first and then
+        // assigns a value in a later node
     },
     Assign {
         target: NodeID,
@@ -110,13 +111,11 @@ pub enum Node {
     // Expressions
     IntLiteral(i64),
     FloatLiteral(f64),
-    // TODO: update this to a StrID from the StrStore
-    StringLiteral(String),
+    StringLiteral(StrID),
     BoolLiteral(bool),
     NilLiteral,
 
-    // TODO: update this to a StrID from the StrStore
-    Identifier(String),
+    Identifier(StrID),
 
     Binary {
         left: NodeID,
@@ -196,6 +195,12 @@ pub struct Param {
     pub type_spec: TypeSpec,
 }
 
+// TODO: I'm going to use the ast::TypeSpec for now since I'm not sure there's really much
+// benefit to using an HIR specific representation. I might even break the TypeSpec stuff out
+// into it's own module to reinforce that idea. For now, I'm leaving this code in, just in case
+// it's needed since I'm not sure it's in SVC yet
+
+/*
 /// Simplified type specification
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum TypeSpec {
@@ -236,6 +241,7 @@ pub struct EnumVariant {
     pub name: String,
     pub payload: Option<TypeSpec>,
 }
+*/
 
 /// Binary operators
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -274,14 +280,14 @@ mod tests {
 
     #[test]
     fn test_new_store_is_empty() {
-        let store = NodeStore::new();
+        let store = NodeTree::new();
         assert_eq!(store.nodes.len(), 0);
         assert_eq!(store.roots.len(), 0);
     }
 
     #[test]
     fn test_add_node_returns_correct_id() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let node = Node::NilLiteral;
         let id = store.add_node(node);
         assert_eq!(id, 0);
@@ -289,7 +295,7 @@ mod tests {
 
     #[test]
     fn test_add_multiple_nodes() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id1 = store.add_node(Node::NilLiteral);
         let id2 = store.add_node(Node::BoolLiteral(true));
         let id3 = store.add_node(Node::IntLiteral(42));
@@ -302,14 +308,14 @@ mod tests {
 
     #[test]
     fn test_add_node_does_not_add_to_roots() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         store.add_node(Node::NilLiteral);
         assert_eq!(store.roots.len(), 0);
     }
 
     #[test]
     fn test_add_root_node_returns_correct_id() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let node = Node::NilLiteral;
         let id = store.add_root_node(node);
         assert_eq!(id, 0);
@@ -317,7 +323,7 @@ mod tests {
 
     #[test]
     fn test_add_root_node_adds_to_roots() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_root_node(Node::BoolLiteral(true));
         assert_eq!(store.roots.len(), 1);
         assert_eq!(store.roots[0], id);
@@ -325,7 +331,7 @@ mod tests {
 
     #[test]
     fn test_add_multiple_root_nodes() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id1 = store.add_root_node(Node::IntLiteral(1));
         let id2 = store.add_root_node(Node::IntLiteral(2));
         let id3 = store.add_root_node(Node::IntLiteral(3));
@@ -338,7 +344,7 @@ mod tests {
 
     #[test]
     fn test_mix_nodes_and_root_nodes() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let regular_id = store.add_node(Node::NilLiteral);
         let root_id = store.add_root_node(Node::BoolLiteral(true));
         let another_regular = store.add_node(Node::IntLiteral(42));
@@ -352,28 +358,28 @@ mod tests {
 
     #[test]
     fn test_add_int_literal() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_node(Node::IntLiteral(100));
         assert_eq!(store.nodes[id], Node::IntLiteral(100));
     }
 
     #[test]
     fn test_add_float_literal() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_node(Node::FloatLiteral(3.45));
         assert_eq!(store.nodes[id], Node::FloatLiteral(3.45));
     }
 
     #[test]
     fn test_add_string_literal() {
-        let mut store = NodeStore::new();
-        let id = store.add_node(Node::StringLiteral("hello".to_string()));
-        assert_eq!(store.nodes[id], Node::StringLiteral("hello".to_string()));
+        let mut store = NodeTree::new();
+        let id = store.add_node(Node::StringLiteral(0));
+        assert_eq!(store.nodes[id], Node::StringLiteral(0));
     }
 
     #[test]
     fn test_add_bool_literal() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id_true = store.add_node(Node::BoolLiteral(true));
         let id_false = store.add_node(Node::BoolLiteral(false));
 
@@ -383,14 +389,14 @@ mod tests {
 
     #[test]
     fn test_add_identifier() {
-        let mut store = NodeStore::new();
-        let id = store.add_node(Node::Identifier("x".to_string()));
-        assert_eq!(store.nodes[id], Node::Identifier("x".to_string()));
+        let mut store = NodeTree::new();
+        let id = store.add_node(Node::Identifier(10));
+        assert_eq!(store.nodes[id], Node::Identifier(10));
     }
 
     #[test]
     fn test_add_block_node() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_node(Node::Block {
             statements: vec![0, 1, 2],
         });
@@ -404,7 +410,7 @@ mod tests {
 
     #[test]
     fn test_add_binary_operation() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_node(Node::Binary {
             left: 0,
             operator: BinaryOp::Add,
@@ -422,7 +428,7 @@ mod tests {
 
     #[test]
     fn test_add_unary_operation() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_node(Node::Unary {
             operator: UnaryOp::Negate,
             operand: 0,
@@ -438,7 +444,7 @@ mod tests {
 
     #[test]
     fn test_add_function_declaration() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let id = store.add_node(Node::FunctionDecl {
             name: "foo".to_string(),
             params: vec![],
@@ -454,7 +460,7 @@ mod tests {
 
     #[test]
     fn test_sequential_ids_are_unique() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         let mut ids = Vec::new();
         for i in 0..10 {
             let id = store.add_node(Node::IntLiteral(i as i64));
@@ -471,7 +477,7 @@ mod tests {
 
     #[test]
     fn test_add_many_root_nodes() {
-        let mut store = NodeStore::new();
+        let mut store = NodeTree::new();
         for i in 0..20 {
             store.add_root_node(Node::IntLiteral(i as i64));
         }
