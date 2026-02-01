@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::parser::lexer::keywords;
+
 /// A type alias for string identifiers. Used to efficiently reference interned strings
 /// without storing duplicate string data.
 /// StrID types are safe to compare like strings since the same string will always map to the
@@ -19,30 +21,77 @@ pub type StrID = usize;
 /// let id2 = store.get_id("hello"); // Returns the same ID without storing "hello" twice
 /// assert_eq!(id1, id2);
 /// ```
-pub struct StrStore<'a> {
+pub struct StrStore {
+    // TODO: I'd like to not copy every string twice like this but ownership is such a headach
+    // right now that i'm going to leave this as is.
+    // I probably need to rething this type but I do think that the StrStore should own the source
+    // code bytes
+    //
     /// Map from string slices to their unique identifiers
-    strings: HashMap<&'a str, StrID>,
+    strings: HashMap<String, StrID>,
     /// Sequential list of strings for reverse lookup (index = StrID)
-    reverse_strings: Vec<&'a str>,
+    reverse_strings: Vec<String>,
     /// Counter for generating the next unique ID
     next_id: usize,
 }
 
-impl<'a> StrStore<'a> {
+impl StrStore {
     /// Creates a new empty string store.
     pub fn new() -> Self {
-        StrStore {
+        let mut str_store = StrStore {
             strings: HashMap::new(),
             reverse_strings: Vec::new(),
             next_id: 0,
-        }
+        };
+
+        // TODO: I should rethink this because it's going to cause a lot of churn
+        // for ID's which will force a lot of tests to update. It would be better
+        // to reserve a special range for these keywords I think.
+        // I know I'm going to want to add new keywords in the future.
+        // Also, remember that all this was just to prevent the noder
+        // from needing a mutable reference to the str store so maybe this
+        // isn't even a problem I need to solve
+        //
+        // make sure every strstore has all the important keywords
+        str_store.get_id(keywords::U8);
+        str_store.get_id(keywords::U16);
+        str_store.get_id(keywords::U32);
+        str_store.get_id(keywords::U64);
+
+        str_store.get_id(keywords::I8);
+        str_store.get_id(keywords::I16);
+        str_store.get_id(keywords::I32);
+        str_store.get_id(keywords::I64);
+
+        str_store.get_id(keywords::F32);
+        str_store.get_id(keywords::F64);
+
+        str_store.get_id(keywords::TRUE);
+        str_store.get_id(keywords::FALSE);
+
+        str_store.get_id(keywords::FN);
+        str_store.get_id(keywords::WHILE);
+        str_store.get_id(keywords::FOR);
+        str_store.get_id(keywords::BREAK);
+        str_store.get_id(keywords::CONTINUE);
+        str_store.get_id(keywords::RETURN);
+        str_store.get_id(keywords::SWITCH);
+        str_store.get_id(keywords::MATCH);
+        str_store.get_id(keywords::CONST);
+        str_store.get_id(keywords::LET);
+        str_store.get_id(keywords::VAR);
+        str_store.get_id(keywords::TYPE);
+        str_store.get_id(keywords::MOD);
+        str_store.get_id(keywords::MUT);
+
+        str_store
     }
 
     /// Returns or creates an interned ID for the given string.
     ///
     /// If the string has been seen before, returns its existing ID.
     /// Otherwise, assigns a new unique ID to this string and stores it.
-    pub fn get_id(&mut self, s: &'a str) -> StrID {
+    pub fn get_id(&mut self, s: &str) -> StrID {
         match self.strings.get(s) {
             // String already interned, return its existing ID
             Some(id) => *id,
@@ -50,16 +99,24 @@ impl<'a> StrStore<'a> {
             None => {
                 let id = self.next_id;
                 self.next_id += 1;
-                self.strings.insert(s, id);
-                self.reverse_strings.push(s);
+                self.strings.insert(s.to_string(), id);
+                self.reverse_strings.push(s.to_string());
                 id
             }
         }
     }
 
     /// Look up the string for a given ID. Returns None if ID not found.
-    pub fn get_string(&self, id: StrID) -> Option<&'a str> {
-        self.reverse_strings.get(id).copied()
+    pub fn get_string(&self, id: StrID) -> Option<&String> {
+        self.reverse_strings.get(id)
+    }
+
+    /// get the StrID for known keywords. These are always included in the FileSet.
+    pub fn get_keyword(&self, keyword: keywords::Keyword) -> StrID {
+        match self.strings.get(keyword) {
+            Some(id) => *id,
+            None => panic!("this should never happen"),
+        }
     }
 }
 
@@ -68,10 +125,38 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_first_string_gets_id_zero() {
-        let mut store = StrStore::new();
-        let id = store.get_id("hello");
-        assert_eq!(id, 0);
+    fn test_all_keywords_dont_panic() {
+        let store = StrStore::new();
+        store.get_keyword(keywords::U8);
+        store.get_keyword(keywords::U16);
+        store.get_keyword(keywords::U32);
+        store.get_keyword(keywords::U64);
+
+        store.get_keyword(keywords::I8);
+        store.get_keyword(keywords::I16);
+        store.get_keyword(keywords::I32);
+        store.get_keyword(keywords::I64);
+
+        store.get_keyword(keywords::F32);
+        store.get_keyword(keywords::F64);
+
+        store.get_keyword(keywords::TRUE);
+        store.get_keyword(keywords::FALSE);
+
+        store.get_keyword(keywords::FN);
+        store.get_keyword(keywords::WHILE);
+        store.get_keyword(keywords::FOR);
+        store.get_keyword(keywords::BREAK);
+        store.get_keyword(keywords::CONTINUE);
+        store.get_keyword(keywords::RETURN);
+        store.get_keyword(keywords::SWITCH);
+        store.get_keyword(keywords::MATCH);
+        store.get_keyword(keywords::CONST);
+        store.get_keyword(keywords::LET);
+        store.get_keyword(keywords::VAR);
+        store.get_keyword(keywords::TYPE);
+        store.get_keyword(keywords::MOD);
+        store.get_keyword(keywords::MUT);
     }
 
     #[test]

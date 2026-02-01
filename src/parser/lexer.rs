@@ -2,6 +2,44 @@ use crate::str_store::{StrID, StrStore};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
+pub mod keywords {
+    pub type Keyword = &'static str;
+
+    pub const U8: Keyword = "u8";
+    pub const U16: Keyword = "u16";
+    pub const U32: Keyword = "u32";
+    pub const U64: Keyword = "u64";
+
+    pub const I8: Keyword = "i8";
+    pub const I16: Keyword = "i16";
+    pub const I32: Keyword = "i32";
+    pub const I64: Keyword = "i64";
+
+    pub const F32: Keyword = "f32";
+    pub const F64: Keyword = "f64";
+    pub const BOOL: Keyword = "bool";
+
+    pub const STR: Keyword = "str";
+
+    pub const TRUE: Keyword = "true";
+    pub const FALSE: Keyword = "false";
+
+    pub const FN: Keyword = "fn";
+    pub const WHILE: Keyword = "while";
+    pub const FOR: Keyword = "for";
+    pub const BREAK: Keyword = "break";
+    pub const CONTINUE: Keyword = "continue";
+    pub const RETURN: Keyword = "return";
+    pub const SWITCH: Keyword = "switch";
+    pub const MATCH: Keyword = "match";
+    pub const CONST: Keyword = "const";
+    pub const LET: Keyword = "let";
+    pub const VAR: Keyword = "var";
+    pub const TYPE: Keyword = "type";
+    pub const MOD: Keyword = "mod";
+    pub const MUT: Keyword = "mut";
+}
+
 // SourceID is the uniqe identifier of the token in the source code
 pub type SourceID = usize;
 
@@ -93,12 +131,12 @@ pub struct Lexer<'a> {
     done: bool,
     prev_kind: TokenKind,
     next: Token,
-    str_store: &'a mut StrStore<'a>,
+    str_store: &'a mut StrStore,
 }
 
 impl<'a> Lexer<'a> {
     /// Create a new lexer from source text.
-    pub fn new(source: &'a str, str_store: &'a mut StrStore<'a>) -> Self {
+    pub fn new(source: &'a str, str_store: &'a mut StrStore) -> Self {
         let mut lexer = Lexer {
             source,
             pos: 0,
@@ -592,8 +630,8 @@ mod tests {
             Err(_) => panic!("Failed to read {}", path.display()),
         };
 
-        let mut store = StrStore::new();
-        let mut lexer = Lexer::new(&source, &mut store);
+        let mut str_store = StrStore::new();
+        let mut lexer = Lexer::new(&source, &mut str_store);
         let mut tokens = vec![];
         loop {
             let token = lexer.peek();
@@ -644,8 +682,8 @@ mod tests {
                 #[test]
                 fn $case() {
                     let source = $input;
-                    let mut store = StrStore::new();
-                    let mut lexer = Lexer::new(source, &mut store);
+                    let mut str_store = StrStore::new();
+                    let mut lexer = Lexer::new(source, &mut str_store);
                     let mut toks = vec![];
                     loop {
                         let token = lexer.peek();

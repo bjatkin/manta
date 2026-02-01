@@ -1,289 +1,289 @@
-[
-  {
-    "Mod": {
-      "name": 1
-    }
-  },
-  {
-    "Use": {
-      "modules": [
-        5,
-        6
-      ]
-    }
-  },
-  {
-    "Type": {
-      "name": {
-        "name": 9
-      },
-      "type_spec": {
-        "Enum": {
-          "variants": [
+{
+  "decls": [
+    {
+      "Mod": {
+        "name": 26
+      }
+    },
+    {
+      "Use": {
+        "modules": [
+          30,
+          31
+        ]
+      }
+    },
+    {
+      "Type": {
+        "name": 33,
+        "type_spec": {
+          "Enum": {
+            "variants": [
+              {
+                "name": 36,
+                "payload": {
+                  "Pointer": "Int32"
+                }
+              },
+              {
+                "name": 38,
+                "payload": null
+              },
+              {
+                "name": 39,
+                "payload": {
+                  "Named": {
+                    "module": 31,
+                    "name": 41
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Function": {
+        "name": 43,
+        "params": [
+          {
+            "name": 44,
+            "type_spec": "Bool"
+          }
+        ],
+        "return_type": {
+          "Named": {
+            "module": null,
+            "name": 33
+          }
+        },
+        "body": {
+          "statements": [
             {
-              "name": 12,
-              "payload": {
-                "Pointer": "Int32"
+              "If": {
+                "check": {
+                  "Identifier": {
+                    "name": 44
+                  }
+                },
+                "success": {
+                  "statements": [
+                    {
+                      "Let": {
+                        "pattern": {
+                          "Payload": {
+                            "pat": {
+                              "Identifier": {
+                                "name": 6
+                              }
+                            },
+                            "payload": 47
+                          }
+                        },
+                        "value": {
+                          "Alloc": {
+                            "meta_type": {
+                              "MetaType": {
+                                "type_spec": "Int32"
+                              }
+                            },
+                            "options": []
+                          }
+                        },
+                        "except": {
+                          "Wrap": {
+                            "DotAccess": {
+                              "target": null,
+                              "field": {
+                                "name": 39
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Assign": {
+                        "lvalue": {
+                          "Unary": {
+                            "operator": "Dereference",
+                            "operand": {
+                              "Identifier": {
+                                "name": 47
+                              }
+                            }
+                          }
+                        },
+                        "rvalue": {
+                          "IntLiteral": 42
+                        }
+                      }
+                    },
+                    {
+                      "Return": {
+                        "value": {
+                          "Call": {
+                            "func": {
+                              "DotAccess": {
+                                "target": null,
+                                "field": {
+                                  "name": 36
+                                }
+                              }
+                            },
+                            "args": [
+                              {
+                                "Identifier": {
+                                  "name": 47
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "fail": null
               }
             },
             {
-              "name": 15,
-              "payload": null
-            },
-            {
-              "name": 16,
-              "payload": {
-                "Named": {
-                  "module": 6,
-                  "name": 18
+              "Return": {
+                "value": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": {
+                      "name": 38
+                    }
+                  }
                 }
               }
             }
           ]
         }
       }
-    }
-  },
-  {
-    "Function": {
-      "name": 21,
-      "params": [
-        {
-          "name": 22,
-          "type_spec": "Bool"
-        }
-      ],
-      "return_type": {
-        "Named": {
-          "module": null,
-          "name": 9
-        }
-      },
-      "body": {
-        "statements": [
-          {
-            "If": {
-              "check": {
-                "Identifier": {
-                  "name": 22
-                }
-              },
-              "success": {
-                "statements": [
-                  {
-                    "Let": {
-                      "pattern": {
-                        "Payload": {
-                          "pat": {
-                            "Identifier": {
-                              "name": 14
-                            }
-                          },
-                          "payload": 26
-                        }
-                      },
-                      "value": {
-                        "Alloc": {
-                          "meta_type": {
-                            "MetaType": {
-                              "type_spec": "Int32"
-                            }
-                          },
-                          "options": []
-                        }
-                      },
-                      "except": {
-                        "Wrap": {
-                          "DotAccess": {
-                            "target": null,
-                            "field": {
-                              "name": 16
-                            }
-                          }
-                        }
+    },
+    {
+      "Function": {
+        "name": 26,
+        "params": [],
+        "return_type": null,
+        "body": {
+          "statements": [
+            {
+              "Match": {
+                "target": {
+                  "Call": {
+                    "func": {
+                      "Identifier": {
+                        "name": 43
                       }
-                    }
-                  },
-                  {
-                    "Assign": {
-                      "lvalue": {
-                        "Unary": {
-                          "operator": "Dereference",
-                          "operand": {
-                            "Identifier": {
-                              "name": 26
-                            }
-                          }
-                        }
-                      },
-                      "rvalue": {
-                        "IntLiteral": 42
-                      }
-                    }
-                  },
-                  {
-                    "Return": {
-                      "value": {
-                        "Call": {
-                          "func": {
-                            "DotAccess": {
-                              "target": null,
-                              "field": {
-                                "name": 12
-                              }
-                            }
-                          },
-                          "args": [
-                            {
-                              "Identifier": {
-                                "name": 26
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  }
-                ]
-              },
-              "fail": null
-            }
-          },
-          {
-            "Return": {
-              "value": {
-                "DotAccess": {
-                  "target": null,
-                  "field": {
-                    "name": 15
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    }
-  },
-  {
-    "Function": {
-      "name": 1,
-      "params": [],
-      "return_type": null,
-      "body": {
-        "statements": [
-          {
-            "Match": {
-              "target": {
-                "Call": {
-                  "func": {
-                    "Identifier": {
-                      "name": 21
-                    }
-                  },
-                  "args": [
-                    {
-                      "BoolLiteral": false
-                    }
-                  ]
-                }
-              },
-              "arms": [
-                {
-                  "pattern": {
-                    "Payload": {
-                      "pat": {
-                        "DotAccess": {
-                          "target": null,
-                          "field": {
-                            "name": 12
-                          }
-                        }
-                      },
-                      "payload": 26
-                    }
-                  },
-                  "body": {
-                    "statements": [
+                    },
+                    "args": [
                       {
-                        "Expr": {
-                          "expr": {
-                            "ModuleAccess": {
-                              "module": {
-                                "name": 5
-                              },
-                              "expr": {
-                                "Call": {
-                                  "func": {
-                                    "Identifier": {
-                                      "name": 36
-                                    }
-                                  },
-                                  "args": [
-                                    {
-                                      "Unary": {
-                                        "operator": "Dereference",
-                                        "operand": {
-                                          "Identifier": {
-                                            "name": 26
-                                          }
-                                        }
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        }
+                        "BoolLiteral": false
                       }
                     ]
                   }
                 },
-                {
-                  "pattern": {
-                    "DotAccess": {
-                      "target": null,
-                      "field": {
-                        "name": 15
+                "arms": [
+                  {
+                    "pattern": {
+                      "Payload": {
+                        "pat": {
+                          "DotAccess": {
+                            "target": null,
+                            "field": {
+                              "name": 36
+                            }
+                          }
+                        },
+                        "payload": 47
                       }
-                    }
-                  },
-                  "body": {
-                    "statements": [
-                      {
-                        "Expr": {
-                          "expr": {
-                            "ModuleAccess": {
-                              "module": {
-                                "name": 5
-                              },
-                              "expr": {
-                                "Call": {
-                                  "func": {
-                                    "Identifier": {
-                                      "name": 36
-                                    }
-                                  },
-                                  "args": [
-                                    {
-                                      "StringLiteral": 38
-                                    }
-                                  ]
+                    },
+                    "body": {
+                      "statements": [
+                        {
+                          "Expr": {
+                            "expr": {
+                              "ModuleAccess": {
+                                "module": {
+                                  "name": 30
+                                },
+                                "expr": {
+                                  "Call": {
+                                    "func": {
+                                      "Identifier": {
+                                        "name": 54
+                                      }
+                                    },
+                                    "args": [
+                                      {
+                                        "Unary": {
+                                          "operator": "Dereference",
+                                          "operand": {
+                                            "Identifier": {
+                                              "name": 47
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
                                 }
                               }
                             }
                           }
                         }
+                      ]
+                    }
+                  },
+                  {
+                    "pattern": {
+                      "DotAccess": {
+                        "target": null,
+                        "field": {
+                          "name": 38
+                        }
                       }
-                    ]
+                    },
+                    "body": {
+                      "statements": [
+                        {
+                          "Expr": {
+                            "expr": {
+                              "ModuleAccess": {
+                                "module": {
+                                  "name": 30
+                                },
+                                "expr": {
+                                  "Call": {
+                                    "func": {
+                                      "Identifier": {
+                                        "name": 54
+                                      }
+                                    },
+                                    "args": [
+                                      {
+                                        "StringLiteral": 56
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             }
-          }
-        ]
+          ]
+        }
       }
     }
-  }
-]
+  ]
+}
