@@ -295,8 +295,8 @@ mod tests {
         AllocExpr, ArrayType, BinaryExpr, BinaryOp, CallExpr, DotAccessExpr, Expr, FreeExpr,
         IdentifierExpr, IndexExpr, MetaTypeExpr, TypeSpec, UnaryExpr, UnaryOp,
     };
+    use crate::file_set::{File, FileSet};
     use crate::parser::lexer::Lexer;
-    use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_expressions {
@@ -304,8 +304,9 @@ mod tests {
             $(
                 #[test]
                 fn $case() {
-                    let mut str_store = StrStore::new();
-                    let mut lexer = Lexer::new($input, &mut str_store);
+                    let file = File::new_from_source("test.manta".to_string(), $input.to_string());
+                    let mut file_set = FileSet::new(vec![file]);
+                    let mut lexer = Lexer::new(&mut file_set);
                     let parser = ExprParser::new();
 
                     let expr = parser.parse(&mut lexer, Precedence::Base).unwrap();

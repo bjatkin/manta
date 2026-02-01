@@ -1,6 +1,42 @@
-use crate::str_store::{StrID, StrStore};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
+
+use crate::file_set::{FileSet, StrID};
+
+pub mod keywords {
+    pub type Keyword = &'static str;
+
+    pub const U8: Keyword = "u8";
+    pub const U16: Keyword = "u16";
+    pub const U32: Keyword = "u32";
+    pub const U64: Keyword = "u64";
+
+    pub const I8: Keyword = "i8";
+    pub const I16: Keyword = "i16";
+    pub const I32: Keyword = "i32";
+    pub const I64: Keyword = "i64";
+
+    pub const F32: Keyword = "f32";
+    pub const F64: Keyword = "f64";
+
+    pub const TRUE: Keyword = "true";
+    pub const FALSE: Keyword = "false";
+
+    pub const FN: Keyword = "fn";
+    pub const WHILE: Keyword = "while";
+    pub const FOR: Keyword = "for";
+    pub const BREAK: Keyword = "break";
+    pub const CONTINUE: Keyword = "continue";
+    pub const RETURN: Keyword = "return";
+    pub const SWITCH: Keyword = "switch";
+    pub const MATCH: Keyword = "match";
+    pub const CONST: Keyword = "const";
+    pub const LET: Keyword = "let";
+    pub const VAR: Keyword = "var";
+    pub const TYPE: Keyword = "type";
+    pub const MOD: Keyword = "mod";
+    pub const MUT: Keyword = "mut";
+}
 
 // SourceID is the uniqe identifier of the token in the source code
 pub type SourceID = usize;
@@ -88,19 +124,17 @@ pub struct Token {
 
 /// Minimal lexer. Uses a byte cursor but iterates by `char`s for UTF-8 correctness.
 pub struct Lexer<'a> {
-    source: &'a str,
     pos: usize,
     done: bool,
     prev_kind: TokenKind,
     next: Token,
-    str_store: &'a mut StrStore<'a>,
+    fset: &'a mut FileSet<'a>,
 }
 
 impl<'a> Lexer<'a> {
     /// Create a new lexer from source text.
-    pub fn new(source: &'a str, str_store: &'a mut StrStore<'a>) -> Self {
+    pub fn new(fset: &'a mut FileSet<'a>) -> Self {
         let mut lexer = Lexer {
-            source,
             pos: 0,
             done: false,
             prev_kind: TokenKind::Identifier,
@@ -109,7 +143,7 @@ impl<'a> Lexer<'a> {
                 source_id: 0,
                 lexeme_id: 0,
             },
-            str_store,
+            fset,
         };
         lexer.next_token();
 
@@ -117,7 +151,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn lexeme(&self, lexeme_id: StrID) -> String {
-        match self.str_store.get_string(lexeme_id) {
+        match self.fset.get_string(lexeme_id) {
             Some(s) => s.to_string(),
             // TODO: should this hand back an option?
             None => panic!("invalid str id"),
@@ -145,7 +179,8 @@ impl<'a> Lexer<'a> {
         // determine by first char
         let ch = self.current_char();
         if ch.is_none() {
-            let lexeme_id = self.str_store.get_id(&self.source[self.pos..self.pos]);
+            let lexeme = self.fset.substr(self.pos, self.pos).unwrap();
+            let lexeme_id = self.fset.get_id(lexeme);
             if self.is_end_of_statement() {
                 return Token {
                     kind: TokenKind::Semicolon,
@@ -166,7 +201,7 @@ impl<'a> Lexer<'a> {
             // if this newline wasn't skipped it's because we need to insert a semicolon
             let source_id = self.pos;
             self.bump();
-            let lexeme_id = self.str_store.get_id(&self.source[source_id..self.pos]);
+            let lexeme_id = self.file_set.get_id(&self.source[source_id..self.pos]);
 
             return Token {
                 kind: TokenKind::Semicolon,
@@ -176,7 +211,7 @@ impl<'a> Lexer<'a> {
         }
 
         if ch == '}' && self.is_end_of_statement() {
-            let lexeme_id = self.str_store.get_id(&self.source[self.pos..self.pos]);
+            let lexeme_id = self.file_set.get_id(&self.source[self.pos..self.pos]);
 
             return Token {
                 kind: TokenKind::Semicolon,
@@ -346,7 +381,7 @@ impl<'a> Lexer<'a> {
             _ => TokenKind::Identifier,
         };
 
-        let lexeme_id = self.str_store.get_id(&self.source[start..end]);
+        let lexeme_id = self.file_set.get_id(&self.source[start..end]);
         Token {
             kind,
             source_id: start,
@@ -404,7 +439,7 @@ impl<'a> Lexer<'a> {
         } else {
             TokenKind::Int
         };
-        let lexeme_id = self.str_store.get_id(&self.source[start..end]);
+        let lexeme_id = self.file_set.get_id(&self.source[start..end]);
         Token {
             kind,
             source_id: start,
@@ -423,7 +458,7 @@ impl<'a> Lexer<'a> {
             if ch == '"' {
                 let end = self.pos;
                 let string_content = &self.source[start + 1..end - 1];
-                let lexeme_id = self.str_store.get_id(string_content);
+                let lexeme_id = self.file_set.get_id(string_content);
                 return Token {
                     kind: TokenKind::Str,
                     source_id: start,
@@ -439,7 +474,7 @@ impl<'a> Lexer<'a> {
                     None => {
                         let end = self.pos;
                         let malformed_str = &self.source[start + 1..end - 1];
-                        let lexeme_id = self.str_store.get_id(malformed_str);
+                        let lexeme_id = self.file_set.get_id(malformed_str);
                         return Token {
                             kind: TokenKind::MalformedStr,
                             source_id: self.pos,
@@ -452,7 +487,7 @@ impl<'a> Lexer<'a> {
 
         let end = self.pos;
         let malformed_str = &self.source[start + 1..end - 1];
-        let lexeme_id = self.str_store.get_id(malformed_str);
+        let lexeme_id = self.file_set.get_id(malformed_str);
         Token {
             kind: TokenKind::MalformedStr,
             source_id: start,
@@ -485,7 +520,7 @@ impl<'a> Lexer<'a> {
             if let Some(kind) = kind {
                 self.bump();
                 let end = self.pos;
-                let lexeme_id = self.str_store.get_id(&self.source[start..end]);
+                let lexeme_id = self.file_set.get_id(&self.source[start..end]);
                 return Token {
                     kind,
                     source_id: start,
@@ -524,7 +559,7 @@ impl<'a> Lexer<'a> {
         };
 
         let end = self.pos;
-        let lexeme_id = self.str_store.get_id(&self.source[start..end]);
+        let lexeme_id = self.file_set.get_id(&self.source[start..end]);
         // otherwise treat as operator
         Token {
             kind,
@@ -548,6 +583,8 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::fs::{self, DirEntry};
     use std::path::Path;
+
+    use crate::file_set::File;
 
     #[test]
     fn lex_file_tests() {
@@ -582,18 +619,18 @@ mod tests {
             return;
         }
 
-        let file_name = path
+        let file_path = path
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown");
 
-        let source = match fs::read_to_string(&path) {
+        let file = match File::new_from_path(file_path.to_string()) {
             Ok(s) => s,
             Err(_) => panic!("Failed to read {}", path.display()),
         };
 
-        let mut store = StrStore::new();
-        let mut lexer = Lexer::new(&source, &mut store);
+        let mut fset = FileSet::new(vec![file]);
+        let mut lexer = Lexer::new(&mut fset);
         let mut tokens = vec![];
         loop {
             let token = lexer.peek();
@@ -607,7 +644,7 @@ mod tests {
         let json_output =
             serde_json::to_string_pretty(&tokens).expect("Failed to serialize tokens to JSON");
 
-        let lex_file = lex_dir.join(format!("{}.json", file_name));
+        let lex_file = lex_dir.join(format!("{}.json", file_path));
 
         if lex_file.exists() {
             let expected_json = match fs::read_to_string(&lex_file) {
@@ -618,7 +655,7 @@ mod tests {
             assert_eq!(
                 json_output, expected_json,
                 "Lexer output mismatch for {}",
-                file_name
+                file_path
             );
         } else {
             // Create the lex directory if it doesn't exist
@@ -644,8 +681,8 @@ mod tests {
                 #[test]
                 fn $case() {
                     let source = $input;
-                    let mut store = StrStore::new();
-                    let mut lexer = Lexer::new(source, &mut store);
+                    let mut fset = FileSet::new(vec![]);
+                    let mut lexer = Lexer::new(&mut fset);
                     let mut toks = vec![];
                     loop {
                         let token = lexer.peek();

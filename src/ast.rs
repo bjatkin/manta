@@ -1,6 +1,92 @@
 use serde::{Deserialize, Serialize};
 
-use crate::str_store::StrID;
+use crate::file_set::StrID;
+
+/// A module in a manta program
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Fragment {
+    decls: Vec<Decl>,
+}
+
+impl Fragment {
+    pub fn new(decls: Vec<Decl>) -> Self {
+        Fragment { decls }
+    }
+}
+
+impl<'a> IntoIterator for &'a Fragment {
+    type Item = &'a Decl;
+    type IntoIter = FragmentIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FragmentIter {
+            fragment: self,
+            idx: 0,
+        }
+    }
+}
+
+pub struct FragmentIter<'a> {
+    fragment: &'a Fragment,
+    idx: usize,
+}
+
+impl<'a> Iterator for FragmentIter<'a> {
+    type Item = &'a Decl;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.fragment.decls.get(self.idx) {
+            Some(decl) => {
+                self.idx += 1;
+                Some(decl)
+            }
+            None => None,
+        }
+    }
+}
+
+/// A module in a manta program
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Module {
+    fragments: Vec<Fragment>,
+}
+
+impl Module {
+    pub fn new(fragments: Vec<Fragment>) -> Self {
+        Module { fragments }
+    }
+}
+
+impl<'a> IntoIterator for &'a Module {
+    type Item = &'a Fragment;
+    type IntoIter = ModuleIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ModuleIter {
+            module: self,
+            idx: 0,
+        }
+    }
+}
+
+pub struct ModuleIter<'a> {
+    module: &'a Module,
+    idx: usize,
+}
+
+impl<'a> Iterator for ModuleIter<'a> {
+    type Item = &'a Fragment;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.module.fragments.get(self.idx) {
+            Some(frag) => {
+                self.idx += 1;
+                Some(frag)
+            }
+            None => None,
+        }
+    }
+}
 
 /// Top-level declarations in a Manta program
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -31,7 +117,7 @@ pub struct FunctionDecl {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct TypeDecl {
-    pub name: IdentifierExpr,
+    pub name: StrID,
     pub type_spec: TypeSpec,
 }
 
