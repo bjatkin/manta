@@ -128,12 +128,12 @@ pub struct Lexer<'a> {
     done: bool,
     prev_kind: TokenKind,
     next: Token,
-    file_set: &'a mut FileSet<'a>,
+    fset: &'a mut FileSet<'a>,
 }
 
 impl<'a> Lexer<'a> {
     /// Create a new lexer from source text.
-    pub fn new(file_set: &'a mut FileSet<'a>) -> Self {
+    pub fn new(fset: &'a mut FileSet<'a>) -> Self {
         let mut lexer = Lexer {
             pos: 0,
             done: false,
@@ -143,7 +143,7 @@ impl<'a> Lexer<'a> {
                 source_id: 0,
                 lexeme_id: 0,
             },
-            file_set,
+            fset,
         };
         lexer.next_token();
 
@@ -151,7 +151,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn lexeme(&self, lexeme_id: StrID) -> String {
-        match self.file_set.get_string(lexeme_id) {
+        match self.fset.get_string(lexeme_id) {
             Some(s) => s.to_string(),
             // TODO: should this hand back an option?
             None => panic!("invalid str id"),
@@ -179,7 +179,8 @@ impl<'a> Lexer<'a> {
         // determine by first char
         let ch = self.current_char();
         if ch.is_none() {
-            let lexeme_id = self.file_set.get_id(&self.source[self.pos..self.pos]);
+            let lexeme = self.fset.substr(self.pos, self.pos).unwrap();
+            let lexeme_id = self.fset.get_id(lexeme);
             if self.is_end_of_statement() {
                 return Token {
                     kind: TokenKind::Semicolon,
