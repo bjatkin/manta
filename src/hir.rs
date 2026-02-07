@@ -12,30 +12,16 @@ pub type NodeID = usize;
 
 /// NodeTree contains all the nodes for a given tree as well as tracking the tree roots
 pub struct NodeTree {
-    module: Option<StrID>,
     nodes: Vec<Node>,
     roots: Vec<NodeID>,
 }
-
-type ModuleNameError = String;
 
 impl NodeTree {
     /// Create a new NodeTree
     pub fn new() -> Self {
         NodeTree {
-            module: None,
             nodes: vec![],
             roots: vec![],
-        }
-    }
-
-    pub fn set_module_name(&mut self, name: StrID) -> Result<(), ModuleNameError> {
-        match self.module {
-            Some(_) => Err("can not rename module".to_string()),
-            None => {
-                self.module = Some(name);
-                Ok(())
-            }
         }
     }
 
@@ -65,7 +51,7 @@ impl NodeTree {
 /// A single node type that can represent any construct in the HIR
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Node {
-    // Declarations
+    Invalid,
     FunctionDecl {
         name: StrID,
         // params are just VarDecl nodes

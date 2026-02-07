@@ -17,9 +17,11 @@ impl Compiler {
         let mut str_store = StrStore::new();
 
         let parser = Parser::new("mod main".to_string());
-        let module = parser.parse_module(&mut str_store).unwrap();
+        let module = parser.parse_module(&mut str_store);
+        if !module.get_errors().is_empty() {
+            panic!("errors in the parser: {:?}", module.get_errors())
+        }
 
-        // TODO: if the str_store was part of the module this wouldn't be necessary
         let noder = Noder::new();
         let _node_tree = noder.node(module);
     }

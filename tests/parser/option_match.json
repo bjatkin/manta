@@ -1,4 +1,9 @@
 {
+  "name": 1,
+  "modules": [
+    5
+  ],
+  "errors": [],
   "decls": [
     {
       "Mod": {
