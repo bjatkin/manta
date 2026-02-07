@@ -5,14 +5,15 @@ pub mod pattern;
 pub mod statement;
 pub mod types;
 
-use crate::ast::Module;
-use crate::str_store::StrStore;
+use crate::ast::{Decl, Module};
+use crate::str_store::{self, StrStore};
 
 use declaration::DeclParser;
 use lexer::{Lexer, Token, TokenKind};
+use serde::{Deserialize, Serialize};
 
 /// Parse error type for the parser core.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ParseError {
     Custom(Token, String),
     UnexpectedToken(Token, String),
@@ -40,20 +41,102 @@ impl Parser {
     }
 
     /// Parse a Manta module
-    pub fn parse_module(&self, str_store: &mut StrStore) -> Result<Module, ParseError> {
-        let mut declarations = vec![];
+    pub fn parse_module(&self, str_store: &mut StrStore) -> Module {
         let mut lexer = Lexer::new(&self.source, str_store);
 
+        let mut declarations = vec![];
+        let mut errors = vec![];
         loop {
             let token_kind = lexer.peek().kind;
             if token_kind == TokenKind::Eof {
                 break;
             }
-            let decl = self.decl_parser.parse(&mut lexer)?;
+            // TODO: the parse method should return both the Decl as well as a vector of errors. We
+            // want to try and compile no matter what so having some of the declaration info is
+            // important and for decls like a function its possible to have way more than a single
+            // ParseError that needs to be reported
+            let decl = match self.decl_parser.parse(&mut lexer) {
+                Ok(decl) => decl,
+                Err(err) => {
+                    errors.push(err);
+                    Decl::Invalid
+                }
+            };
             declarations.push(decl);
         }
 
-        Ok(Module::new(declarations))
+        self.check_module(errors, declarations)
+    }
+
+    fn check_module(&self, mut errors: Vec<ParseError>, declarations: Vec<Decl>) -> Module {
+        if declarations.is_empty() {
+            errors.push(ParseError::Custom(
+                Token {
+                    kind: TokenKind::Identifier,
+                    source_id: 0,
+                    lexeme_id: 0,
+                },
+                "module is empty".to_string(),
+            ));
+        };
+
+        let mut name = str_store::NIL;
+        let mut modules = vec![];
+        for (i, decl) in declarations.iter().enumerate() {
+            match decl {
+                Decl::Mod(module) => {
+                    if i == 0 {
+                        name = module.name;
+                    } else {
+                        errors.push(ParseError::Custom(
+                            Token {
+                                kind: TokenKind::Identifier,
+                                source_id: 0,
+                                lexeme_id: 0,
+                            },
+                            "only a single module name is allowed per file".to_string(),
+                        ));
+                    }
+                }
+                Decl::Use(using) => {
+                    if i == 0 {
+                        errors.push(ParseError::Custom(
+                            Token {
+                                kind: TokenKind::Identifier,
+                                source_id: 0,
+                                lexeme_id: 0,
+                            },
+                            "first declaration in a file must be the module name".to_string(),
+                        ));
+                    } else if i == 1 {
+                        modules = using.modules.clone();
+                    } else {
+                        errors.push(ParseError::Custom(
+                        Token {
+                            kind: TokenKind::Identifier,
+                            source_id: 0,
+                            lexeme_id: 0,
+                        },
+                        "only a single import section allowed per file, and it must be right below the module name".to_string(),
+                    ));
+                    }
+                }
+                _ => {
+                    if i == 0 {
+                        errors.push(ParseError::Custom(
+                            Token {
+                                kind: TokenKind::Identifier,
+                                source_id: 0,
+                                lexeme_id: 0,
+                            },
+                            "first declaration in a file must be the module name".to_string(),
+                        ));
+                    }
+                }
+            }
+        }
+
+        Module::new(name, modules, errors, declarations)
     }
 }
 
@@ -115,11 +198,8 @@ mod tests {
         let parser = Parser::new(source);
         let ast = parser.parse_module(&mut str_store);
 
-        let ast = match ast {
-            Ok(a) => a,
-            Err(e) => {
-                panic!("Parser error for {}: {:?}", file_name, e);
-            }
+        if !ast.get_errors().is_empty() {
+            panic!("Parser error for {}: {:?}", file_name, ast.get_errors());
         };
 
         let json_output =

@@ -1,16 +1,34 @@
 use serde::{Deserialize, Serialize};
 
+use crate::parser::ParseError;
 use crate::str_store::StrID;
 
 /// A module in a manta program
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Module {
+    name: StrID,
+    modules: Vec<StrID>,
+    errors: Vec<ParseError>,
     decls: Vec<Decl>,
 }
 
 impl Module {
-    pub fn new(decls: Vec<Decl>) -> Self {
-        Module { decls }
+    pub fn new(
+        name: StrID,
+        modules: Vec<StrID>,
+        errors: Vec<ParseError>,
+        decls: Vec<Decl>,
+    ) -> Self {
+        Module {
+            name,
+            modules,
+            errors,
+            decls,
+        }
+    }
+
+    pub fn get_errors(&self) -> &Vec<ParseError> {
+        &self.errors
     }
 }
 
@@ -54,6 +72,7 @@ pub enum Decl {
     Var(VarDecl),
     Use(UseDecl),
     Mod(ModDecl),
+    Invalid,
 }
 
 /// Function declaration

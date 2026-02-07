@@ -8,8 +8,8 @@ pub type StrID = usize;
 
 // Some key strings are hard coded as package constants these include type names
 // and internal string values
-// nil is is used to represent an invalid StrID
-pub const _NILID: StrID = usize::MAX;
+// nil is is used to represent an empty StrID
+pub const NIL: StrID = usize::MAX;
 
 pub const U8: StrID = usize::MAX - 1;
 pub const U16: StrID = usize::MAX - 2;
@@ -46,7 +46,7 @@ fn constant_str_id(s: &str) -> Option<StrID> {
         "bool" => Some(BOOL),
         // this is not a valid identifier so we can use it in the compiler
         // without worrying about conflicting with user identifiers
-        "$wrap" => Some(WRAP),
+        "<wrap>" => Some(WRAP),
         "panic" => Some(PANIC),
         _ => None,
     }
@@ -68,8 +68,9 @@ fn constant_id_str(id: StrID) -> Option<&'static str> {
         BOOL => Some("bool"),
         // this is not a valid identifier so we can use it in the compiler
         // without worrying about conflicting with user identifiers
-        WRAP => Some("$wrap"),
+        WRAP => Some("<wrap>"),
         PANIC => Some("panic"),
+        NIL => Some("<nil>"),
         _ => None,
     }
 }

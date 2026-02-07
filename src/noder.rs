@@ -313,14 +313,10 @@ impl Noder {
                     _node: decl_id,
                 });
             }
-            Decl::Use(_) => todo!(
-                "need to resolve the import graph and then import modules, this is unsupported for now"
-            ),
-            Decl::Mod(decl) => {
-                let result = node_tree.set_module_name(decl.name);
-                if result.is_err() {
-                    panic!("error setting node name")
-                }
+            Decl::Use(_) => { /* ignore these since they're handled by the parser */ }
+            Decl::Mod(_) => { /* ignore these since they're handled by the parser */ }
+            Decl::Invalid => {
+                node_tree.add_root_node(Node::Invalid);
             }
         }
     }
