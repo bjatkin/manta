@@ -1,0 +1,61 @@
+{
+  "name": 18446744073709551615,
+  "modules": [],
+  "errors": [
+    {
+      "Custom": [
+        {
+          "kind": "Identifier",
+          "source_id": 0,
+          "lexeme_id": 0
+        },
+        "first declaration in a file must be the module name"
+      ]
+    }
+  ],
+  "decls": [
+    {
+      "Use": {
+        "modules": [
+          2
+        ]
+      }
+    },
+    {
+      "Function": {
+        "name": 6,
+        "params": [],
+        "return_type": null,
+        "body": {
+          "statements": [
+            {
+              "Expr": {
+                "expr": {
+                  "ModuleAccess": {
+                    "module": {
+                      "name": 2
+                    },
+                    "expr": {
+                      "Call": {
+                        "func": {
+                          "Identifier": {
+                            "name": 9
+                          }
+                        },
+                        "args": [
+                          {
+                            "StringLiteral": 10
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

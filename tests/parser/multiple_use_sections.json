@@ -1,0 +1,75 @@
+{
+  "name": 1,
+  "modules": [
+    5
+  ],
+  "errors": [
+    {
+      "Custom": [
+        {
+          "kind": "Identifier",
+          "source_id": 0,
+          "lexeme_id": 0
+        },
+        "only a single import section allowed per file, and it must be right below the module name"
+      ]
+    }
+  ],
+  "decls": [
+    {
+      "Mod": {
+        "name": 1
+      }
+    },
+    {
+      "Use": {
+        "modules": [
+          5
+        ]
+      }
+    },
+    {
+      "Function": {
+        "name": 1,
+        "params": [],
+        "return_type": null,
+        "body": {
+          "statements": [
+            {
+              "Expr": {
+                "expr": {
+                  "ModuleAccess": {
+                    "module": {
+                      "name": 5
+                    },
+                    "expr": {
+                      "Call": {
+                        "func": {
+                          "Identifier": {
+                            "name": 10
+                          }
+                        },
+                        "args": [
+                          {
+                            "StringLiteral": 11
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "Use": {
+        "modules": [
+          13
+        ]
+      }
+    }
+  ]
+}

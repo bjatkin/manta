@@ -1,0 +1,7 @@
+use (
+    "fmt"
+)
+
+fn main() {
+    fmt::println("this will have errors")
+}

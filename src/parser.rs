@@ -198,10 +198,6 @@ mod tests {
         let parser = Parser::new(source);
         let ast = parser.parse_module(&mut str_store);
 
-        if !ast.get_errors().is_empty() {
-            panic!("Parser error for {}: {:?}", file_name, ast.get_errors());
-        };
-
         let json_output =
             serde_json::to_string_pretty(&ast).expect("Failed to serialize AST to JSON");
 
