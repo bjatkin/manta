@@ -120,7 +120,7 @@ impl<'a> Lexer<'a> {
         match self.str_store.get_string(lexeme_id) {
             Some(s) => s.to_string(),
             // TODO: should this hand back an option?
-            None => panic!("invalid str id"),
+            None => panic!("invalid str id {}", lexeme_id),
         }
     }
 
@@ -816,13 +816,13 @@ mod tests {
                 Token { kind: TokenKind::Identifier, source_id: 3, lexeme_id: 1 },
                 Token { kind: TokenKind::OpenParen, source_id: 20, lexeme_id: 2 },
                 Token { kind: TokenKind::Identifier, source_id: 21, lexeme_id: 3 },
-                Token { kind: TokenKind::Identifier, source_id: 26, lexeme_id: 4 },
-                Token { kind: TokenKind::CloseParen, source_id: 29, lexeme_id: 5 },
-                Token { kind: TokenKind::Identifier, source_id: 31, lexeme_id: 6 },
-                Token { kind: TokenKind::OpenBrace, source_id: 47, lexeme_id: 7 },
-                Token { kind: TokenKind::CloseBrace, source_id: 49, lexeme_id: 8 },
-                Token { kind: TokenKind::Semicolon, source_id: 50, lexeme_id: 9 },
-                Token { kind: TokenKind::Eof, source_id: 50, lexeme_id: 9 },
+                Token { kind: TokenKind::Identifier, source_id: 26, lexeme_id: 18446744073709551604 },
+                Token { kind: TokenKind::CloseParen, source_id: 29, lexeme_id: 4 },
+                Token { kind: TokenKind::Identifier, source_id: 31, lexeme_id: 5 },
+                Token { kind: TokenKind::OpenBrace, source_id: 47, lexeme_id: 6 },
+                Token { kind: TokenKind::CloseBrace, source_id: 49, lexeme_id: 7 },
+                Token { kind: TokenKind::Semicolon, source_id: 50, lexeme_id: 8 },
+                Token { kind: TokenKind::Eof, source_id: 50, lexeme_id: 8 },
             ],
         },
         lex_input_let_or {

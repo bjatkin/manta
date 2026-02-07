@@ -23,7 +23,7 @@
                 "payload": "Int32"
               },
               {
-                "name": 13,
+                "name": 12,
                 "payload": null
               }
             ]
@@ -33,14 +33,14 @@
     },
     {
       "Function": {
-        "name": 16,
+        "name": 15,
         "params": [
           {
-            "name": 17,
+            "name": 16,
             "type_spec": "Int32"
           },
           {
-            "name": 19,
+            "name": 18,
             "type_spec": "Int32"
           }
         ],
@@ -58,7 +58,7 @@
                   "Binary": {
                     "left": {
                       "Identifier": {
-                        "name": 19
+                        "name": 18
                       }
                     },
                     "operator": "Equal",
@@ -75,7 +75,7 @@
                           "DotAccess": {
                             "target": null,
                             "field": {
-                              "name": 13
+                              "name": 12
                             }
                           }
                         }
@@ -103,13 +103,13 @@
                         "Binary": {
                           "left": {
                             "Identifier": {
-                              "name": 17
+                              "name": 16
                             }
                           },
                           "operator": "Divide",
                           "right": {
                             "Identifier": {
-                              "name": 19
+                              "name": 18
                             }
                           }
                         }
@@ -134,14 +134,14 @@
               "Let": {
                 "pattern": {
                   "Identifier": {
-                    "name": 27
+                    "name": 26
                   }
                 },
                 "value": {
                   "Call": {
                     "func": {
                       "Identifier": {
-                        "name": 16
+                        "name": 15
                       }
                     },
                     "args": [
@@ -161,7 +161,7 @@
               "Match": {
                 "target": {
                   "Identifier": {
-                    "name": 27
+                    "name": 26
                   }
                 },
                 "arms": [
@@ -176,7 +176,7 @@
                             }
                           }
                         },
-                        "payload": 32
+                        "payload": 31
                       }
                     },
                     "body": {
@@ -192,16 +192,16 @@
                                   "Call": {
                                     "func": {
                                       "Identifier": {
-                                        "name": 34
+                                        "name": 33
                                       }
                                     },
                                     "args": [
                                       {
-                                        "StringLiteral": 35
+                                        "StringLiteral": 34
                                       },
                                       {
                                         "Identifier": {
-                                          "name": 32
+                                          "name": 31
                                         }
                                       }
                                     ]
@@ -219,7 +219,7 @@
                       "DotAccess": {
                         "target": null,
                         "field": {
-                          "name": 13
+                          "name": 12
                         }
                       }
                     },
@@ -236,12 +236,12 @@
                                   "Call": {
                                     "func": {
                                       "Identifier": {
-                                        "name": 34
+                                        "name": 33
                                       }
                                     },
                                     "args": [
                                       {
-                                        "StringLiteral": 37
+                                        "StringLiteral": 36
                                       }
                                     ]
                                   }

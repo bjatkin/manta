@@ -866,7 +866,7 @@ mod tests {
                     options: vec![Expr::Call(CallExpr {
                         func: Box::new(Expr::DotAccess(DotAccessExpr {
                             target: None,
-                            field: IdentifierExpr { name: 8 },
+                            field: IdentifierExpr { name: 7 },
                         })),
                         args: vec![Expr::IntLiteral(10)],
                     })],
@@ -886,13 +886,13 @@ mod tests {
                         Expr::Call(CallExpr {
                             func: Box::new(Expr::DotAccess(DotAccessExpr {
                                 target: None,
-                                field: IdentifierExpr { name: 8 },
+                                field: IdentifierExpr { name: 7 },
                             })),
                             args: vec![Expr::IntLiteral(15)],
                         }),
                         Expr::DotAccess(DotAccessExpr {
                             target: None,
-                            field: IdentifierExpr { name: 11 },
+                            field: IdentifierExpr { name: 10 },
                         })
                     ],
                 },
@@ -911,7 +911,7 @@ mod tests {
                             })),
                             options: vec![],
                         }))),
-                        field: IdentifierExpr { name: 6 },
+                        field: IdentifierExpr { name: 5 },
                     })),
                     args: vec![],
                 }

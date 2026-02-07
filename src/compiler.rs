@@ -23,6 +23,6 @@ impl Compiler {
 
         // TODO: if the str_store was part of the module this wouldn't be necessary
         let noder = Noder::new(&mut str_store);
-        let _node_tree = noder.node(&str_store, module);
+        let _node_tree = noder.node(module);
     }
 }

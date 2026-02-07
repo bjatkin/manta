@@ -6,6 +6,73 @@ use std::collections::HashMap;
 /// same StrID
 pub type StrID = usize;
 
+// Some key strings are hard coded as package constants these include type names
+// and internal string values
+pub const NilID: StrID = usize::MAX;
+
+pub const U8: StrID = usize::MAX - 1;
+pub const U16: StrID = usize::MAX - 2;
+pub const U32: StrID = usize::MAX - 3;
+pub const U64: StrID = usize::MAX - 4;
+
+pub const I8: StrID = usize::MAX - 5;
+pub const I16: StrID = usize::MAX - 6;
+pub const I32: StrID = usize::MAX - 7;
+pub const I64: StrID = usize::MAX - 8;
+
+pub const F32: StrID = usize::MAX - 9;
+pub const F64: StrID = usize::MAX - 10;
+
+pub const STR: StrID = usize::MAX - 11;
+pub const BOOL: StrID = usize::MAX - 12;
+
+pub const WRAP: StrID = usize::MAX - 13;
+pub const PANIC: StrID = usize::MAX - 14;
+
+fn constant_str_id(s: &str) -> Option<StrID> {
+    match s {
+        "u8" => Some(U8),
+        "u16" => Some(U16),
+        "u32" => Some(U32),
+        "u64" => Some(U64),
+        "i8" => Some(I8),
+        "i16" => Some(I16),
+        "i32" => Some(I32),
+        "i64" => Some(I64),
+        "f32" => Some(F32),
+        "f64" => Some(F64),
+        "str" => Some(STR),
+        "bool" => Some(BOOL),
+        // this is not a valid identifier so we can use it in the compiler
+        // without worrying about conflicting with user identifiers
+        "$wrap" => Some(WRAP),
+        "panic" => Some(PANIC),
+        _ => None,
+    }
+}
+
+fn constant_id_str(id: StrID) -> Option<&'static str> {
+    match id {
+        U8 => Some("u8"),
+        U16 => Some("u16"),
+        U32 => Some("u32"),
+        U64 => Some("u64"),
+        I8 => Some("i8"),
+        I16 => Some("i16"),
+        I32 => Some("i32"),
+        I64 => Some("i64"),
+        F32 => Some("f32"),
+        F64 => Some("f64"),
+        STR => Some("str"),
+        BOOL => Some("bool"),
+        // this is not a valid identifier so we can use it in the compiler
+        // without worrying about conflicting with user identifiers
+        WRAP => Some("$wrap"),
+        PANIC => Some("panic"),
+        _ => None,
+    }
+}
+
 /// A string interning store that maps strings to unique identifiers.
 ///
 /// This structure allows efficient deduplication of strings during lexing and parsing.
@@ -48,6 +115,10 @@ impl StrStore {
     /// If the string has been seen before, returns its existing ID.
     /// Otherwise, assigns a new unique ID to this string and stores it.
     pub fn get_id(&mut self, s: &str) -> StrID {
+        if let Some(id) = constant_str_id(s) {
+            return id;
+        }
+
         match self.strings.get(s) {
             // String already interned, return its existing ID
             Some(id) => *id,
@@ -63,15 +134,18 @@ impl StrStore {
     }
 
     /// Look up the string for a given ID. Returns None if ID not found.
-    pub fn get_string(&self, id: StrID) -> Option<&String> {
-        self.reverse_strings.get(id)
+    pub fn get_string(&self, id: StrID) -> Option<String> {
+        match constant_id_str(id) {
+            Some(id) => Some(id.to_string()),
+            None => self.reverse_strings.get(id).cloned(),
+        }
     }
 
     /// get the StrID for the string if it has been added previously.
     pub fn find_id(&self, s: &str) -> Option<StrID> {
-        match self.strings.get(s) {
-            Some(id) => Some(*id),
-            None => None,
+        match constant_str_id(s) {
+            Some(id) => Some(id),
+            None => self.strings.get(s).copied(),
         }
     }
 }
@@ -87,6 +161,7 @@ mod tests {
         assert_eq!(id, 0);
     }
 
+    #[test]
     fn test_find_string() {
         let mut store = StrStore::new();
         store.get_id("hello");
@@ -204,5 +279,19 @@ mod tests {
         assert_ne!(id1, id2);
         assert_ne!(id1, id3);
         assert_ne!(id2, id3);
+    }
+
+    #[test]
+    fn test_constant_strings() {
+        let mut store = StrStore::new();
+        let u8_id = store.get_id("u8");
+        assert_eq!(u8_id, U8);
+
+        let u16_id = store.get_id("u16");
+        assert_eq!(u16_id, U16);
+
+        store.get_id("other");
+        let bool_id = store.get_id("bool");
+        assert_eq!(bool_id, BOOL);
     }
 }
