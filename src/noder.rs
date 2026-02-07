@@ -4,7 +4,7 @@ use crate::ast::{
     BlockStmt, Decl, Expr, IdentifierPat, LetExcept, LetStmt, Module, Pattern, Stmt, TypeSpec,
 };
 use crate::hir::{Node, NodeID, NodeTree};
-use crate::str_store::{StrID, StrStore};
+use crate::str_store::{self, StrID, StrStore};
 
 struct Binding {
     name: StrID,
@@ -44,35 +44,41 @@ impl Scope {
         }
     }
 
-    fn new_root(str_store: &StrStore) -> Self {
+    fn new_root() -> Self {
         // the root scope always needs to have the builtin types since they're
         // available in every package
         let builtin_types = vec![
-            "u8", "u16", "u32", "u64", "i8", "i16", "i32", "i64", "f32", "f64", "bool",
+            str_store::U8,
+            str_store::U16,
+            str_store::U32,
+            str_store::U64,
+            str_store::I8,
+            str_store::I16,
+            str_store::I32,
+            str_store::I64,
+            str_store::F32,
+            str_store::F64,
+            str_store::BOOL,
         ];
 
         let mut types = vec![];
-        for t in builtin_types {
-            if let Some(id) = str_store.find_id(t) {
-                types.push(Type {
-                    name: id,
-                    kind: TypeKind::Unit,
-                    // this isn't tied to any actual node so this ensures if we try to
-                    // access the node we'll get a panic
-                    node: usize::MAX,
-                });
-            }
-        }
-
-        if let Some(id) = str_store.find_id("str") {
+        for id in builtin_types {
             types.push(Type {
                 name: id,
-                kind: TypeKind::Struct,
+                kind: TypeKind::Unit,
                 // this isn't tied to any actual node so this ensures if we try to
                 // access the node we'll get a panic
                 node: usize::MAX,
             });
         }
+
+        types.push(Type {
+            name: str_store::STR,
+            kind: TypeKind::Struct,
+            // this isn't tied to any actual node so this ensures if we try to
+            // access the node we'll get a panic
+            node: usize::MAX,
+        });
 
         Scope {
             parent: None,
@@ -88,8 +94,8 @@ struct SymTable {
 }
 
 impl SymTable {
-    fn new(str_store: &StrStore) -> Self {
-        let root = Scope::new_root(str_store);
+    fn new() -> Self {
+        let root = Scope::new_root();
         SymTable {
             scopes: vec![root],
             current_scope: 0,
@@ -191,10 +197,10 @@ impl Noder {
         Noder { panic_id, wrap_id }
     }
 
-    pub fn node(&self, str_store: &StrStore, module: Module) -> NodeTree {
+    pub fn node(&self, module: Module) -> NodeTree {
         // Should these types be owned by the Noder type?
         let mut node_tree = NodeTree::new();
-        let mut sym_table = SymTable::new(str_store);
+        let mut sym_table = SymTable::new();
 
         for (i, decl) in module.into_iter().enumerate() {
             if i == 0 && !matches!(decl, Decl::Mod(_)) {

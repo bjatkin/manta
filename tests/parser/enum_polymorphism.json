@@ -24,7 +24,7 @@
                 "payload": "Int32"
               },
               {
-                "name": 14,
+                "name": 13,
                 "payload": "Int32"
               }
             ]
@@ -34,10 +34,10 @@
     },
     {
       "Function": {
-        "name": 17,
+        "name": 16,
         "params": [
           {
-            "name": 18,
+            "name": 17,
             "type_spec": {
               "Named": {
                 "module": null,
@@ -53,7 +53,7 @@
               "Match": {
                 "target": {
                   "Identifier": {
-                    "name": 18
+                    "name": 17
                   }
                 },
                 "arms": [
@@ -68,7 +68,7 @@
                             }
                           }
                         },
-                        "payload": 21
+                        "payload": 20
                       }
                     },
                     "body": {
@@ -87,14 +87,14 @@
                                           }
                                         },
                                         "field": {
-                                          "name": 23
+                                          "name": 22
                                         }
                                       }
                                     },
                                     "operator": "Multiply",
                                     "right": {
                                       "Identifier": {
-                                        "name": 21
+                                        "name": 20
                                       }
                                     }
                                   }
@@ -102,7 +102,7 @@
                                 "operator": "Multiply",
                                 "right": {
                                   "Identifier": {
-                                    "name": 21
+                                    "name": 20
                                   }
                                 }
                               }
@@ -119,11 +119,11 @@
                           "DotAccess": {
                             "target": null,
                             "field": {
-                              "name": 14
+                              "name": 13
                             }
                           }
                         },
-                        "payload": 18
+                        "payload": 17
                       }
                     },
                     "body": {
@@ -134,13 +134,13 @@
                               "Binary": {
                                 "left": {
                                   "Identifier": {
-                                    "name": 18
+                                    "name": 17
                                   }
                                 },
                                 "operator": "Multiply",
                                 "right": {
                                   "Identifier": {
-                                    "name": 18
+                                    "name": 17
                                   }
                                 }
                               }
@@ -168,7 +168,7 @@
               "Let": {
                 "pattern": {
                   "Identifier": {
-                    "name": 27
+                    "name": 26
                   }
                 },
                 "value": {
@@ -181,7 +181,7 @@
                           }
                         },
                         "field": {
-                          "name": 14
+                          "name": 13
                         }
                       }
                     },
@@ -199,20 +199,20 @@
               "Let": {
                 "pattern": {
                   "Identifier": {
-                    "name": 30
+                    "name": 29
                   }
                 },
                 "value": {
                   "Call": {
                     "func": {
                       "Identifier": {
-                        "name": 17
+                        "name": 16
                       }
                     },
                     "args": [
                       {
                         "Identifier": {
-                          "name": 27
+                          "name": 26
                         }
                       }
                     ]
@@ -232,13 +232,13 @@
                       "Call": {
                         "func": {
                           "Identifier": {
-                            "name": 32
+                            "name": 31
                           }
                         },
                         "args": [
                           {
                             "Identifier": {
-                              "name": 30
+                              "name": 29
                             }
                           }
                         ]
@@ -257,7 +257,7 @@
                         "name": 9
                       }
                     },
-                    "payload": 33
+                    "payload": 32
                   }
                 },
                 "value": {
@@ -284,20 +284,20 @@
               "Let": {
                 "pattern": {
                   "Identifier": {
-                    "name": 35
+                    "name": 34
                   }
                 },
                 "value": {
                   "Call": {
                     "func": {
                       "Identifier": {
-                        "name": 17
+                        "name": 16
                       }
                     },
                     "args": [
                       {
                         "Identifier": {
-                          "name": 33
+                          "name": 32
                         }
                       }
                     ]
@@ -317,13 +317,13 @@
                       "Call": {
                         "func": {
                           "Identifier": {
-                            "name": 32
+                            "name": 31
                           }
                         },
                         "args": [
                           {
                             "Identifier": {
-                              "name": 33
+                              "name": 32
                             }
                           }
                         ]

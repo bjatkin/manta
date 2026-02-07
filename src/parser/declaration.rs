@@ -194,7 +194,7 @@ mod tests {
                             type_spec: TypeSpec::Int32,
                         },
                         Parameter {
-                            name: 6,
+                            name: 5,
                             type_spec: TypeSpec::String,
                         },
                     ],
@@ -224,7 +224,7 @@ mod tests {
                     body: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 7 })),
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 6 })),
                                 args: vec![Expr::Identifier(IdentifierExpr { name: 3 })],
                             })
                         })],
@@ -326,7 +326,7 @@ mod tests {
                     body: BlockStmt {
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 9 })),
+                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 8 })),
                                 args: vec![Expr::Identifier(IdentifierExpr { name: 3 })],
                             }),
                         })],
@@ -351,7 +351,7 @@ mod tests {
                                 type_spec: TypeSpec::Int32,
                             },
                             StructField {
-                                name: 7,
+                                name: 6,
                                 type_spec: TypeSpec::Int32,
                             },
                         ]

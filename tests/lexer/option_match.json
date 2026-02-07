@@ -77,7 +77,7 @@
   {
     "kind": "Identifier",
     "source_id": 130,
-    "lexeme_id": 12
+    "lexeme_id": 18446744073709551608
   },
   {
     "kind": "CloseParen",
@@ -92,7 +92,7 @@
   {
     "kind": "Identifier",
     "source_id": 139,
-    "lexeme_id": 13
+    "lexeme_id": 12
   },
   {
     "kind": "Semicolon",
@@ -102,7 +102,7 @@
   {
     "kind": "CloseBrace",
     "source_id": 149,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -112,12 +112,12 @@
   {
     "kind": "FnKeyword",
     "source_id": 237,
-    "lexeme_id": 15
+    "lexeme_id": 14
   },
   {
     "kind": "Identifier",
     "source_id": 240,
-    "lexeme_id": 16
+    "lexeme_id": 15
   },
   {
     "kind": "OpenParen",
@@ -127,22 +127,22 @@
   {
     "kind": "Identifier",
     "source_id": 244,
-    "lexeme_id": 17
+    "lexeme_id": 16
   },
   {
     "kind": "Comma",
     "source_id": 245,
-    "lexeme_id": 18
+    "lexeme_id": 17
   },
   {
     "kind": "Identifier",
     "source_id": 247,
-    "lexeme_id": 19
+    "lexeme_id": 18
   },
   {
     "kind": "Identifier",
     "source_id": 249,
-    "lexeme_id": 12
+    "lexeme_id": 18446744073709551608
   },
   {
     "kind": "CloseParen",
@@ -162,22 +162,22 @@
   {
     "kind": "IfKeyword",
     "source_id": 264,
-    "lexeme_id": 20
+    "lexeme_id": 19
   },
   {
     "kind": "Identifier",
     "source_id": 267,
-    "lexeme_id": 19
+    "lexeme_id": 18
   },
   {
     "kind": "EqualEqual",
     "source_id": 269,
-    "lexeme_id": 21
+    "lexeme_id": 20
   },
   {
     "kind": "Int",
     "source_id": 272,
-    "lexeme_id": 22
+    "lexeme_id": 21
   },
   {
     "kind": "OpenBrace",
@@ -187,17 +187,17 @@
   {
     "kind": "ReturnKeyword",
     "source_id": 284,
-    "lexeme_id": 23
+    "lexeme_id": 22
   },
   {
     "kind": "Dot",
     "source_id": 291,
-    "lexeme_id": 24
+    "lexeme_id": 23
   },
   {
     "kind": "Identifier",
     "source_id": 292,
-    "lexeme_id": 13
+    "lexeme_id": 12
   },
   {
     "kind": "Semicolon",
@@ -207,7 +207,7 @@
   {
     "kind": "CloseBrace",
     "source_id": 306,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -217,12 +217,12 @@
   {
     "kind": "ReturnKeyword",
     "source_id": 312,
-    "lexeme_id": 23
+    "lexeme_id": 22
   },
   {
     "kind": "Dot",
     "source_id": 319,
-    "lexeme_id": 24
+    "lexeme_id": 23
   },
   {
     "kind": "Identifier",
@@ -237,17 +237,17 @@
   {
     "kind": "Identifier",
     "source_id": 323,
-    "lexeme_id": 17
+    "lexeme_id": 16
   },
   {
     "kind": "Slash",
     "source_id": 325,
-    "lexeme_id": 25
+    "lexeme_id": 24
   },
   {
     "kind": "Identifier",
     "source_id": 327,
-    "lexeme_id": 19
+    "lexeme_id": 18
   },
   {
     "kind": "CloseParen",
@@ -262,7 +262,7 @@
   {
     "kind": "CloseBrace",
     "source_id": 330,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -272,7 +272,7 @@
   {
     "kind": "FnKeyword",
     "source_id": 333,
-    "lexeme_id": 15
+    "lexeme_id": 14
   },
   {
     "kind": "Identifier",
@@ -297,22 +297,22 @@
   {
     "kind": "LetKeyword",
     "source_id": 349,
-    "lexeme_id": 26
+    "lexeme_id": 25
   },
   {
     "kind": "Identifier",
     "source_id": 353,
-    "lexeme_id": 27
+    "lexeme_id": 26
   },
   {
     "kind": "Equal",
     "source_id": 355,
-    "lexeme_id": 28
+    "lexeme_id": 27
   },
   {
     "kind": "Identifier",
     "source_id": 357,
-    "lexeme_id": 16
+    "lexeme_id": 15
   },
   {
     "kind": "OpenParen",
@@ -322,17 +322,17 @@
   {
     "kind": "Int",
     "source_id": 361,
-    "lexeme_id": 29
+    "lexeme_id": 28
   },
   {
     "kind": "Comma",
     "source_id": 363,
-    "lexeme_id": 18
+    "lexeme_id": 17
   },
   {
     "kind": "Int",
     "source_id": 365,
-    "lexeme_id": 30
+    "lexeme_id": 29
   },
   {
     "kind": "CloseParen",
@@ -347,12 +347,12 @@
   {
     "kind": "MatchKeyword",
     "source_id": 372,
-    "lexeme_id": 31
+    "lexeme_id": 30
   },
   {
     "kind": "Identifier",
     "source_id": 378,
-    "lexeme_id": 27
+    "lexeme_id": 26
   },
   {
     "kind": "OpenBrace",
@@ -362,7 +362,7 @@
   {
     "kind": "Dot",
     "source_id": 390,
-    "lexeme_id": 24
+    "lexeme_id": 23
   },
   {
     "kind": "Identifier",
@@ -377,7 +377,7 @@
   {
     "kind": "Identifier",
     "source_id": 394,
-    "lexeme_id": 32
+    "lexeme_id": 31
   },
   {
     "kind": "CloseParen",
@@ -397,12 +397,12 @@
   {
     "kind": "ColonColon",
     "source_id": 402,
-    "lexeme_id": 33
+    "lexeme_id": 32
   },
   {
     "kind": "Identifier",
     "source_id": 404,
-    "lexeme_id": 34
+    "lexeme_id": 33
   },
   {
     "kind": "OpenParen",
@@ -412,17 +412,17 @@
   {
     "kind": "Str",
     "source_id": 412,
-    "lexeme_id": 35
+    "lexeme_id": 34
   },
   {
     "kind": "Comma",
     "source_id": 422,
-    "lexeme_id": 18
+    "lexeme_id": 17
   },
   {
     "kind": "Identifier",
     "source_id": 424,
-    "lexeme_id": 32
+    "lexeme_id": 31
   },
   {
     "kind": "CloseParen",
@@ -432,12 +432,12 @@
   {
     "kind": "Semicolon",
     "source_id": 427,
-    "lexeme_id": 36
+    "lexeme_id": 35
   },
   {
     "kind": "CloseBrace",
     "source_id": 427,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -447,12 +447,12 @@
   {
     "kind": "Dot",
     "source_id": 437,
-    "lexeme_id": 24
+    "lexeme_id": 23
   },
   {
     "kind": "Identifier",
     "source_id": 438,
-    "lexeme_id": 13
+    "lexeme_id": 12
   },
   {
     "kind": "OpenBrace",
@@ -467,12 +467,12 @@
   {
     "kind": "ColonColon",
     "source_id": 453,
-    "lexeme_id": 33
+    "lexeme_id": 32
   },
   {
     "kind": "Identifier",
     "source_id": 455,
-    "lexeme_id": 34
+    "lexeme_id": 33
   },
   {
     "kind": "OpenParen",
@@ -482,7 +482,7 @@
   {
     "kind": "Str",
     "source_id": 463,
-    "lexeme_id": 37
+    "lexeme_id": 36
   },
   {
     "kind": "CloseParen",
@@ -492,12 +492,12 @@
   {
     "kind": "Semicolon",
     "source_id": 489,
-    "lexeme_id": 36
+    "lexeme_id": 35
   },
   {
     "kind": "CloseBrace",
     "source_id": 489,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -507,7 +507,7 @@
   {
     "kind": "CloseBrace",
     "source_id": 495,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -517,7 +517,7 @@
   {
     "kind": "CloseBrace",
     "source_id": 497,
-    "lexeme_id": 14
+    "lexeme_id": 13
   },
   {
     "kind": "Semicolon",
@@ -527,6 +527,6 @@
   {
     "kind": "Eof",
     "source_id": 499,
-    "lexeme_id": 36
+    "lexeme_id": 35
   }
 ]

@@ -226,8 +226,10 @@ mod test {
                 stmt,
                 LetStmt {
                     pattern: Pattern::Payload(PayloadPat {
-                        pat: Box::new(Pattern::Identifier(IdentifierPat { name: 1 })),
-                        payload: 3
+                        pat: Box::new(Pattern::Identifier(IdentifierPat {
+                            name: 18446744073709551603
+                        })),
+                        payload: 2
                     }),
                     value: Expr::BoolLiteral(true),
                     except: LetExcept::None,

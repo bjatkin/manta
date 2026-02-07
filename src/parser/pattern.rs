@@ -167,8 +167,10 @@ mod test {
         parse_pattern_type_match {
             input: "f32(f) =",
             want: Pattern::Payload(PayloadPat {
-                pat: Box::new(Pattern::Identifier(IdentifierPat { name: 0 })),
-                payload: 2,
+                pat: Box::new(Pattern::Identifier(IdentifierPat {
+                    name: 18446744073709551606
+                })),
+                payload: 1,
             }),
         },
         parse_pattern_pointer {

@@ -26,15 +26,15 @@
                 }
               },
               {
-                "name": 15,
+                "name": 14,
                 "payload": null
               },
               {
-                "name": 16,
+                "name": 15,
                 "payload": {
                   "Named": {
                     "module": 6,
-                    "name": 18
+                    "name": 17
                   }
                 }
               }
@@ -45,10 +45,10 @@
     },
     {
       "Function": {
-        "name": 21,
+        "name": 20,
         "params": [
           {
-            "name": 22,
+            "name": 21,
             "type_spec": "Bool"
           }
         ],
@@ -64,7 +64,7 @@
               "If": {
                 "check": {
                   "Identifier": {
-                    "name": 22
+                    "name": 21
                   }
                 },
                 "success": {
@@ -75,10 +75,10 @@
                           "Payload": {
                             "pat": {
                               "Identifier": {
-                                "name": 14
+                                "name": 18446744073709551608
                               }
                             },
-                            "payload": 26
+                            "payload": 24
                           }
                         },
                         "value": {
@@ -96,7 +96,7 @@
                             "DotAccess": {
                               "target": null,
                               "field": {
-                                "name": 16
+                                "name": 15
                               }
                             }
                           }
@@ -110,7 +110,7 @@
                             "operator": "Dereference",
                             "operand": {
                               "Identifier": {
-                                "name": 26
+                                "name": 24
                               }
                             }
                           }
@@ -135,7 +135,7 @@
                             "args": [
                               {
                                 "Identifier": {
-                                  "name": 26
+                                  "name": 24
                                 }
                               }
                             ]
@@ -154,7 +154,7 @@
                   "DotAccess": {
                     "target": null,
                     "field": {
-                      "name": 15
+                      "name": 14
                     }
                   }
                 }
@@ -177,7 +177,7 @@
                   "Call": {
                     "func": {
                       "Identifier": {
-                        "name": 21
+                        "name": 20
                       }
                     },
                     "args": [
@@ -199,7 +199,7 @@
                             }
                           }
                         },
-                        "payload": 26
+                        "payload": 24
                       }
                     },
                     "body": {
@@ -215,7 +215,7 @@
                                   "Call": {
                                     "func": {
                                       "Identifier": {
-                                        "name": 36
+                                        "name": 34
                                       }
                                     },
                                     "args": [
@@ -224,7 +224,7 @@
                                           "operator": "Dereference",
                                           "operand": {
                                             "Identifier": {
-                                              "name": 26
+                                              "name": 24
                                             }
                                           }
                                         }
@@ -244,7 +244,7 @@
                       "DotAccess": {
                         "target": null,
                         "field": {
-                          "name": 15
+                          "name": 14
                         }
                       }
                     },
@@ -261,12 +261,12 @@
                                   "Call": {
                                     "func": {
                                       "Identifier": {
-                                        "name": 36
+                                        "name": 34
                                       }
                                     },
                                     "args": [
                                       {
-                                        "StringLiteral": 38
+                                        "StringLiteral": 36
                                       }
                                     ]
                                   }
