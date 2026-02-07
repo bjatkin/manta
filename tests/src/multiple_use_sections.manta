@@ -1,0 +1,13 @@
+mod main
+
+use (
+    "fmt"
+)
+
+fn main() {
+    fmt::println("testing")
+}
+
+use (
+    "fail"
+)
