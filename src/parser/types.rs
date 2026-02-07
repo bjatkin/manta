@@ -41,10 +41,10 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                     let size = match lex.parse::<usize>() {
                         Ok(n) => n,
                         Err(_) => {
-                            return Err(ParseError::InvalidTypeSpec(format!(
-                                "Invalid array size: {}",
-                                lex
-                            )));
+                            return Err(ParseError::InvalidTypeSpec(
+                                size_tok,
+                                format!("Invalid array size: {}", lex),
+                            ));
                         }
                     };
 
@@ -53,6 +53,7 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                         TokenKind::CloseSquare => lexer.next_token(),
                         _ => {
                             return Err(ParseError::InvalidTypeSpec(
+                                next,
                                 "Expected ']' after array size".into(),
                             ));
                         }
@@ -65,10 +66,10 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                         size,
                     }))
                 }
-                other => Err(ParseError::InvalidTypeSpec(format!(
-                    "Unexpected token in array type: {:?}",
-                    other
-                ))),
+                other => Err(ParseError::InvalidTypeSpec(
+                    next,
+                    format!("Unexpected token in array type: {:?}", other),
+                )),
             }
         }
 
@@ -112,10 +113,10 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
             Ok(tyspec)
         }
 
-        other => Err(ParseError::InvalidTypeSpec(format!(
-            "Unexpected token while parsing type: {:?}",
-            other
-        ))),
+        other => Err(ParseError::InvalidTypeSpec(
+            token,
+            format!("Unexpected token while parsing type: {:?}", other),
+        )),
     }
 }
 

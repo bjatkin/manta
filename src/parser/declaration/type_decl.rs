@@ -1,6 +1,4 @@
-use crate::ast::{
-    Decl, EnumType, EnumVariant, IdentifierExpr, StructField, StructType, TypeDecl, TypeSpec,
-};
+use crate::ast::{Decl, EnumType, EnumVariant, StructField, StructType, TypeDecl, TypeSpec};
 use crate::parser::ParseError;
 use crate::parser::declaration::{DeclParselet, DeclParser};
 use crate::parser::lexer::{Lexer, Token, TokenKind};

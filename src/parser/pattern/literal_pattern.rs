@@ -19,17 +19,20 @@ impl PrefixPatternParselet for LiteralPatternParselet {
             TokenKind::FalseLiteral => Ok(Pattern::BoolLiteral(false)),
             TokenKind::Int => match lexeme.replace("_", "").parse() {
                 Ok(n) => Ok(Pattern::IntLiteral(n)),
-                Err(e) => Err(ParseError::Custom(format!(
-                    "Invalid integer pattern {:?}",
-                    e
-                ))),
+                Err(e) => Err(ParseError::Custom(
+                    token,
+                    format!("Invalid integer pattern {:?}", e),
+                )),
             },
             TokenKind::Float => match lexeme.replace("_", "").parse() {
                 Ok(f) => Ok(Pattern::FloatLiteral(f)),
-                Err(e) => Err(ParseError::Custom(format!("Invalid float pattern {:?}", e))),
+                Err(e) => Err(ParseError::Custom(
+                    token,
+                    format!("Invalid float pattern {:?}", e),
+                )),
             },
             TokenKind::Str => Ok(Pattern::StringLiteral(token.lexeme_id)),
-            _ => Err(ParseError::Custom("Invalid bool token".to_string())),
+            _ => Err(ParseError::Custom(token, "Invalid bool token".to_string())),
         }
     }
 }

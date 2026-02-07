@@ -53,7 +53,7 @@ impl NodeTree {
         id
     }
 
-    pub fn get_node(&self, node_id: NodeID) -> Option<&Node> {
+    pub fn _get_node(&self, node_id: NodeID) -> Option<&Node> {
         self.nodes.get(node_id)
     }
 

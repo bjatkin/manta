@@ -15,7 +15,6 @@ use std::rc::Rc;
 use crate::ast::{BinaryOp, Expr, UnaryOp};
 use crate::parser::ParseError;
 use crate::parser::lexer::{Lexer, Token, TokenKind};
-use crate::str_store::StrStore;
 
 use binary_operator::BinaryOperatorParselet;
 use call::CallParselet;
@@ -67,7 +66,6 @@ pub enum Precedence {
     Comparison,
     Addition,
     Multiplication,
-    Exponentiation,
     Prefix,
     Call,
 }

@@ -30,6 +30,7 @@ impl InfixExprParselet for IndexParselet {
         let next = lexer.next_token();
         if next.kind != TokenKind::CloseSquare {
             return Err(ParseError::MissingExpression(
+                next,
                 "missing index expression".to_string(),
             ));
         }

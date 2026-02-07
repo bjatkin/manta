@@ -13,13 +13,14 @@ impl PrefixExprParselet for GroupParselet {
         &self,
         parser: &ExprParser,
         lexer: &mut Lexer,
-        _token: Token,
+        token: Token,
     ) -> Result<Expr, ParseError> {
         // Parse the inner expression
         let expr = match parser.parse(lexer, Precedence::Base) {
             Ok(expr) => expr,
             Err(_) => {
                 return Err(ParseError::MissingExpression(
+                    token,
                     "missing expression inside parentheses".to_string(),
                 ));
             }

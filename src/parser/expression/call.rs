@@ -55,6 +55,7 @@ impl InfixExprParselet for CallParselet {
                 if fn_name == "free" {
                     if arguments.len() != 1 {
                         return Err(ParseError::InvalidArguments(
+                            token,
                             "free() expects exactly one argument".to_string(),
                         ));
                     }
@@ -67,6 +68,7 @@ impl InfixExprParselet for CallParselet {
                 if fn_name == "alloc" {
                     if arguments.is_empty() {
                         return Err(ParseError::InvalidArguments(
+                            token,
                             "alloc() expects at least on argument".to_string(),
                         ));
                     }

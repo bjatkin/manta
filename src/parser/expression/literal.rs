@@ -23,7 +23,10 @@ impl PrefixExprParselet for LiteralParselet {
             TokenKind::TrueLiteral => Ok(Expr::BoolLiteral(true)),
             TokenKind::FalseLiteral => Ok(Expr::BoolLiteral(false)),
             TokenKind::Str => Ok(Expr::StringLiteral(token.lexeme_id)),
-            e => Err(ParseError::Custom(format!("invalid integer {:?}", e))),
+            e => Err(ParseError::Custom(
+                token,
+                format!("invalid integer {:?}", e),
+            )),
         }
     }
 }
@@ -31,13 +34,16 @@ impl PrefixExprParselet for LiteralParselet {
 fn parse_int(lexer: &mut Lexer, token: Token) -> Result<Expr, ParseError> {
     match lexer.lexeme(token.lexeme_id).parse() {
         Ok(n) => Ok(Expr::IntLiteral(n)),
-        Err(e) => Err(ParseError::Custom(format!("invalid integer {:?}", e))),
+        Err(e) => Err(ParseError::Custom(
+            token,
+            format!("invalid integer {:?}", e),
+        )),
     }
 }
 
 fn parse_float(lexer: &mut Lexer, token: Token) -> Result<Expr, ParseError> {
     match lexer.lexeme(token.lexeme_id).parse() {
         Ok(f) => Ok(Expr::FloatLiteral(f)),
-        Err(e) => Err(ParseError::Custom(format!("invalid float {:?}", e))),
+        Err(e) => Err(ParseError::Custom(token, format!("invalid float {:?}", e))),
     }
 }
