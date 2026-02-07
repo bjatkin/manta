@@ -4,19 +4,19 @@ use crate::ast::{
     BlockStmt, Decl, Expr, IdentifierPat, LetExcept, LetStmt, Module, Pattern, Stmt, TypeSpec,
 };
 use crate::hir::{Node, NodeID, NodeTree};
-use crate::str_store::{self, StrID, StrStore};
+use crate::str_store::{self, StrID};
 
 struct Binding {
     name: StrID,
-    used: bool,
-    mutable: bool,
-    node: NodeID,
+    _used: bool,
+    _mutable: bool,
+    _node: NodeID,
 }
 
 struct Type {
     name: StrID,
     kind: TypeKind,
-    node: NodeID,
+    _node: NodeID,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -68,7 +68,7 @@ impl Scope {
                 kind: TypeKind::Unit,
                 // this isn't tied to any actual node so this ensures if we try to
                 // access the node we'll get a panic
-                node: usize::MAX,
+                _node: usize::MAX,
             });
         }
 
@@ -77,7 +77,7 @@ impl Scope {
             kind: TypeKind::Struct,
             // this isn't tied to any actual node so this ensures if we try to
             // access the node we'll get a panic
-            node: usize::MAX,
+            _node: usize::MAX,
         });
 
         Scope {
@@ -178,23 +178,11 @@ impl SymTable {
     }
 }
 
-pub struct Noder {
-    panic_id: StrID,
-    wrap_id: StrID,
-}
+pub struct Noder {}
 
 impl Noder {
-    pub fn new(str_store: &mut StrStore) -> Self {
-        // TODO: should we get all the necessary keywords here?
-        // maybe keywords like panic etc should be hard coded since we need to use.
-        // them in a bunch of places.
-
-        // used in `let .Ok = expr() !` style expressions
-        let panic_id = str_store.get_id("panic");
-
-        // used in `let .Ok = expr() wrap .Err` style expressions
-        let wrap_id = str_store.get_id("w");
-        Noder { panic_id, wrap_id }
+    pub fn new() -> Self {
+        Noder {}
     }
 
     pub fn node(&self, module: Module) -> NodeTree {
@@ -229,9 +217,9 @@ impl Noder {
 
                     sym_table.add_binding(Binding {
                         name: param.name,
-                        used: false,
-                        mutable: false, // params are immutable
-                        node: param_id,
+                        _used: false,
+                        _mutable: false, // params are immutable
+                        _node: param_id,
                     });
                 }
 
@@ -246,9 +234,9 @@ impl Noder {
 
                 sym_table.add_binding(Binding {
                     name: decl.name,
-                    used: false,
-                    mutable: false,
-                    node: decl_id,
+                    _used: false,
+                    _mutable: false,
+                    _node: decl_id,
                 });
 
                 sym_table.close_scope();
@@ -282,7 +270,7 @@ impl Noder {
                 sym_table.add_type(Type {
                     name: decl.name,
                     kind,
-                    node: decl_id,
+                    _node: decl_id,
                 });
             }
             Decl::Const(decl) => {
@@ -291,7 +279,7 @@ impl Noder {
                     name: decl.name,
                     type_spec: None,
                 });
-                let value_node = self.node_expr(sym_table, node_tree, &decl.value);
+                let value_node = Self::node_expr(sym_table, node_tree, &decl.value);
                 node_tree.add_node(Node::Assign {
                     target: decl_id,
                     value: value_node,
@@ -300,9 +288,9 @@ impl Noder {
                 // update the symbol table
                 sym_table.add_binding(Binding {
                     name: decl.name,
-                    used: false,
-                    mutable: false,
-                    node: decl_id,
+                    _used: false,
+                    _mutable: false,
+                    _node: decl_id,
                 });
             }
             Decl::Var(decl) => {
@@ -311,7 +299,7 @@ impl Noder {
                     name: decl.name,
                     type_spec: None,
                 });
-                let value_node = self.node_expr(sym_table, node_tree, &decl.value);
+                let value_node = Self::node_expr(sym_table, node_tree, &decl.value);
                 node_tree.add_node(Node::Assign {
                     target: decl_id,
                     value: value_node,
@@ -320,9 +308,9 @@ impl Noder {
                 // update the symbol table
                 sym_table.add_binding(Binding {
                     name: decl.name,
-                    used: false,
-                    mutable: true,
-                    node: decl_id,
+                    _used: false,
+                    _mutable: true,
+                    _node: decl_id,
                 });
             }
             Decl::Use(_) => todo!(
@@ -360,8 +348,8 @@ impl Noder {
         match stmt {
             Stmt::Let(stmt) => self.node_let(sym_table, node_tree, stmt),
             Stmt::Assign(stmt) => {
-                let l_id = self.node_expr(sym_table, node_tree, &stmt.lvalue);
-                let r_id = self.node_expr(sym_table, node_tree, &stmt.rvalue);
+                let l_id = Self::node_expr(sym_table, node_tree, &stmt.lvalue);
+                let r_id = Self::node_expr(sym_table, node_tree, &stmt.rvalue);
 
                 // TODO: should i check that l_id is an assignable node here or should that
                 // happen later when I do full type checking? (defaulting to later for now)
@@ -370,10 +358,10 @@ impl Noder {
                     value: r_id,
                 })
             }
-            Stmt::Expr(stmt) => self.node_expr(sym_table, node_tree, &stmt.expr),
+            Stmt::Expr(stmt) => Self::node_expr(sym_table, node_tree, &stmt.expr),
             Stmt::Return(stmt) => {
                 let value = if let Some(v) = &stmt.value {
-                    let value_id = self.node_expr(sym_table, node_tree, v);
+                    let value_id = Self::node_expr(sym_table, node_tree, v);
                     Some(value_id)
                 } else {
                     None
@@ -386,7 +374,7 @@ impl Noder {
                 node_tree.add_node(Node::Defer { block: block_id })
             }
             Stmt::Match(stmt) => {
-                let target_id = self.node_expr(sym_table, node_tree, &stmt.target);
+                let target_id = Self::node_expr(sym_table, node_tree, &stmt.target);
                 let mut arms = vec![];
                 for arm in &stmt.arms {
                     let block_id = self.node_block(sym_table, node_tree, &arm.body);
@@ -406,7 +394,7 @@ impl Noder {
             }
             Stmt::Block(stmt) => self.node_block(sym_table, node_tree, stmt),
             Stmt::If(stmt) => {
-                let check_id = self.node_expr(sym_table, node_tree, &stmt.check);
+                let check_id = Self::node_expr(sym_table, node_tree, &stmt.check);
                 let success_id = self.node_block(sym_table, node_tree, &stmt.success);
                 let fail_id = stmt
                     .fail
@@ -487,13 +475,15 @@ impl Noder {
                 // also body should be a block instead of just a regular expression so that
                 // the sym_table works correctly. We don't want to bind values to outer scopes
                 node_tree.add_node(Node::MatchArm {
-                    pattern: Pattern::Identifier(IdentifierPat { name: self.wrap_id }),
+                    pattern: Pattern::Identifier(IdentifierPat {
+                        name: str_store::WRAP,
+                    }),
                     body: body_id,
                 })
             }
             LetExcept::Panic => {
                 // TODO: can we reuse this node mabye?
-                let panic_id = node_tree.add_node(Node::Identifier(self.panic_id));
+                let panic_id = node_tree.add_node(Node::Identifier(str_store::PANIC));
                 // TODO: need to actually pass the results of the call to the panic
                 let body_id = node_tree.add_node(Node::Call {
                     func: panic_id,
@@ -512,7 +502,7 @@ impl Noder {
                 // right now we'll just panic...
 
                 // TODO: can we reuse this node mabye?
-                let panic_id = node_tree.add_node(Node::Identifier(self.panic_id));
+                let panic_id = node_tree.add_node(Node::Identifier(str_store::PANIC));
                 // TODO: need to actually pass the results of the call to the panic
                 let body_id = node_tree.add_node(Node::Call {
                     func: panic_id,
@@ -528,7 +518,7 @@ impl Noder {
 
         arms.push(default_id);
 
-        let value_id = self.node_expr(sym_table, node_tree, &stmt.value);
+        let value_id = Self::node_expr(sym_table, node_tree, &stmt.value);
         node_tree.add_node(Node::Match {
             target: value_id,
             arms,
@@ -559,7 +549,7 @@ impl Noder {
             Some(target) => target,
             // TODO: how do we check this more carfully, we need to fill in the type hole first
             None => {
-                let wrap_id = node_tree.add_node(Node::Identifier(self.wrap_id));
+                let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
                 let enum_id = node_tree.add_node(Node::EnumConstructor {
                     target: None,
                     variant,
@@ -588,7 +578,7 @@ impl Noder {
             };
         }
 
-        let wrap_id = node_tree.add_node(Node::Identifier(self.wrap_id));
+        let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
         let enum_id = node_tree.add_node(Node::EnumConstructor {
             target,
             variant,
@@ -598,7 +588,7 @@ impl Noder {
         Some(enum_id)
     }
 
-    fn node_expr(&self, sym_table: &mut SymTable, node_tree: &mut NodeTree, expr: &Expr) -> NodeID {
+    fn node_expr(sym_table: &mut SymTable, node_tree: &mut NodeTree, expr: &Expr) -> NodeID {
         match expr {
             Expr::IntLiteral(expr) => node_tree.add_node(Node::IntLiteral(*expr)),
             Expr::FloatLiteral(expr) => node_tree.add_node(Node::FloatLiteral(*expr)),
@@ -611,8 +601,8 @@ impl Noder {
                 None => panic!("unknown identifier"),
             },
             Expr::Binary(expr) => {
-                let left_id = self.node_expr(sym_table, node_tree, &expr.left);
-                let right_id = self.node_expr(sym_table, node_tree, &expr.right);
+                let left_id = Self::node_expr(sym_table, node_tree, &expr.left);
+                let right_id = Self::node_expr(sym_table, node_tree, &expr.right);
                 node_tree.add_node(Node::Binary {
                     left: left_id,
                     operator: expr.operator,
@@ -620,18 +610,18 @@ impl Noder {
                 })
             }
             Expr::Unary(expr) => {
-                let expr_id = self.node_expr(sym_table, node_tree, &expr.operand);
+                let expr_id = Self::node_expr(sym_table, node_tree, &expr.operand);
                 node_tree.add_node(Node::Unary {
                     operator: expr.operator,
                     operand: expr_id,
                 })
             }
             Expr::Call(expr) => {
-                let func_id = self.node_expr(sym_table, node_tree, &expr.func);
+                let func_id = Self::node_expr(sym_table, node_tree, &expr.func);
 
                 let mut args = vec![];
                 for arg in &expr.args {
-                    let param_id = self.node_expr(sym_table, node_tree, arg);
+                    let param_id = Self::node_expr(sym_table, node_tree, arg);
                     args.push(param_id);
                 }
 
@@ -654,8 +644,8 @@ impl Noder {
                 }
             }
             Expr::Index(expr) => {
-                let target_id = self.node_expr(sym_table, node_tree, &expr.target);
-                let idx_id = self.node_expr(sym_table, node_tree, &expr.index);
+                let target_id = Self::node_expr(sym_table, node_tree, &expr.target);
+                let idx_id = Self::node_expr(sym_table, node_tree, &expr.index);
 
                 node_tree.add_node(Node::Index {
                     target: target_id,
@@ -663,8 +653,8 @@ impl Noder {
                 })
             }
             Expr::Range(expr) => {
-                let start_id = self.node_expr(sym_table, node_tree, &expr.start);
-                let end_id = self.node_expr(sym_table, node_tree, &expr.end);
+                let start_id = Self::node_expr(sym_table, node_tree, &expr.start);
+                let end_id = Self::node_expr(sym_table, node_tree, &expr.end);
                 node_tree.add_node(Node::Range {
                     start: start_id,
                     end: end_id,
@@ -678,7 +668,7 @@ impl Noder {
                         let binding = sym_table.get_binding(ident.name);
                         if binding.is_some() {
                             // if this is a known binding then it's not an enum type
-                            let target_id = self.node_expr(sym_table, node_tree, target);
+                            let target_id = Self::node_expr(sym_table, node_tree, target);
                             return node_tree.add_node(Node::FieldAccess {
                                 target: Some(target_id),
                                 field: expr.field.name,
@@ -688,7 +678,7 @@ impl Noder {
                         let type_binding = sym_table.get_type(ident.name);
                         if let Some(t) = type_binding {
                             if t.kind == TypeKind::Enum {
-                                let target_id = self.node_expr(sym_table, node_tree, target);
+                                let target_id = Self::node_expr(sym_table, node_tree, target);
                                 return node_tree.add_node(Node::EnumConstructor {
                                     target: Some(target_id),
                                     variant: expr.field.name,
@@ -700,7 +690,7 @@ impl Noder {
                         panic!("unknown identifier")
                     }
                     _ => {
-                        let target_id = self.node_expr(sym_table, node_tree, target);
+                        let target_id = Self::node_expr(sym_table, node_tree, target);
                         node_tree.add_node(Node::FieldAccess {
                             target: Some(target_id),
                             field: expr.field.name,
@@ -719,10 +709,10 @@ impl Noder {
                 type_spec: expr.type_spec.clone(),
             }),
             Expr::Alloc(expr) => {
-                let meta_id = self.node_expr(sym_table, node_tree, &expr.meta_type);
+                let meta_id = Self::node_expr(sym_table, node_tree, &expr.meta_type);
                 let mut options = vec![];
                 for opt in &expr.options {
-                    let opt_id = self.node_expr(sym_table, node_tree, opt);
+                    let opt_id = Self::node_expr(sym_table, node_tree, opt);
                     options.push(opt_id);
                 }
 
@@ -732,7 +722,7 @@ impl Noder {
                 })
             }
             Expr::Free(expr) => {
-                let ptr_id = self.node_expr(sym_table, node_tree, &expr.expr);
+                let ptr_id = Self::node_expr(sym_table, node_tree, &expr.expr);
                 node_tree.add_node(Node::Free { expr: ptr_id })
             }
         }

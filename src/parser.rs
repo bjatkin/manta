@@ -5,7 +5,7 @@ pub mod pattern;
 pub mod statement;
 pub mod types;
 
-use crate::ast::{Decl, Module};
+use crate::ast::Module;
 use crate::str_store::StrStore;
 
 use declaration::DeclParser;
@@ -14,26 +14,12 @@ use lexer::{Lexer, Token, TokenKind};
 /// Parse error type for the parser core.
 #[derive(Debug, Clone)]
 pub enum ParseError {
-    Custom(String),
+    Custom(Token, String),
     UnexpectedToken(Token, String),
-    MissingExpression(String),
-    InvalidTypeSpec(String),
-    InvalidArguments(String),
+    MissingExpression(Token, String),
+    InvalidTypeSpec(Token, String),
+    InvalidArguments(Token, String),
     InvalidExpression(Token, String),
-}
-
-impl ParseError {
-    pub fn invalid_integer(lexeme: &str) -> Self {
-        ParseError::Custom(format!("Invalid integer literal: {}", lexeme))
-    }
-
-    pub fn invalid_float(lexeme: &str) -> Self {
-        ParseError::Custom(format!("Invalid float literal: {}", lexeme))
-    }
-
-    pub fn invalid_string(msg: &str) -> Self {
-        ParseError::Custom(format!("Invalid string literal: {}", msg))
-    }
 }
 
 /// A minimal Parser core scaffolding. This implements a buffered token stream
@@ -54,7 +40,7 @@ impl Parser {
     }
 
     /// Parse a Manta module
-    pub fn parse_module<'a>(&self, str_store: &mut StrStore) -> Result<Module, ParseError> {
+    pub fn parse_module(&self, str_store: &mut StrStore) -> Result<Module, ParseError> {
         let mut declarations = vec![];
         let mut lexer = Lexer::new(&self.source, str_store);
 

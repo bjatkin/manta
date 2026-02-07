@@ -90,7 +90,6 @@ pub struct Token {
 pub struct Lexer<'a> {
     source: &'a str,
     pos: usize,
-    done: bool,
     prev_kind: TokenKind,
     next: Token,
     str_store: &'a mut StrStore,
@@ -102,7 +101,6 @@ impl<'a> Lexer<'a> {
         let mut lexer = Lexer {
             source,
             pos: 0,
-            done: false,
             prev_kind: TokenKind::Identifier,
             next: Token {
                 kind: TokenKind::Identifier,

@@ -8,7 +8,8 @@ pub type StrID = usize;
 
 // Some key strings are hard coded as package constants these include type names
 // and internal string values
-pub const NilID: StrID = usize::MAX;
+// nil is is used to represent an invalid StrID
+pub const _NILID: StrID = usize::MAX;
 
 pub const U8: StrID = usize::MAX - 1;
 pub const U16: StrID = usize::MAX - 2;
@@ -142,7 +143,7 @@ impl StrStore {
     }
 
     /// get the StrID for the string if it has been added previously.
-    pub fn find_id(&self, s: &str) -> Option<StrID> {
+    pub fn _find_id(&self, s: &str) -> Option<StrID> {
         match constant_str_id(s) {
             Some(id) => Some(id),
             None => self.strings.get(s).copied(),
@@ -166,10 +167,10 @@ mod tests {
         let mut store = StrStore::new();
         store.get_id("hello");
         store.get_id("goodbye");
-        if store.find_id("hello").is_none() {
+        if store._find_id("hello").is_none() {
             panic!("hello should be in the store");
         }
-        if store.find_id("world").is_some() {
+        if store._find_id("world").is_some() {
             panic!("world should not be in the store");
         }
     }
