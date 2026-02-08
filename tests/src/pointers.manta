@@ -1,0 +1,24 @@
+// examples/option_match.manta
+mod main
+
+use (
+    "fmt"
+)
+
+// TODO: replace with fmt::println when modules are fully supported
+fn fmt_println(i i64) {}
+
+fn main() {
+    let i = 42
+    let j = 2701
+
+	  let p = &i      // point to i
+	  fmt_println(*p) // read i through the pointer
+	  *p = 21         // set i through the pointer
+	  fmt_println(i)  // see the new value of i
+
+	  p = &j         // point to j
+	  *p = *p / 37   // divide j through the pointer
+	  fmt_println(j) // see the new value of j
+}
+
