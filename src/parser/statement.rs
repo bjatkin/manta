@@ -292,7 +292,7 @@ mod test {
                                 target: Some(Box::new(Expr::Identifier(IdentifierExpr {
                                     name: 1
                                 }))),
-                                field: IdentifierExpr { name: 3 },
+                                field: 3,
                             })),
                             args: vec![Expr::BoolLiteral(true)],
                         })),
@@ -435,7 +435,7 @@ mod test {
                     rvalue: Expr::Call(CallExpr {
                         func: Box::new(Expr::DotAccess(DotAccessExpr {
                             target: Some(Box::new(Expr::Identifier(IdentifierExpr { name: 2 }))),
-                            field: IdentifierExpr { name: 0 },
+                            field: 0,
                         })),
                         args: vec![
                             Expr::Identifier(IdentifierExpr { name: 5 }),
@@ -534,7 +534,7 @@ mod test {
                 ReturnStmt {
                     value: Some(Expr::DotAccess(DotAccessExpr {
                         target: None,
-                        field: IdentifierExpr { name: 2 },
+                        field: 2,
                     })),
                 }
             ),
@@ -650,7 +650,7 @@ mod test {
                     }),
                     except: LetExcept::Wrap(Expr::DotAccess(DotAccessExpr {
                         target: None,
-                        field: IdentifierExpr { name: 9 }
+                        field: 9
                     })),
                 },
             ),
@@ -835,7 +835,7 @@ mod test {
                 stmt,
                 ExprStmt {
                     expr: Expr::ModuleAccess(ModuleAccessExpr {
-                        module: IdentifierExpr { name: 0 },
+                        module: 0,
                         expr: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                     }),
                 }
@@ -848,7 +848,7 @@ mod test {
                 stmt,
                 ExprStmt {
                     expr: Expr::ModuleAccess(ModuleAccessExpr {
-                        module: IdentifierExpr { name: 0 },
+                        module: 0,
                         expr: Box::new(Expr::Call(CallExpr {
                             func: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                             args: vec![Expr::StringLiteral(4)],
@@ -864,7 +864,7 @@ mod test {
                 stmt,
                 ExprStmt {
                     expr: Expr::ModuleAccess(ModuleAccessExpr {
-                        module: IdentifierExpr { name: 0 },
+                        module: 0,
                         expr: Box::new(Expr::Identifier(IdentifierExpr { name: 2 })),
                     }),
                 }
