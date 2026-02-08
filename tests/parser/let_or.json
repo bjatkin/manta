@@ -1,6 +1,6 @@
 {
   "name": 1,
-  "modules": [
+  "using_modules": [
     5,
     6,
     7
@@ -88,9 +88,7 @@
                 },
                 "value": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 5
-                    },
+                    "module": 5,
                     "expr": {
                       "Call": {
                         "func": {
@@ -113,9 +111,7 @@
                   "Wrap": {
                     "DotAccess": {
                       "target": null,
-                      "field": {
-                        "name": 14
-                      }
+                      "field": 14
                     }
                   }
                 }
@@ -129,9 +125,7 @@
                       "Expr": {
                         "expr": {
                           "ModuleAccess": {
-                            "module": {
-                              "name": 5
-                            },
+                            "module": 5,
                             "expr": {
                               "Call": {
                                 "func": {
@@ -173,9 +167,7 @@
                 },
                 "value": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 6
-                    },
+                    "module": 6,
                     "expr": {
                       "Call": {
                         "func": {
@@ -198,9 +190,7 @@
                   "Wrap": {
                     "DotAccess": {
                       "target": null,
-                      "field": {
-                        "name": 17
-                      }
+                      "field": 17
                     }
                   }
                 }
@@ -213,9 +203,7 @@
                     "func": {
                       "DotAccess": {
                         "target": null,
-                        "field": {
-                          "name": 13
-                        }
+                        "field": 13
                       }
                     },
                     "args": [
@@ -278,9 +266,7 @@
                           "Expr": {
                             "expr": {
                               "ModuleAccess": {
-                                "module": {
-                                  "name": 7
-                                },
+                                "module": 7,
                                 "expr": {
                                   "Call": {
                                     "func": {
@@ -319,9 +305,7 @@
               "Expr": {
                 "expr": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 7
-                    },
+                    "module": 7,
                     "expr": {
                       "Call": {
                         "func": {
@@ -378,5 +362,173 @@
         }
       }
     }
-  ]
+  ],
+  "sym_table": {
+    "scopes": [
+      {
+        "parent": null,
+        "bindings": [
+          {
+            "name": 18446744073709551614,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551613,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551612,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551611,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551610,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551609,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551608,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551607,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551606,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551605,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551603,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551604,
+            "binding_type": "StructType",
+            "used": true
+          },
+          {
+            "name": 10,
+            "binding_type": "EnumType",
+            "used": true
+          },
+          {
+            "name": 21,
+            "binding_type": "FuncType",
+            "used": false
+          },
+          {
+            "name": 1,
+            "binding_type": "FuncType",
+            "used": false
+          }
+        ],
+        "children": [
+          1,
+          4
+        ]
+      },
+      {
+        "parent": 0,
+        "bindings": [
+          {
+            "name": 22,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          2
+        ]
+      },
+      {
+        "parent": 1,
+        "bindings": [
+          {
+            "name": 25,
+            "binding_type": "Value",
+            "used": false
+          },
+          {
+            "name": 32,
+            "binding_type": "Value",
+            "used": true
+          }
+        ],
+        "children": [
+          3
+        ]
+      },
+      {
+        "parent": 2,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 0,
+        "bindings": [],
+        "children": [
+          5
+        ]
+      },
+      {
+        "parent": 4,
+        "bindings": [
+          {
+            "name": 35,
+            "binding_type": "Value",
+            "used": false
+          },
+          {
+            "name": 35,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          6
+        ]
+      },
+      {
+        "parent": 5,
+        "bindings": [
+          {
+            "name": 38,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          7
+        ]
+      },
+      {
+        "parent": 6,
+        "bindings": [],
+        "children": []
+      }
+    ],
+    "current_scope": 0
+  }
 }

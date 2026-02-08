@@ -1,20 +1,9 @@
 {
   "name": 1,
-  "modules": [
+  "using_modules": [
     5
   ],
-  "errors": [
-    {
-      "Custom": [
-        {
-          "kind": "Identifier",
-          "source_id": 0,
-          "lexeme_id": 0
-        },
-        "only a single import section allowed per file, and it must be right below the module name"
-      ]
-    }
-  ],
+  "errors": [],
   "decls": [
     {
       "Mod": {
@@ -39,9 +28,7 @@
               "Expr": {
                 "expr": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 5
-                    },
+                    "module": 5,
                     "expr": {
                       "Call": {
                         "func": {
@@ -71,5 +58,95 @@
         ]
       }
     }
-  ]
+  ],
+  "sym_table": {
+    "scopes": [
+      {
+        "parent": null,
+        "bindings": [
+          {
+            "name": 18446744073709551614,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551613,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551612,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551611,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551610,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551609,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551608,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551607,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551606,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551605,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551603,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551604,
+            "binding_type": "StructType",
+            "used": true
+          },
+          {
+            "name": 1,
+            "binding_type": "FuncType",
+            "used": false
+          }
+        ],
+        "children": [
+          1
+        ]
+      },
+      {
+        "parent": 0,
+        "bindings": [],
+        "children": [
+          2
+        ]
+      },
+      {
+        "parent": 1,
+        "bindings": [],
+        "children": []
+      }
+    ],
+    "current_scope": 0
+  }
 }

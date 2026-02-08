@@ -1,6 +1,6 @@
 {
   "name": 1,
-  "modules": [
+  "using_modules": [
     5,
     6
   ],
@@ -92,9 +92,7 @@
                                             "name": 5
                                           }
                                         },
-                                        "field": {
-                                          "name": 22
-                                        }
+                                        "field": 22
                                       }
                                     },
                                     "operator": "Multiply",
@@ -186,9 +184,7 @@
                             "name": 9
                           }
                         },
-                        "field": {
-                          "name": 13
-                        }
+                        "field": 13
                       }
                     },
                     "args": [
@@ -231,9 +227,7 @@
               "Expr": {
                 "expr": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 6
-                    },
+                    "module": 6,
                     "expr": {
                       "Call": {
                         "func": {
@@ -271,9 +265,7 @@
                     "func": {
                       "DotAccess": {
                         "target": null,
-                        "field": {
-                          "name": 12
-                        }
+                        "field": 12
                       }
                     },
                     "args": [
@@ -316,9 +308,7 @@
               "Expr": {
                 "expr": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 6
-                    },
+                    "module": 6,
                     "expr": {
                       "Call": {
                         "func": {
@@ -343,5 +333,183 @@
         }
       }
     }
-  ]
+  ],
+  "sym_table": {
+    "scopes": [
+      {
+        "parent": null,
+        "bindings": [
+          {
+            "name": 18446744073709551614,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551613,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551612,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551611,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551610,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551609,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551608,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551607,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551606,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551605,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551603,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551604,
+            "binding_type": "StructType",
+            "used": true
+          },
+          {
+            "name": 9,
+            "binding_type": "EnumType",
+            "used": false
+          },
+          {
+            "name": 16,
+            "binding_type": "FuncType",
+            "used": false
+          }
+        ],
+        "children": [
+          1
+        ]
+      },
+      {
+        "parent": 0,
+        "bindings": [
+          {
+            "name": 17,
+            "binding_type": "Value",
+            "used": true
+          }
+        ],
+        "children": [
+          2
+        ]
+      },
+      {
+        "parent": 1,
+        "bindings": [],
+        "children": [
+          3
+        ]
+      },
+      {
+        "parent": 2,
+        "bindings": [
+          {
+            "name": 20,
+            "binding_type": "Value",
+            "used": true
+          }
+        ],
+        "children": [
+          4,
+          5
+        ]
+      },
+      {
+        "parent": 3,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 3,
+        "bindings": [
+          {
+            "name": 1,
+            "binding_type": "FuncType",
+            "used": false
+          }
+        ],
+        "children": [
+          6,
+          9
+        ]
+      },
+      {
+        "parent": 5,
+        "bindings": [
+          {
+            "name": 17,
+            "binding_type": "Value",
+            "used": true
+          }
+        ],
+        "children": [
+          7,
+          8
+        ]
+      },
+      {
+        "parent": 6,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 6,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 5,
+        "bindings": [],
+        "children": [
+          10
+        ]
+      },
+      {
+        "parent": 9,
+        "bindings": [
+          {
+            "name": 32,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": []
+      }
+    ],
+    "current_scope": 5
+  }
 }

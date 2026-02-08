@@ -1,18 +1,7 @@
 {
   "name": 18446744073709551615,
-  "modules": [],
-  "errors": [
-    {
-      "Custom": [
-        {
-          "kind": "Identifier",
-          "source_id": 0,
-          "lexeme_id": 0
-        },
-        "first declaration in a file must be the module name"
-      ]
-    }
-  ],
+  "using_modules": [],
+  "errors": [],
   "decls": [
     {
       "Use": {
@@ -32,9 +21,7 @@
               "Expr": {
                 "expr": {
                   "ModuleAccess": {
-                    "module": {
-                      "name": 2
-                    },
+                    "module": 2,
                     "expr": {
                       "Call": {
                         "func": {
@@ -57,5 +44,95 @@
         }
       }
     }
-  ]
+  ],
+  "sym_table": {
+    "scopes": [
+      {
+        "parent": null,
+        "bindings": [
+          {
+            "name": 18446744073709551614,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551613,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551612,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551611,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551610,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551609,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551608,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551607,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551606,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551605,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551603,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551604,
+            "binding_type": "StructType",
+            "used": true
+          },
+          {
+            "name": 6,
+            "binding_type": "FuncType",
+            "used": false
+          }
+        ],
+        "children": [
+          1
+        ]
+      },
+      {
+        "parent": 0,
+        "bindings": [],
+        "children": [
+          2
+        ]
+      },
+      {
+        "parent": 1,
+        "bindings": [],
+        "children": []
+      }
+    ],
+    "current_scope": 0
+  }
 }
