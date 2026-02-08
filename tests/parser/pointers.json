@@ -1,70 +1,37 @@
 {
-  "name": 18446744073709551615,
-  "using_modules": [],
-  "errors": [
-    {
-      "Custom": [
-        {
-          "kind": "Identifier",
-          "source_id": 0,
-          "lexeme_id": 0
-        },
-        "first declaration in a file must be the module name"
-      ]
-    }
+  "name": 1,
+  "using_modules": [
+    5
   ],
+  "errors": [],
   "decls": [
+    {
+      "Mod": {
+        "name": 1
+      }
+    },
     {
       "Use": {
         "modules": [
-          2
+          5
         ]
       }
     },
     {
       "Function": {
-        "name": 6,
+        "name": 8,
         "params": [
           {
-            "name": 7,
-            "type_spec": "String"
+            "name": 9,
+            "type_spec": "Int64"
           }
         ],
         "return_type": null,
         "body": {
-          "statements": []
+          "statements": [ "this should not be empty..." ]
         }
       }
     },
-    {
-      "Function": {
-        "name": 10,
-        "params": [],
-        "return_type": null,
-        "body": {
-          "statements": [
-            {
-              "Expr": {
-                "expr": {
-                  "Call": {
-                    "func": {
-                      "Identifier": {
-                        "name": 6
-                      }
-                    },
-                    "args": [
-                      {
-                        "StringLiteral": 11
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          ]
-        }
-      }
-    }
   ],
   "sym_table": {
     "scopes": [
@@ -132,26 +99,20 @@
             "used": true
           },
           {
-            "name": 6,
-            "binding_type": "FuncType",
-            "used": true
-          },
-          {
-            "name": 10,
+            "name": 8,
             "binding_type": "FuncType",
             "used": false
           }
         ],
         "children": [
-          1,
-          3
+          1
         ]
       },
       {
         "parent": 0,
         "bindings": [
           {
-            "name": 7,
+            "name": 9,
             "binding_type": "Value",
             "used": false
           }
@@ -162,18 +123,6 @@
       },
       {
         "parent": 1,
-        "bindings": [],
-        "children": []
-      },
-      {
-        "parent": 0,
-        "bindings": [],
-        "children": [
-          4
-        ]
-      },
-      {
-        "parent": 3,
         "bindings": [],
         "children": []
       }

@@ -1,6 +1,6 @@
 {
   "name": 1,
-  "modules": [
+  "using_modules": [
     5
   ],
   "errors": [],
@@ -21,27 +21,148 @@
       "Type": {
         "name": 8,
         "type_spec": {
+          "Struct": {
+            "fields": []
+          }
+        }
+      }
+    },
+    {
+      "Type": {
+        "name": 12,
+        "type_spec": {
           "Enum": {
             "variants": [
               {
-                "name": 11,
-                "payload": null
-              },
-              {
-                "name": 12,
+                "name": 14,
                 "payload": {
                   "Named": {
-                    "module": 5,
-                    "name": 14
+                    "module": null,
+                    "name": 8
                   }
                 }
               },
               {
                 "name": 15,
+                "payload": null
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Function": {
+        "name": 17,
+        "params": [
+          {
+            "name": 18,
+            "type_spec": "String"
+          }
+        ],
+        "return_type": {
+          "Named": {
+            "module": null,
+            "name": 12
+          }
+        },
+        "body": {
+          "statements": [
+            {
+              "Return": {
+                "value": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": 15
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "Type": {
+        "name": 21,
+        "type_spec": {
+          "Enum": {
+            "variants": [
+              {
+                "name": 14,
+                "payload": "UInt64"
+              },
+              {
+                "name": 15,
+                "payload": null
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Function": {
+        "name": 22,
+        "params": [
+          {
+            "name": 23,
+            "type_spec": {
+              "Named": {
+                "module": null,
+                "name": 8
+              }
+            }
+          },
+          {
+            "name": 25,
+            "type_spec": {
+              "Slice": "UInt8"
+            }
+          }
+        ],
+        "return_type": null,
+        "body": {
+          "statements": [
+            {
+              "Return": {
+                "value": {
+                  "DotAccess": {
+                    "target": null,
+                    "field": 15
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "Type": {
+        "name": 28,
+        "type_spec": {
+          "Enum": {
+            "variants": [
+              {
+                "name": 14,
+                "payload": null
+              },
+              {
+                "name": 29,
                 "payload": {
                   "Named": {
-                    "module": 5,
-                    "name": 16
+                    "module": null,
+                    "name": 12
+                  }
+                }
+              },
+              {
+                "name": 30,
+                "payload": {
+                  "Named": {
+                    "module": null,
+                    "name": 21
                   }
                 }
               }
@@ -52,17 +173,17 @@
     },
     {
       "Function": {
-        "name": 19,
+        "name": 31,
         "params": [
           {
-            "name": 20,
+            "name": 18,
             "type_spec": "String"
           }
         ],
         "return_type": {
           "Named": {
             "module": null,
-            "name": 8
+            "name": 28
           }
         },
         "body": {
@@ -75,7 +196,7 @@
                       "DotAccess": {
                         "target": null,
                         "field": {
-                          "name": 11
+                          "name": 14
                         }
                       }
                     },
@@ -83,35 +204,26 @@
                   }
                 },
                 "value": {
-                  "ModuleAccess": {
-                    "module": {
-                      "name": 5
-                    },
-                    "expr": {
-                      "Call": {
-                        "func": {
-                          "Identifier": {
-                            "name": 25
-                          }
-                        },
-                        "args": [
-                          {
-                            "Identifier": {
-                              "name": 20
-                            }
-                          }
-                        ]
+                  "Call": {
+                    "func": {
+                      "Identifier": {
+                        "name": 17
                       }
-                    }
+                    },
+                    "args": [
+                      {
+                        "Identifier": {
+                          "name": 18
+                        }
+                      }
+                    ]
                   }
                 },
                 "except": {
                   "Wrap": {
                     "DotAccess": {
                       "target": null,
-                      "field": {
-                        "name": 12
-                      }
+                      "field": 29
                     }
                   }
                 }
@@ -124,26 +236,19 @@
                     {
                       "Expr": {
                         "expr": {
-                          "ModuleAccess": {
-                            "module": {
-                              "name": 5
-                            },
-                            "expr": {
-                              "Call": {
-                                "func": {
-                                  "Identifier": {
-                                    "name": 28
-                                  }
-                                },
-                                "args": [
-                                  {
-                                    "Identifier": {
-                                      "name": 23
-                                    }
-                                  }
-                                ]
+                          "Call": {
+                            "func": {
+                              "Identifier": {
+                                "name": 36
                               }
-                            }
+                            },
+                            "args": [
+                              {
+                                "Identifier": {
+                                  "name": 23
+                                }
+                              }
+                            ]
                           }
                         }
                       }
@@ -161,7 +266,7 @@
                         "Slice": "UInt8"
                       }
                     },
-                    "payload": 32
+                    "payload": 25
                   }
                 },
                 "value": {
@@ -189,7 +294,7 @@
                           "Free": {
                             "expr": {
                               "Identifier": {
-                                "name": 32
+                                "name": 25
                               }
                             }
                           }
@@ -208,18 +313,18 @@
                       "DotAccess": {
                         "target": null,
                         "field": {
-                          "name": 11
+                          "name": 14
                         }
                       }
                     },
-                    "payload": 37
+                    "payload": 42
                   }
                 },
                 "value": {
                   "Call": {
                     "func": {
                       "Identifier": {
-                        "name": 38
+                        "name": 43
                       }
                     },
                     "args": [
@@ -230,7 +335,7 @@
                       },
                       {
                         "Identifier": {
-                          "name": 32
+                          "name": 25
                         }
                       }
                     ]
@@ -240,9 +345,7 @@
                   "Wrap": {
                     "DotAccess": {
                       "target": null,
-                      "field": {
-                        "name": 15
-                      }
+                      "field": 30
                     }
                   }
                 }
@@ -253,9 +356,7 @@
                 "value": {
                   "DotAccess": {
                     "target": null,
-                    "field": {
-                      "name": 11
-                    }
+                    "field": 14
                   }
                 }
               }
@@ -264,5 +365,203 @@
         }
       }
     }
-  ]
+  ],
+  "sym_table": {
+    "scopes": [
+      {
+        "parent": null,
+        "bindings": [
+          {
+            "name": 18446744073709551614,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551613,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551612,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551611,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551610,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551609,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551608,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551607,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551606,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551605,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551603,
+            "binding_type": "UnitType",
+            "used": true
+          },
+          {
+            "name": 18446744073709551604,
+            "binding_type": "StructType",
+            "used": true
+          },
+          {
+            "name": 8,
+            "binding_type": "StructType",
+            "used": true
+          },
+          {
+            "name": 12,
+            "binding_type": "EnumType",
+            "used": true
+          },
+          {
+            "name": 17,
+            "binding_type": "FuncType",
+            "used": false
+          },
+          {
+            "name": 21,
+            "binding_type": "EnumType",
+            "used": true
+          },
+          {
+            "name": 22,
+            "binding_type": "FuncType",
+            "used": false
+          },
+          {
+            "name": 28,
+            "binding_type": "EnumType",
+            "used": true
+          },
+          {
+            "name": 31,
+            "binding_type": "FuncType",
+            "used": false
+          }
+        ],
+        "children": [
+          1,
+          3,
+          5
+        ]
+      },
+      {
+        "parent": 0,
+        "bindings": [
+          {
+            "name": 18,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          2
+        ]
+      },
+      {
+        "parent": 1,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 0,
+        "bindings": [
+          {
+            "name": 23,
+            "binding_type": "Value",
+            "used": false
+          },
+          {
+            "name": 25,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          4
+        ]
+      },
+      {
+        "parent": 3,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 0,
+        "bindings": [
+          {
+            "name": 18,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          6
+        ]
+      },
+      {
+        "parent": 5,
+        "bindings": [
+          {
+            "name": 23,
+            "binding_type": "Value",
+            "used": true
+          },
+          {
+            "name": 25,
+            "binding_type": "Value",
+            "used": true
+          },
+          {
+            "name": 42,
+            "binding_type": "Value",
+            "used": false
+          }
+        ],
+        "children": [
+          7,
+          8
+        ]
+      },
+      {
+        "parent": 6,
+        "bindings": [],
+        "children": []
+      },
+      {
+        "parent": 6,
+        "bindings": [],
+        "children": []
+      }
+    ],
+    "current_scope": 0
+  }
 }
