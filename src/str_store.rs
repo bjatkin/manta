@@ -75,6 +75,8 @@ fn constant_id_str(id: StrID) -> Option<&'static str> {
     }
 }
 
+// TODO: swap this out for slotmap maybe?
+
 /// A string interning store that maps strings to unique identifiers.
 ///
 /// This structure allows efficient deduplication of strings during lexing and parsing.

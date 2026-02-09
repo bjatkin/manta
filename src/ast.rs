@@ -1,130 +1,74 @@
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
 
+use crate::parser::ParseError;
+use crate::store::{ID, Store};
 use crate::str_store::StrID;
 
-pub struct StoreID<T> {
-    pub id: usize,
-    // This costs zero bytes at runtime
-    _marker: PhantomData<T>,
+pub struct Tree {
+    decls: Store<Decl>,
+    stmts: Store<Stmt>,
+    exprs: Store<Expr>,
+    errors: Vec<ParseError>,
 }
 
-pub struct Store<T> {
-    items: Vec<T>,
-}
-
-impl<T> Store<T> {
+impl Tree {
     pub fn new() -> Self {
-        Store { items: vec![] }
-    }
-
-    pub fn add(&mut self, item: T) -> StoreID<T> {
-        self.items.push(item);
-
-        StoreID {
-            id: self.items.len() - 1,
-            _marker: PhantomData,
+        Tree {
+            decls: Store::new(),
+            stmts: Store::new(),
+            exprs: Store::new(),
+            errors: vec![],
         }
     }
 
-    pub fn get(&self, id: StoreID<T>) -> Option<&T> {
-        self.items.get(id.id)
-    }
-}
-
-pub type DeclID = usize;
-pub type StmtID = usize;
-pub type ExprID = usize;
-pub type TypeSpecID = usize;
-pub type PatternID = usize;
-
-pub struct NodeStore {
-    decls: Vec<Decl>,
-    stmts: Vec<Stmt>,
-    exprs: Vec<Expr>,
-    type_specs: Vec<TypeSpec>,
-    patterns: Vec<Pattern>,
-}
-
-impl NodeStore {
-    pub fn new() -> Self {
-        NodeStore {
-            decls: vec![],
-            stmts: vec![],
-            exprs: vec![],
-            type_specs: vec![],
-            patterns: vec![],
-        }
+    pub fn add_error(&mut self, err: ParseError) {
+        self.errors.push(err)
     }
 
-    pub fn add_decl(&mut self, decl: Decl) -> DeclID {
-        self.decls.push(decl);
-        self.decls.len() - 1
+    pub fn add_decl(&mut self, decl: Decl) -> ID<Decl> {
+        self.decls.insert(decl)
     }
 
-    pub fn get_decl(&self, id: DeclID) -> Option<&Decl> {
+    pub fn get_decl(&self, id: ID<Decl>) -> Option<&Decl> {
         self.decls.get(id)
     }
 
-    pub fn add_stmt(&mut self, stmt: Stmt) -> StmtID {
-        self.stmts.push(stmt);
-        self.stmts.len() - 1
+    pub fn add_stmt(&mut self, stmt: Stmt) -> ID<Stmt> {
+        self.stmts.insert(stmt)
     }
 
-    pub fn get_stmt(&self, id: StmtID) -> Option<&Stmt> {
+    pub fn get_stmt(&self, id: ID<Stmt>) -> Option<&Stmt> {
         self.stmts.get(id)
     }
 
-    pub fn add_expr(&mut self, expr: Expr) -> ExprID {
-        self.exprs.push(expr);
-        self.exprs.len() - 1
+    pub fn add_expr(&mut self, expr: Expr) -> ID<Expr> {
+        self.exprs.insert(expr)
     }
 
-    pub fn get_expr(&self, id: ExprID) -> Option<&Expr> {
+    pub fn get_expr(&self, id: ID<Expr>) -> Option<&Expr> {
         self.exprs.get(id)
     }
-
-    pub fn add_type_spec(&mut self, type_spec: TypeSpec) -> TypeSpecID {
-        self.type_specs.push(type_spec);
-        self.type_specs.len() - 1
-    }
-
-    pub fn get_type_spec(&self, id: TypeSpecID) -> Option<&TypeSpec> {
-        self.type_specs.get(id)
-    }
-
-    pub fn add_pattern(&mut self, pattern: Pattern) -> PatternID {
-        self.patterns.push(pattern);
-        self.patterns.len() - 1
-    }
-
-    pub fn get_pattern(&self, id: PatternID) -> Option<&Pattern> {
-        self.patterns.get(id)
-    }
 }
 
-impl<'a> IntoIterator for &'a NodeStore {
+impl<'a> IntoIterator for &'a Tree {
     type Item = &'a Decl;
-    type IntoIter = NodeStoreIter<'a>;
+    type IntoIter = TreeIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        NodeStoreIter {
-            node_store: self,
-            idx: 0,
-        }
+        TreeIter { tree: self, idx: 0 }
     }
 }
 
-pub struct NodeStoreIter<'a> {
-    node_store: &'a NodeStore,
+pub struct TreeIter<'a> {
+    tree: &'a Tree,
     idx: usize,
 }
 
-impl<'a> Iterator for NodeStoreIter<'a> {
+impl<'a> Iterator for TreeIter<'a> {
     type Item = &'a Decl;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.node_store.decls.get(self.idx) {
+        match self.tree.decls.get(ID::from(self.idx)) {
             Some(decl) => {
                 self.idx += 1;
                 Some(decl)
@@ -240,8 +184,8 @@ pub enum TypeSpec {
     // User-defined types
     Named { module: Option<StrID>, name: StrID },
     // Composite types
-    Pointer(TypeSpecID),
-    Slice(TypeSpecID),
+    Pointer(Box<TypeSpec>),
+    Slice(Box<TypeSpec>),
     Array(ArrayType),
     Struct(StructType),
     Enum(EnumType),
@@ -256,7 +200,7 @@ pub struct MetaTypeExpr {
 /// Array type with size
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ArrayType {
-    pub type_spec: TypeSpecID,
+    pub type_spec: Box<TypeSpec>,
     pub size: usize,
 }
 
@@ -292,7 +236,7 @@ pub struct BlockStmt {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IfStmt {
-    pub check: ExprID,
+    pub check: ID<Expr>,
     pub success: BlockStmt,
     pub fail: Option<BlockStmt>,
 }
@@ -381,19 +325,19 @@ pub enum Pattern {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ModuleAccesPat {
-    pub module: PatternID,
-    pub pat: PatternID,
+    pub module: Box<Pattern>,
+    pub pat: Box<Pattern>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DotAccessPat {
-    pub target: Option<PatternID>,
+    pub target: Option<Box<Pattern>>,
     pub field: IdentifierPat,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PayloadPat {
-    pub pat: PatternID,
+    pub pat: Box<Pattern>,
     pub payload: StrID,
 }
 
@@ -445,6 +389,8 @@ pub enum Expr {
     // Memory operations
     Alloc(AllocExpr),
     Free(FreeExpr),
+
+    Invalid,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -454,9 +400,9 @@ pub struct IdentifierExpr {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct BinaryExpr {
-    pub left: ExprID,
+    pub left: ID<Expr>,
     pub operator: BinaryOp,
-    pub right: ExprID,
+    pub right: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -482,7 +428,7 @@ pub enum BinaryOp {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct UnaryExpr {
     pub operator: UnaryOp,
-    pub operand: ExprID,
+    pub operand: ID<Expr>,
 }
 
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
@@ -496,48 +442,48 @@ pub enum UnaryOp {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct CallExpr {
-    pub func: ExprID,
+    pub func: ID<Expr>,
     pub args: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IndexExpr {
-    pub target: ExprID,
-    pub index: ExprID,
+    pub target: ID<Expr>,
+    pub index: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct RangeExpr {
-    pub start: ExprID,
-    pub end: ExprID,
+    pub start: ID<Expr>,
+    pub end: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct DotAccessExpr {
     // this is an option because this can be infered in some contexts
-    pub target: Option<ExprID>,
+    pub target: Option<ID<Expr>>,
     pub field: StrID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ModuleAccessExpr {
     pub module: StrID,
-    pub expr: ExprID,
+    pub expr: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct CastExpr {
-    expr: ExprID,
+    expr: ID<Expr>,
     target_type: TypeSpec,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct AllocExpr {
-    pub meta_type: ExprID,
+    pub meta_type: ID<Expr>,
     pub options: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FreeExpr {
-    pub expr: ExprID,
+    pub expr: ID<Expr>,
 }

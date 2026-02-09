@@ -12,9 +12,10 @@ mod unary_operator;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::ast::{BinaryOp, Expr, UnaryOp};
+use crate::ast::{BinaryOp, Expr, Tree, UnaryOp};
 use crate::parser::ParseError;
 use crate::parser::lexer::{Lexer, Token, TokenKind};
+use crate::store::ID;
 
 use binary_operator::BinaryOperatorParselet;
 use call::CallParselet;
@@ -244,15 +245,21 @@ impl ExprParser {
 
     /// Parse an expression with a minimum precedence level.
     /// This implements the Pratt parser algorithm.
-    pub fn parse(&self, lexer: &mut Lexer, min_precedence: Precedence) -> Result<Expr, ParseError> {
+    pub fn parse(
+        &self,
+        lexer: &mut Lexer,
+        tree: &mut Tree,
+        min_precedence: Precedence,
+    ) -> ID<Expr> {
         let token = lexer.next_token();
 
         let prefix_opt = self.prefix_parselets.get(&token.kind);
         if prefix_opt.is_none() {
-            return Err(ParseError::UnexpectedToken(
+            tree.add_error(ParseError::UnexpectedToken(
                 token,
                 "No prefix parselet for token kind".to_string(),
             ));
+            return tree.add_expr(Expr::Invalid);
         };
 
         let prefix = prefix_opt.unwrap().clone();

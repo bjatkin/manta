@@ -6,7 +6,7 @@ pub mod pattern;
 pub mod statement;
 pub mod types;
 
-use crate::ast::Decl;
+use crate::ast::{Decl, Tree};
 use crate::str_store::StrStore;
 
 use declaration::DeclParser;
@@ -46,8 +46,7 @@ impl Parser {
     pub fn parse_module(&self, str_store: &mut StrStore) -> Module {
         let mut lexer = Lexer::new(&self.source, str_store);
 
-        let mut declarations = vec![];
-        let mut errors = vec![];
+        let mut tree = Tree::new();
         loop {
             let token_kind = lexer.peek().kind;
             if token_kind == TokenKind::Eof {
@@ -57,17 +56,10 @@ impl Parser {
             // want to try and compile no matter what so having some of the declaration info is
             // important and for decls like a function its possible to have way more than a single
             // ParseError that needs to be reported
-            let decl = match self.decl_parser.parse(&mut lexer) {
-                Ok(decl) => decl,
-                Err(err) => {
-                    errors.push(err);
-                    Decl::Invalid
-                }
-            };
-            declarations.push(decl);
+            self.decl_parser.parse(&mut lexer, &mut tree)
         }
 
-        Module::new(errors, declarations)
+        Module::new(tree)
     }
 }
 

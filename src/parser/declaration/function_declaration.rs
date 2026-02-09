@@ -1,8 +1,9 @@
-use crate::ast::{Decl, FunctionDecl, Parameter};
+use crate::ast::{Decl, FunctionDecl, Parameter, Tree};
 use crate::parser::ParseError;
 use crate::parser::declaration::{DeclParselet, DeclParser};
 use crate::parser::lexer::{Lexer, Token, TokenKind};
 use crate::parser::types;
+use crate::store::ID;
 
 /// Parses top-level function declarations
 ///
@@ -14,14 +15,17 @@ impl DeclParselet for FunctionDeclParselet {
         &self,
         parser: &DeclParser,
         lexer: &mut Lexer,
+        tree: &mut Tree,
         _token: Token,
-    ) -> Result<Decl, ParseError> {
+    ) -> ID<Decl> {
         let token = lexer.next_token();
         if token.kind != TokenKind::Identifier {
-            return Err(ParseError::UnexpectedToken(
+            tree.add_error(ParseError::UnexpectedToken(
                 token,
                 "Expected function name".to_string(),
             ));
+            lexer.recover();
+            return tree.add_decl(Decl::Invalid);
         }
 
         let name = token.lexeme_id;

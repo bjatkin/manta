@@ -8,10 +8,11 @@ mod var_decl;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::ast::{BlockStmt, Decl, Expr};
+use crate::ast::{BlockStmt, Decl, Expr, Tree};
 use crate::parser::ParseError;
 use crate::parser::statement::StmtParser;
 use crate::parser::{Lexer, Token, TokenKind};
+use crate::store::ID;
 
 use const_decl::ConstDeclParselet;
 use function_declaration::FunctionDeclParselet;
@@ -27,8 +28,9 @@ pub trait DeclParselet {
         &self,
         parser: &DeclParser,
         lexer: &mut Lexer,
+        tree: &mut Tree,
         token: Token,
-    ) -> Result<Decl, ParseError>;
+    ) -> ID<Decl>;
 }
 
 pub struct DeclParser {
@@ -54,34 +56,34 @@ impl DeclParser {
     }
 
     /// Parse a top level declration for a manta program.
-    pub fn parse(&self, lexer: &mut Lexer) -> Result<Decl, ParseError> {
+    pub fn parse(&self, lexer: &mut Lexer, tree: &mut Tree) {
         let token = lexer.next_token();
 
         let prefix_opt = self.parselets.get(&token.kind);
         if prefix_opt.is_none() {
-            return Err(ParseError::UnexpectedToken(
+            tree.add_error(ParseError::UnexpectedToken(
                 token,
-                format!("Unexpected token at top level: {:?}", token.kind),
+                format!("Unexpected token at top level"),
             ));
+            tree.add_decl(Decl::Invalid);
+            return;
         }
 
         let prefix = prefix_opt.unwrap().clone();
-        let decl = prefix.parse(self, lexer, token)?;
+        prefix.parse(self, lexer, tree, token);
 
         // expect a semicolon after declarations
         let token = lexer.next_token();
         if token.kind != TokenKind::Semicolon {
-            Err(ParseError::UnexpectedToken(
+            tree.add_error(ParseError::UnexpectedToken(
                 token,
                 "missing semicolon".to_string(),
-            ))
-        } else {
-            Ok(decl)
+            ));
         }
     }
 
-    pub fn parse_expression(&self, lexer: &mut Lexer) -> Result<Expr, ParseError> {
-        self.statement_parser.parse_expression(lexer)
+    pub fn parse_expression(&self, lexer: &mut Lexer, tree: &mut Tree) -> Result<Expr, ParseError> {
+        self.statement_parser.parse_expression(lexer, tree)
     }
 
     pub fn parse_block(&self, lexer: &mut Lexer) -> Result<BlockStmt, ParseError> {
@@ -102,15 +104,17 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     macro_rules! test_parse_declaration {
-        ( $( $case:ident { input: $input:expr, want_var: $want_var:pat, want_value: $want_value:expr, } ),*, ) => {
+        ( $( $case:ident { input: $input:expr, want: $want:expr, } ),*, ) => {
             $(
                 #[test]
                 fn $case() {
                     let mut str_store = StrStore::new();
                     let mut lexer = Lexer::new($input, &mut str_store);
+                    let mut tree = Tree:new();
                     let parser = DeclParser::new();
 
-                    let decl = parser.parse(&mut lexer).unwrap();
+                    parser.parse(&mut lexer, &mut tree);
+                    assert_eq!(tree, $want)
                     match decl {
                         $want_var => $want_value,
                         _ => panic!("Expected {} => {}, but got {:?}", stringify!($want_var), stringify!($want_value), decl)

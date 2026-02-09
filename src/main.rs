@@ -3,6 +3,7 @@ mod compiler;
 mod hir;
 mod noder;
 mod parser;
+mod store;
 mod str_store;
 
 use clap::{Parser, Subcommand};
