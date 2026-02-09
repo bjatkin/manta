@@ -1,6 +1,138 @@
 use serde::{Deserialize, Serialize};
+use std::marker::PhantomData;
 
 use crate::str_store::StrID;
+
+pub struct StoreID<T> {
+    pub id: usize,
+    // This costs zero bytes at runtime
+    _marker: PhantomData<T>,
+}
+
+pub struct Store<T> {
+    items: Vec<T>,
+}
+
+impl<T> Store<T> {
+    pub fn new() -> Self {
+        Store { items: vec![] }
+    }
+
+    pub fn add(&mut self, item: T) -> StoreID<T> {
+        self.items.push(item);
+
+        StoreID {
+            id: self.items.len() - 1,
+            _marker: PhantomData,
+        }
+    }
+
+    pub fn get(&self, id: StoreID<T>) -> Option<&T> {
+        self.items.get(id.id)
+    }
+}
+
+pub type DeclID = usize;
+pub type StmtID = usize;
+pub type ExprID = usize;
+pub type TypeSpecID = usize;
+pub type PatternID = usize;
+
+pub struct NodeStore {
+    decls: Vec<Decl>,
+    stmts: Vec<Stmt>,
+    exprs: Vec<Expr>,
+    type_specs: Vec<TypeSpec>,
+    patterns: Vec<Pattern>,
+}
+
+impl NodeStore {
+    pub fn new() -> Self {
+        NodeStore {
+            decls: vec![],
+            stmts: vec![],
+            exprs: vec![],
+            type_specs: vec![],
+            patterns: vec![],
+        }
+    }
+
+    pub fn add_decl(&mut self, decl: Decl) -> DeclID {
+        self.decls.push(decl);
+        self.decls.len() - 1
+    }
+
+    pub fn get_decl(&self, id: DeclID) -> Option<&Decl> {
+        self.decls.get(id)
+    }
+
+    pub fn add_stmt(&mut self, stmt: Stmt) -> StmtID {
+        self.stmts.push(stmt);
+        self.stmts.len() - 1
+    }
+
+    pub fn get_stmt(&self, id: StmtID) -> Option<&Stmt> {
+        self.stmts.get(id)
+    }
+
+    pub fn add_expr(&mut self, expr: Expr) -> ExprID {
+        self.exprs.push(expr);
+        self.exprs.len() - 1
+    }
+
+    pub fn get_expr(&self, id: ExprID) -> Option<&Expr> {
+        self.exprs.get(id)
+    }
+
+    pub fn add_type_spec(&mut self, type_spec: TypeSpec) -> TypeSpecID {
+        self.type_specs.push(type_spec);
+        self.type_specs.len() - 1
+    }
+
+    pub fn get_type_spec(&self, id: TypeSpecID) -> Option<&TypeSpec> {
+        self.type_specs.get(id)
+    }
+
+    pub fn add_pattern(&mut self, pattern: Pattern) -> PatternID {
+        self.patterns.push(pattern);
+        self.patterns.len() - 1
+    }
+
+    pub fn get_pattern(&self, id: PatternID) -> Option<&Pattern> {
+        self.patterns.get(id)
+    }
+}
+
+impl<'a> IntoIterator for &'a NodeStore {
+    type Item = &'a Decl;
+    type IntoIter = NodeStoreIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        NodeStoreIter {
+            node_store: self,
+            idx: 0,
+        }
+    }
+}
+
+pub struct NodeStoreIter<'a> {
+    node_store: &'a NodeStore,
+    idx: usize,
+}
+
+impl<'a> Iterator for NodeStoreIter<'a> {
+    type Item = &'a Decl;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.node_store.decls.get(self.idx) {
+            Some(decl) => {
+                self.idx += 1;
+                Some(decl)
+            }
+            None => None,
+        }
+    }
+}
 
 /// Top-level declarations in a Manta program
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -108,8 +240,8 @@ pub enum TypeSpec {
     // User-defined types
     Named { module: Option<StrID>, name: StrID },
     // Composite types
-    Pointer(Box<TypeSpec>),
-    Slice(Box<TypeSpec>),
+    Pointer(TypeSpecID),
+    Slice(TypeSpecID),
     Array(ArrayType),
     Struct(StructType),
     Enum(EnumType),
@@ -124,7 +256,7 @@ pub struct MetaTypeExpr {
 /// Array type with size
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ArrayType {
-    pub type_spec: Box<TypeSpec>,
+    pub type_spec: TypeSpecID,
     pub size: usize,
 }
 
@@ -160,7 +292,7 @@ pub struct BlockStmt {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IfStmt {
-    pub check: Box<Expr>,
+    pub check: ExprID,
     pub success: BlockStmt,
     pub fail: Option<BlockStmt>,
 }
@@ -249,19 +381,19 @@ pub enum Pattern {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ModuleAccesPat {
-    pub module: Box<IdentifierPat>,
-    pub pat: Box<Pattern>,
+    pub module: PatternID,
+    pub pat: PatternID,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct DotAccessPat {
-    pub target: Option<Box<Pattern>>,
+    pub target: Option<PatternID>,
     pub field: IdentifierPat,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PayloadPat {
-    pub pat: Box<Pattern>,
+    pub pat: PatternID,
     pub payload: StrID,
 }
 
@@ -322,9 +454,9 @@ pub struct IdentifierExpr {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct BinaryExpr {
-    pub left: Box<Expr>,
+    pub left: ExprID,
     pub operator: BinaryOp,
-    pub right: Box<Expr>,
+    pub right: ExprID,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -350,7 +482,7 @@ pub enum BinaryOp {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct UnaryExpr {
     pub operator: UnaryOp,
-    pub operand: Box<Expr>,
+    pub operand: ExprID,
 }
 
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
@@ -364,48 +496,48 @@ pub enum UnaryOp {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct CallExpr {
-    pub func: Box<Expr>,
+    pub func: ExprID,
     pub args: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IndexExpr {
-    pub target: Box<Expr>,
-    pub index: Box<Expr>,
+    pub target: ExprID,
+    pub index: ExprID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct RangeExpr {
-    pub start: Box<Expr>,
-    pub end: Box<Expr>,
+    pub start: ExprID,
+    pub end: ExprID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct DotAccessExpr {
     // this is an option because this can be infered in some contexts
-    pub target: Option<Box<Expr>>,
+    pub target: Option<ExprID>,
     pub field: StrID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ModuleAccessExpr {
     pub module: StrID,
-    pub expr: Box<Expr>,
+    pub expr: ExprID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct CastExpr {
-    expr: Box<Expr>,
+    expr: ExprID,
     target_type: TypeSpec,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct AllocExpr {
-    pub meta_type: Box<Expr>,
+    pub meta_type: ExprID,
     pub options: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FreeExpr {
-    pub expr: Box<Expr>,
+    pub expr: ExprID,
 }
