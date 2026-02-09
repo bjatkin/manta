@@ -9,11 +9,12 @@ mod return_statement;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::ast::{BlockStmt, Expr, ExprStmt, Pattern, Stmt};
+use crate::ast::{BlockStmt, Expr, ExprStmt, Pattern, Stmt, Tree};
 use crate::parser::ParseError;
 use crate::parser::expression::{ExprParser, Precedence};
 use crate::parser::lexer::{Lexer, Token, TokenKind};
 use crate::parser::pattern::PatternParser;
+use crate::store::ID;
 
 use assign_statement::AssignParselet;
 use block_statement::BlockParselet;
@@ -160,8 +161,8 @@ impl StmtParser {
         Ok(BlockStmt { statements })
     }
 
-    pub fn parse_expression(&self, lexer: &mut Lexer) -> Result<Expr, ParseError> {
-        self.expr_parser.parse(lexer, Precedence::Base)
+    pub fn parse_expression(&self, lexer: &mut Lexer, tree: &mut Tree) -> ID<Expr> {
+        self.expr_parser.parse(lexer, tree, Precedence::Base)
     }
 
     pub fn parse_pattern(&self, lexer: &mut Lexer) -> Result<Pattern, ParseError> {

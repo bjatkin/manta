@@ -1,6 +1,82 @@
 use serde::{Deserialize, Serialize};
 
+use crate::parser::ParseError;
+use crate::store::{ID, Store};
 use crate::str_store::StrID;
+
+pub struct Tree {
+    decls: Store<Decl>,
+    stmts: Store<Stmt>,
+    exprs: Store<Expr>,
+    errors: Vec<ParseError>,
+}
+
+impl Tree {
+    pub fn new() -> Self {
+        Tree {
+            decls: Store::new(),
+            stmts: Store::new(),
+            exprs: Store::new(),
+            errors: vec![],
+        }
+    }
+
+    pub fn add_error(&mut self, err: ParseError) {
+        self.errors.push(err)
+    }
+
+    pub fn add_decl(&mut self, decl: Decl) -> ID<Decl> {
+        self.decls.insert(decl)
+    }
+
+    pub fn get_decl(&self, id: ID<Decl>) -> Option<&Decl> {
+        self.decls.get(id)
+    }
+
+    pub fn add_stmt(&mut self, stmt: Stmt) -> ID<Stmt> {
+        self.stmts.insert(stmt)
+    }
+
+    pub fn get_stmt(&self, id: ID<Stmt>) -> Option<&Stmt> {
+        self.stmts.get(id)
+    }
+
+    pub fn add_expr(&mut self, expr: Expr) -> ID<Expr> {
+        self.exprs.insert(expr)
+    }
+
+    pub fn get_expr(&self, id: ID<Expr>) -> Option<&Expr> {
+        self.exprs.get(id)
+    }
+}
+
+impl<'a> IntoIterator for &'a Tree {
+    type Item = &'a Decl;
+    type IntoIter = TreeIter<'a>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        TreeIter { tree: self, idx: 0 }
+    }
+}
+
+pub struct TreeIter<'a> {
+    tree: &'a Tree,
+    idx: usize,
+}
+
+impl<'a> Iterator for TreeIter<'a> {
+    type Item = &'a Decl;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.tree.decls.get(ID::from(self.idx)) {
+            Some(decl) => {
+                self.idx += 1;
+                Some(decl)
+            }
+            None => None,
+        }
+    }
+}
 
 /// Top-level declarations in a Manta program
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -160,7 +236,7 @@ pub struct BlockStmt {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IfStmt {
-    pub check: Box<Expr>,
+    pub check: ID<Expr>,
     pub success: BlockStmt,
     pub fail: Option<BlockStmt>,
 }
@@ -249,7 +325,7 @@ pub enum Pattern {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ModuleAccesPat {
-    pub module: Box<IdentifierPat>,
+    pub module: Box<Pattern>,
     pub pat: Box<Pattern>,
 }
 
@@ -313,6 +389,8 @@ pub enum Expr {
     // Memory operations
     Alloc(AllocExpr),
     Free(FreeExpr),
+
+    Invalid,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -322,9 +400,9 @@ pub struct IdentifierExpr {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct BinaryExpr {
-    pub left: Box<Expr>,
+    pub left: ID<Expr>,
     pub operator: BinaryOp,
-    pub right: Box<Expr>,
+    pub right: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -350,7 +428,7 @@ pub enum BinaryOp {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct UnaryExpr {
     pub operator: UnaryOp,
-    pub operand: Box<Expr>,
+    pub operand: ID<Expr>,
 }
 
 #[derive(PartialEq, Debug, Clone, Copy, Serialize, Deserialize)]
@@ -364,48 +442,48 @@ pub enum UnaryOp {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct CallExpr {
-    pub func: Box<Expr>,
+    pub func: ID<Expr>,
     pub args: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IndexExpr {
-    pub target: Box<Expr>,
-    pub index: Box<Expr>,
+    pub target: ID<Expr>,
+    pub index: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct RangeExpr {
-    pub start: Box<Expr>,
-    pub end: Box<Expr>,
+    pub start: ID<Expr>,
+    pub end: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct DotAccessExpr {
     // this is an option because this can be infered in some contexts
-    pub target: Option<Box<Expr>>,
+    pub target: Option<ID<Expr>>,
     pub field: StrID,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ModuleAccessExpr {
     pub module: StrID,
-    pub expr: Box<Expr>,
+    pub expr: ID<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct CastExpr {
-    expr: Box<Expr>,
+    expr: ID<Expr>,
     target_type: TypeSpec,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct AllocExpr {
-    pub meta_type: Box<Expr>,
+    pub meta_type: ID<Expr>,
     pub options: Vec<Expr>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FreeExpr {
-    pub expr: Box<Expr>,
+    pub expr: ID<Expr>,
 }
