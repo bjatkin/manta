@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use crate::ast::{BlockStmt, Decl, Expr, LetExcept, Pattern, Stmt, TypeSpec};
 use crate::parser::ParseError;
@@ -27,6 +28,9 @@ type ScopeID = usize;
 struct Scope {
     parent: Option<ScopeID>,
     bindings: Vec<Binding>,
+    // TODO: now that I have the scope_map I may be able to revert back to singly linked scopes
+    // instead of mapping both parents and children together. Once the HIR conversion fully uses
+    // the new SymTable come back here and try to remove this.
     children: Vec<ScopeID>,
 }
 
@@ -81,6 +85,11 @@ impl Scope {
 struct SymTable {
     scopes: Vec<Scope>,
     current_scope: ScopeID,
+    // TODO: this maps a source_id from the token to it's associated scope. In some ways this is
+    // nice because the scope maps to the actual spot in the file where it opens. However it feels
+    // a little messy in some ways too. I would rather use something like a NodeID but to do that
+    // would require a HUGE refactor of the AST so I'm leaving it at this for now.
+    scope_map: BTreeMap<usize, ScopeID>,
 }
 
 impl SymTable {
@@ -89,6 +98,7 @@ impl SymTable {
             // TODO: Should we use a SlotMap?
             scopes: vec![Scope::new_root()],
             current_scope: 0,
+            scope_map: BTreeMap::new(),
         }
     }
 
@@ -106,15 +116,16 @@ impl SymTable {
         }
     }
 
-    fn open_scope(&mut self) {
+    fn open_scope(&mut self, source_id: usize) {
         let new_scope = Scope::new(self.current_scope);
         let new_scope_id = self.scopes.len();
         self.scopes.push(new_scope);
+        self.scope_map.insert(source_id, new_scope_id);
 
         let current_scope = self.get_current_scope_mut();
         current_scope.children.push(new_scope_id);
 
-        self.current_scope = new_scope_id
+        self.current_scope = new_scope_id;
     }
 
     fn close_scope(&mut self) {
@@ -264,7 +275,7 @@ impl Module {
                         Self::build_sym_table_type_spec(errors, &mut sym_table, type_spec);
                     }
 
-                    sym_table.open_scope();
+                    sym_table.open_scope(decl.token.source_id);
 
                     for param in &decl.params {
                         sym_table.add_binding(Binding {
@@ -397,7 +408,7 @@ impl Module {
         sym_table: &mut SymTable,
         block: &BlockStmt,
     ) {
-        sym_table.open_scope();
+        sym_table.open_scope(block.token.source_id);
 
         for stmt in &block.statements {
             Self::build_sym_table_stmt(errors, sym_table, stmt);
@@ -426,8 +437,12 @@ impl Module {
                 }
 
                 match &stmt.except {
-                    LetExcept::Or { binding, body } => {
-                        sym_table.open_scope();
+                    LetExcept::Or {
+                        token,
+                        binding,
+                        body,
+                    } => {
+                        sym_table.open_scope(token.source_id);
 
                         if let Some(binding) = binding {
                             sym_table.add_binding(Binding {
@@ -467,7 +482,7 @@ impl Module {
                 Self::build_sym_table_expr(errors, sym_table, &stmt.target);
 
                 for arm in &stmt.arms {
-                    sym_table.open_scope();
+                    sym_table.open_scope(arm.token.source_id);
 
                     if let Pattern::Payload(pat) = &arm.pattern {
                         sym_table.add_binding(Binding {
@@ -479,7 +494,7 @@ impl Module {
 
                     Self::build_sym_table_block(errors, sym_table, &arm.body);
 
-                    sym_table.open_scope();
+                    sym_table.close_scope();
                 }
             }
             Stmt::Block(stmt) => {

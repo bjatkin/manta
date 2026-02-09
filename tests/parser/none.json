@@ -274,6 +274,11 @@
                 },
                 "arms": [
                   {
+                    "token": {
+                      "kind": "Dot",
+                      "source_id": 649,
+                      "lexeme_id": 31
+                    },
                     "pattern": {
                       "Payload": {
                         "pat": {
@@ -323,6 +328,11 @@
                     }
                   },
                   {
+                    "token": {
+                      "kind": "Dot",
+                      "source_id": 688,
+                      "lexeme_id": 31
+                    },
                     "pattern": {
                       "DotAccess": {
                         "target": null,
@@ -548,7 +558,8 @@
         "parent": 8,
         "bindings": [],
         "children": [
-          10
+          10,
+          12
         ]
       },
       {
@@ -561,8 +572,7 @@
           }
         ],
         "children": [
-          11,
-          12
+          11
         ]
       },
       {
@@ -571,7 +581,7 @@
         "children": []
       },
       {
-        "parent": 10,
+        "parent": 9,
         "bindings": [],
         "children": [
           13
@@ -580,22 +590,24 @@
       {
         "parent": 12,
         "bindings": [],
-        "children": [
-          14,
-          15
-        ]
-      },
-      {
-        "parent": 13,
-        "bindings": [],
-        "children": []
-      },
-      {
-        "parent": 13,
-        "bindings": [],
         "children": []
       }
     ],
-    "current_scope": 12
+    "current_scope": 0,
+    "scope_map": {
+      "226": 1,
+      "253": 2,
+      "256": 3,
+      "278": 4,
+      "423": 5,
+      "460": 6,
+      "474": 7,
+      "598": 8,
+      "608": 9,
+      "649": 10,
+      "656": 11,
+      "688": 12,
+      "701": 13
+    }
   }
 }

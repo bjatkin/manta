@@ -32,7 +32,7 @@ impl PrefixStmtParselet for LetParselet {
         let next = lexer.peek();
         match next.kind {
             TokenKind::OrKeyword => {
-                lexer.next_token();
+                let or_token = lexer.next_token();
                 let next = lexer.peek();
                 let binding = if next.kind == TokenKind::OpenParen {
                     lexer.next_token();
@@ -66,7 +66,11 @@ impl PrefixStmtParselet for LetParselet {
                 }
 
                 let body = parser.parse_block(lexer, token)?;
-                let except = LetExcept::Or { binding, body };
+                let except = LetExcept::Or {
+                    token: or_token,
+                    binding,
+                    body,
+                };
 
                 Ok(Stmt::Let(LetStmt {
                     pattern,

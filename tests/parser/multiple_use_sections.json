@@ -212,6 +212,12 @@
         "children": []
       }
     ],
-    "current_scope": 0
+    "current_scope": 0,
+    "scope_map": {
+      "97": 1,
+      "119": 2,
+      "123": 3,
+      "133": 4
+    }
   }
 }
