@@ -191,6 +191,7 @@ pub struct LetStmt {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum LetExcept {
     Or {
+        token: Token,
         binding: Option<StrID>,
         body: BlockStmt,
     },
@@ -228,6 +229,7 @@ pub struct MatchStmt {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct MatchArm {
+    pub token: Token,
     pub pattern: Pattern,
     pub body: BlockStmt,
 }

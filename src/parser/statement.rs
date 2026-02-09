@@ -629,6 +629,11 @@ mod test {
                         args: vec![Expr::StringLiteral(9)],
                     }),
                     except: LetExcept::Or {
+                        token: Token {
+                            kind: TokenKind::OrKeyword,
+                            source_id: 36,
+                            lexeme_id: 10,
+                        },
                         binding: None,
                         body: BlockStmt {
                             token: Token {
@@ -668,6 +673,11 @@ mod test {
                         ],
                     }),
                     except: LetExcept::Or {
+                        token: Token {
+                            kind: TokenKind::OrKeyword,
+                            source_id: 35,
+                            lexeme_id: 10,
+                        },
                         binding: Some(11),
                         body: BlockStmt {
                             token: Token {
@@ -729,6 +739,11 @@ mod test {
                     target: Expr::Identifier(IdentifierExpr { name: 1 }),
                     arms: vec![
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 14,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
@@ -753,6 +768,11 @@ mod test {
                             },
                         },
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 40,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::DotAccess(DotAccessPat {
                                 target: None,
                                 field: IdentifierPat { name: 12 },
@@ -790,6 +810,11 @@ mod test {
                     target: Expr::Identifier(IdentifierExpr { name: 1 }),
                     arms: vec![
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 19,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
@@ -814,6 +839,11 @@ mod test {
                             },
                         },
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 52,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,
@@ -838,6 +868,11 @@ mod test {
                             },
                         },
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 85,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::DotAccess(DotAccessPat {
                                 target: None,
                                 field: IdentifierPat { name: 14 },
@@ -874,6 +909,11 @@ mod test {
                     target: Expr::Identifier(IdentifierExpr { name: 1 }),
                     arms: vec![
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 19,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::DotAccess(DotAccessPat {
                                 target: None,
                                 field: IdentifierPat { name: 4 },
@@ -895,6 +935,11 @@ mod test {
                             },
                         },
                         MatchArm {
+                            token: Token {
+                                kind: TokenKind::Dot,
+                                source_id: 46,
+                                lexeme_id: 3,
+                            },
                             pattern: Pattern::Payload(PayloadPat {
                                 pat: Box::new(Pattern::DotAccess(DotAccessPat {
                                     target: None,

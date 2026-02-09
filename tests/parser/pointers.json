@@ -371,6 +371,12 @@
         "children": []
       }
     ],
-    "current_scope": 0
+    "current_scope": 0,
+    "scope_map": {
+      "29": 1,
+      "51": 2,
+      "55": 3,
+      "65": 4
+    }
   }
 }

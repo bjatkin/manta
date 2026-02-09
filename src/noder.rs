@@ -442,7 +442,7 @@ impl Noder {
         };
 
         let default_id = match &stmt.except {
-            LetExcept::Or { binding, body } => {
+            LetExcept::Or { binding, body, .. } => {
                 let body_id = self.node_block(sym_table, node_tree, body);
 
                 // TODO: need to update the sym_table for the match body here.

@@ -42,25 +42,29 @@ impl PrefixStmtParselet for MatchParselet {
 
             let pattern = parser.parse_pattern(lexer)?;
 
-            let token = lexer.next_token();
-            if token.kind != TokenKind::OpenBrace {
+            let next = lexer.next_token();
+            if next.kind != TokenKind::OpenBrace {
                 return Err(ParseError::UnexpectedToken(
-                    token,
+                    next,
                     "Expected '{' after pattern in match arm".to_string(),
                 ));
             }
 
-            let body = parser.parse_block(lexer, token)?;
+            let body = parser.parse_block(lexer, next)?;
 
-            let token = lexer.next_token();
-            if token.kind != TokenKind::Semicolon {
+            let next = lexer.next_token();
+            if next.kind != TokenKind::Semicolon {
                 return Err(ParseError::UnexpectedToken(
                     token,
                     "Expected ';' after body in match arm".to_string(),
                 ));
             }
 
-            arms.push(MatchArm { pattern, body });
+            arms.push(MatchArm {
+                token,
+                pattern,
+                body,
+            });
         }
 
         if arms.is_empty() {
