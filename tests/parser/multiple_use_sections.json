@@ -76,6 +76,11 @@
                   "Call": {
                     "func": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 139,
+                          "lexeme_id": 8
+                        },
                         "name": 8
                       }
                     },
@@ -175,10 +180,6 @@
             "binding_type": "FuncType",
             "used": false
           }
-        ],
-        "children": [
-          1,
-          3
         ]
       },
       {
@@ -189,27 +190,19 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          2
         ]
       },
       {
         "parent": 1,
-        "bindings": [],
-        "children": []
+        "bindings": []
       },
       {
         "parent": 0,
-        "bindings": [],
-        "children": [
-          4
-        ]
+        "bindings": []
       },
       {
         "parent": 3,
-        "bindings": [],
-        "children": []
+        "bindings": []
       }
     ],
     "current_scope": 0,
@@ -217,7 +210,8 @@
       "97": 1,
       "119": 2,
       "123": 3,
-      "133": 4
+      "133": 4,
+      "139": 4
     }
   }
 }

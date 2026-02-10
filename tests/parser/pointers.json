@@ -97,6 +97,11 @@
                     "operator": "AddressOf",
                     "operand": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 113,
+                          "lexeme_id": 9
+                        },
                         "name": 9
                       }
                     }
@@ -111,6 +116,11 @@
                   "Call": {
                     "func": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 119,
+                          "lexeme_id": 8
+                        },
                         "name": 8
                       }
                     },
@@ -120,6 +130,11 @@
                           "operator": "Dereference",
                           "operand": {
                             "Identifier": {
+                              "token": {
+                                "kind": "Identifier",
+                                "source_id": 132,
+                                "lexeme_id": 17
+                              },
                               "name": 17
                             }
                           }
@@ -137,6 +152,11 @@
                     "operator": "Dereference",
                     "operand": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 140,
+                          "lexeme_id": 17
+                        },
                         "name": 17
                       }
                     }
@@ -153,12 +173,22 @@
                   "Call": {
                     "func": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 151,
+                          "lexeme_id": 8
+                        },
                         "name": 8
                       }
                     },
                     "args": [
                       {
                         "Identifier": {
+                          "token": {
+                            "kind": "Identifier",
+                            "source_id": 163,
+                            "lexeme_id": 9
+                          },
                           "name": 9
                         }
                       }
@@ -171,6 +201,11 @@
               "Assign": {
                 "lvalue": {
                   "Identifier": {
+                    "token": {
+                      "kind": "Identifier",
+                      "source_id": 171,
+                      "lexeme_id": 17
+                    },
                     "name": 17
                   }
                 },
@@ -179,6 +214,11 @@
                     "operator": "AddressOf",
                     "operand": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 176,
+                          "lexeme_id": 15
+                        },
                         "name": 15
                       }
                     }
@@ -193,6 +233,11 @@
                     "operator": "Dereference",
                     "operand": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 183,
+                          "lexeme_id": 17
+                        },
                         "name": 17
                       }
                     }
@@ -205,6 +250,11 @@
                         "operator": "Dereference",
                         "operand": {
                           "Identifier": {
+                            "token": {
+                              "kind": "Identifier",
+                              "source_id": 188,
+                              "lexeme_id": 17
+                            },
                             "name": 17
                           }
                         }
@@ -224,12 +274,22 @@
                   "Call": {
                     "func": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 199,
+                          "lexeme_id": 8
+                        },
                         "name": 8
                       }
                     },
                     "args": [
                       {
                         "Identifier": {
+                          "token": {
+                            "kind": "Identifier",
+                            "source_id": 211,
+                            "lexeme_id": 15
+                          },
                           "name": 15
                         }
                       }
@@ -318,10 +378,6 @@
             "binding_type": "FuncType",
             "used": false
           }
-        ],
-        "children": [
-          1,
-          3
         ]
       },
       {
@@ -332,22 +388,15 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          2
         ]
       },
       {
         "parent": 1,
-        "bindings": [],
-        "children": []
+        "bindings": []
       },
       {
         "parent": 0,
-        "bindings": [],
-        "children": [
-          4
-        ]
+        "bindings": []
       },
       {
         "parent": 3,
@@ -367,8 +416,7 @@
             "binding_type": "Value",
             "used": true
           }
-        ],
-        "children": []
+        ]
       }
     ],
     "current_scope": 0,
@@ -376,7 +424,18 @@
       "29": 1,
       "51": 2,
       "55": 3,
-      "65": 4
+      "65": 4,
+      "119": 4,
+      "132": 4,
+      "140": 4,
+      "151": 4,
+      "163": 4,
+      "171": 4,
+      "176": 4,
+      "183": 4,
+      "188": 4,
+      "199": 4,
+      "211": 4
     }
   }
 }

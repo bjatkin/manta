@@ -1,183 +1,9 @@
 use std::ops::Deref;
 
-use crate::ast::{
-    BlockStmt, Decl, Expr, IdentifierPat, LetExcept, LetStmt, Pattern, Stmt, TypeSpec,
-};
+use crate::ast::{BlockStmt, Decl, Expr, IdentifierPat, LetExcept, LetStmt, Pattern, Stmt};
 use crate::hir::{Node, NodeID, NodeTree};
-use crate::parser::module::Module;
-use crate::str_store::{self, StrID};
-
-struct Binding {
-    name: StrID,
-    _used: bool,
-    _mutable: bool,
-    _node: NodeID,
-}
-
-struct Type {
-    name: StrID,
-    kind: TypeKind,
-    _node: NodeID,
-}
-
-#[derive(Copy, Clone, PartialEq)]
-enum TypeKind {
-    Unit,
-    Struct,
-    Enum,
-    Indexable,
-}
-
-type ScopeID = usize;
-
-struct Scope {
-    parent: Option<ScopeID>,
-    bindings: Vec<Binding>,
-    types: Vec<Type>,
-}
-
-impl Scope {
-    fn new(parent: ScopeID) -> Self {
-        Scope {
-            parent: Some(parent),
-            bindings: vec![],
-            types: vec![],
-        }
-    }
-
-    fn new_root() -> Self {
-        // the root scope always needs to have the builtin types since they're
-        // available in every package
-        let builtin_types = vec![
-            str_store::U8,
-            str_store::U16,
-            str_store::U32,
-            str_store::U64,
-            str_store::I8,
-            str_store::I16,
-            str_store::I32,
-            str_store::I64,
-            str_store::F32,
-            str_store::F64,
-            str_store::BOOL,
-        ];
-
-        let mut types = vec![];
-        for id in builtin_types {
-            types.push(Type {
-                name: id,
-                kind: TypeKind::Unit,
-                // this isn't tied to any actual node so this ensures if we try to
-                // access the node we'll get a panic
-                _node: usize::MAX,
-            });
-        }
-
-        types.push(Type {
-            name: str_store::STR,
-            kind: TypeKind::Struct,
-            // this isn't tied to any actual node so this ensures if we try to
-            // access the node we'll get a panic
-            _node: usize::MAX,
-        });
-
-        Scope {
-            parent: None,
-            bindings: vec![],
-            types,
-        }
-    }
-}
-
-struct SymTable {
-    scopes: Vec<Scope>,
-    current_scope: ScopeID,
-}
-
-impl SymTable {
-    fn new() -> Self {
-        let root = Scope::new_root();
-        SymTable {
-            scopes: vec![root],
-            current_scope: 0,
-        }
-    }
-
-    fn open_scope(&mut self) {
-        let parent = self.current_scope;
-        self.scopes.push(Scope::new(parent));
-
-        self.current_scope = self.scopes.len() - 1;
-    }
-
-    fn close_scope(&mut self) {
-        let scope = self.must_get_scope();
-        match scope.parent {
-            Some(s) => self.current_scope = s,
-            None => panic!("can not close the root scope"),
-        }
-    }
-
-    // TODO: bindings and types should actually be unified so we don't have bidings
-    // fighting in a single scope
-    // also, I think functions should be included in the bindings as well
-    // especially once we start adding closures
-    fn add_binding(&mut self, b: Binding) {
-        let scope = self.must_get_mut_scope();
-        scope.bindings.push(b);
-    }
-
-    fn add_type(&mut self, t: Type) {
-        let scope = self.must_get_mut_scope();
-        scope.types.push(t)
-    }
-
-    fn get_binding(&self, name: StrID) -> Option<&Binding> {
-        let mut scope = Some(self.must_get_scope());
-        while scope.is_some() {
-            let s = scope.unwrap();
-            match s.bindings.iter().find(|b| b.name == name) {
-                Some(b) => return Some(b),
-                None => match s.parent {
-                    Some(s) => scope = self.scopes.get(s),
-                    None => scope = None,
-                },
-            }
-        }
-
-        None
-    }
-
-    fn get_type(&self, name: StrID) -> Option<&Type> {
-        let mut scope = Some(self.must_get_scope());
-        while scope.is_some() {
-            let s = scope.unwrap();
-            match s.types.iter().find(|t| t.name == name) {
-                Some(t) => return Some(t),
-                None => match s.parent {
-                    Some(s) => scope = self.scopes.get(s),
-                    None => scope = None,
-                },
-            }
-        }
-
-        None
-    }
-
-    fn must_get_scope(&self) -> &Scope {
-        match self.scopes.get(self.current_scope) {
-            Some(s) => s,
-            None => panic!("invalid ScopeID in SymTable"),
-        }
-    }
-
-    fn must_get_mut_scope(&mut self) -> &mut Scope {
-        match self.scopes.get_mut(self.current_scope) {
-            Some(s) => s,
-            None => panic!("invalid ScopeID in SymTable"),
-        }
-    }
-}
+use crate::parser::module::{BindingType, Module};
+use crate::str_store;
 
 pub struct Noder {}
 
@@ -186,28 +12,20 @@ impl Noder {
         Noder {}
     }
 
-    pub fn node(&self, module: Module) -> NodeTree {
+    pub fn node(&mut self, module: Module) -> NodeTree {
         // Should these types be owned by the Noder type?
         let mut node_tree = NodeTree::new();
-        let mut sym_table = SymTable::new();
 
-        for (i, decl) in module.into_iter().enumerate() {
-            if i == 0 && !matches!(decl, Decl::Mod(_)) {
-                // TODO: should be a error not a panic like this
-                // update it once we have a good error system
-                panic!("first line must be a module")
-            }
-
-            self.node_decl(&mut sym_table, &mut node_tree, decl);
+        for decl in module.get_decls() {
+            self.node_decl(&mut node_tree, &module, decl);
         }
-        todo!()
+
+        node_tree
     }
 
-    fn node_decl(&self, sym_table: &mut SymTable, node_tree: &mut NodeTree, decl: &Decl) {
+    fn node_decl(&mut self, node_tree: &mut NodeTree, module: &Module, decl: &Decl) {
         match decl {
             Decl::Function(decl) => {
-                sym_table.open_scope();
-
                 let mut params = vec![];
                 for param in &decl.params {
                     let param_id = node_tree.add_node(Node::VarDecl {
@@ -215,63 +33,22 @@ impl Noder {
                         type_spec: Some(param.type_spec.clone()),
                     });
                     params.push(param_id);
-
-                    sym_table.add_binding(Binding {
-                        name: param.name,
-                        _used: false,
-                        _mutable: false, // params are immutable
-                        _node: param_id,
-                    });
                 }
 
-                let body_id = self.node_block(sym_table, node_tree, &decl.body);
+                let body_id = self.node_block(node_tree, module, &decl.body);
 
-                let decl_id = node_tree.add_root_node(Node::FunctionDecl {
+                node_tree.add_root_node(Node::FunctionDecl {
                     name: decl.name,
                     params,
                     return_type: decl.return_type.clone(),
                     body: body_id,
                 });
-
-                sym_table.add_binding(Binding {
-                    name: decl.name,
-                    _used: false,
-                    _mutable: false,
-                    _node: decl_id,
-                });
-
-                sym_table.close_scope();
             }
             Decl::Type(decl) => {
                 // create the node
-                let decl_id = node_tree.add_root_node(Node::TypeDecl {
+                node_tree.add_root_node(Node::TypeDecl {
                     name: decl.name,
                     type_spec: decl.type_spec.clone(),
-                });
-
-                let kind = match decl.type_spec {
-                    TypeSpec::Array(_) => TypeKind::Indexable,
-                    TypeSpec::Slice(_) => TypeKind::Indexable,
-                    TypeSpec::Enum(_) => TypeKind::Enum,
-                    TypeSpec::Struct(_) => TypeKind::Struct,
-                    TypeSpec::Named { module, name } => {
-                        if module.is_some() {
-                            todo!("need to handle modules");
-                        }
-
-                        match sym_table.get_type(name) {
-                            Some(t) => t.kind,
-                            // TODO: use the error reporter instead of just panicing
-                            None => panic!("unknown type!"),
-                        }
-                    }
-                    _ => TypeKind::Unit, // all other types are unit types
-                };
-
-                sym_table.add_type(Type {
-                    name: decl.name,
-                    kind,
-                    _node: decl_id,
                 });
             }
             Decl::Const(decl) => {
@@ -280,18 +57,10 @@ impl Noder {
                     name: decl.name,
                     type_spec: None,
                 });
-                let value_node = Self::node_expr(sym_table, node_tree, &decl.value);
+                let value_node = Self::node_expr(node_tree, module, &decl.value);
                 node_tree.add_node(Node::Assign {
                     target: decl_id,
                     value: value_node,
-                });
-
-                // update the symbol table
-                sym_table.add_binding(Binding {
-                    name: decl.name,
-                    _used: false,
-                    _mutable: false,
-                    _node: decl_id,
                 });
             }
             Decl::Var(decl) => {
@@ -300,18 +69,10 @@ impl Noder {
                     name: decl.name,
                     type_spec: None,
                 });
-                let value_node = Self::node_expr(sym_table, node_tree, &decl.value);
+                let value_node = Self::node_expr(node_tree, module, &decl.value);
                 node_tree.add_node(Node::Assign {
                     target: decl_id,
                     value: value_node,
-                });
-
-                // update the symbol table
-                sym_table.add_binding(Binding {
-                    name: decl.name,
-                    _used: false,
-                    _mutable: true,
-                    _node: decl_id,
                 });
             }
             Decl::Use(_) => { /* ignore these since they're handled by the parser */ }
@@ -322,31 +83,28 @@ impl Noder {
         }
     }
     fn node_block(
-        &self,
-        sym_table: &mut SymTable,
+        &mut self,
         node_tree: &mut NodeTree,
+        module: &Module,
         block: &BlockStmt,
     ) -> NodeID {
-        sym_table.open_scope();
-
         let mut stmt_ids = vec![];
         for stmt in &block.statements {
-            let stmt_id = self.node_stmt(sym_table, node_tree, stmt);
+            let stmt_id = self.node_stmt(node_tree, module, stmt);
             stmt_ids.push(stmt_id);
         }
-
-        sym_table.close_scope();
 
         node_tree.add_node(Node::Block {
             statements: stmt_ids,
         })
     }
-    fn node_stmt(&self, sym_table: &mut SymTable, node_tree: &mut NodeTree, stmt: &Stmt) -> NodeID {
+
+    fn node_stmt(&mut self, node_tree: &mut NodeTree, module: &Module, stmt: &Stmt) -> NodeID {
         match stmt {
-            Stmt::Let(stmt) => self.node_let(sym_table, node_tree, stmt),
+            Stmt::Let(stmt) => self.node_let(node_tree, module, stmt),
             Stmt::Assign(stmt) => {
-                let l_id = Self::node_expr(sym_table, node_tree, &stmt.lvalue);
-                let r_id = Self::node_expr(sym_table, node_tree, &stmt.rvalue);
+                let l_id = Self::node_expr(node_tree, module, &stmt.lvalue);
+                let r_id = Self::node_expr(node_tree, module, &stmt.rvalue);
 
                 // TODO: should i check that l_id is an assignable node here or should that
                 // happen later when I do full type checking? (defaulting to later for now)
@@ -355,10 +113,10 @@ impl Noder {
                     value: r_id,
                 })
             }
-            Stmt::Expr(stmt) => Self::node_expr(sym_table, node_tree, &stmt.expr),
+            Stmt::Expr(stmt) => Self::node_expr(node_tree, module, &stmt.expr),
             Stmt::Return(stmt) => {
                 let value = if let Some(v) = &stmt.value {
-                    let value_id = Self::node_expr(sym_table, node_tree, v);
+                    let value_id = Self::node_expr(node_tree, module, v);
                     Some(value_id)
                 } else {
                     None
@@ -367,14 +125,14 @@ impl Noder {
                 node_tree.add_node(Node::Return { value })
             }
             Stmt::Defer(stmt) => {
-                let block_id = self.node_block(sym_table, node_tree, &stmt.block);
+                let block_id = self.node_block(node_tree, module, &stmt.block);
                 node_tree.add_node(Node::Defer { block: block_id })
             }
             Stmt::Match(stmt) => {
-                let target_id = Self::node_expr(sym_table, node_tree, &stmt.target);
+                let target_id = Self::node_expr(node_tree, module, &stmt.target);
                 let mut arms = vec![];
                 for arm in &stmt.arms {
-                    let block_id = self.node_block(sym_table, node_tree, &arm.body);
+                    let block_id = self.node_block(node_tree, module, &arm.body);
 
                     let arm_id = node_tree.add_node(Node::MatchArm {
                         pattern: arm.pattern.clone(),
@@ -389,14 +147,14 @@ impl Noder {
                     arms,
                 })
             }
-            Stmt::Block(stmt) => self.node_block(sym_table, node_tree, stmt),
+            Stmt::Block(stmt) => self.node_block(node_tree, module, stmt),
             Stmt::If(stmt) => {
-                let check_id = Self::node_expr(sym_table, node_tree, &stmt.check);
-                let success_id = self.node_block(sym_table, node_tree, &stmt.success);
+                let check_id = Self::node_expr(node_tree, module, &stmt.check);
+                let success_id = self.node_block(node_tree, module, &stmt.success);
                 let fail_id = stmt
                     .fail
                     .as_ref()
-                    .map(|fail| self.node_block(sym_table, node_tree, fail));
+                    .map(|fail| self.node_block(node_tree, module, fail));
 
                 node_tree.add_node(Node::If {
                     condition: check_id,
@@ -407,12 +165,7 @@ impl Noder {
         }
     }
 
-    fn node_let(
-        &self,
-        sym_table: &mut SymTable,
-        node_tree: &mut NodeTree,
-        stmt: &LetStmt,
-    ) -> NodeID {
+    fn node_let(&mut self, node_tree: &mut NodeTree, module: &Module, stmt: &LetStmt) -> NodeID {
         let mut arms = vec![];
         let empty_body = node_tree.add_node(Node::Block { statements: vec![] });
         if let Pattern::Payload(pat) = &stmt.pattern {
@@ -443,7 +196,7 @@ impl Noder {
 
         let default_id = match &stmt.except {
             LetExcept::Or { binding, body, .. } => {
-                let body_id = self.node_block(sym_table, node_tree, body);
+                let body_id = self.node_block(node_tree, module, body);
 
                 // TODO: need to update the sym_table for the match body here.
                 match *binding {
@@ -460,7 +213,7 @@ impl Noder {
                 }
             }
             LetExcept::Wrap(expr) => {
-                let enum_id = self.node_wrap_expr(sym_table, node_tree, expr);
+                let enum_id = self.node_wrap_expr(node_tree, module, expr);
                 if enum_id.is_none() {
                     panic!("not a valid target for a let wrap statement")
                 }
@@ -515,7 +268,7 @@ impl Noder {
 
         arms.push(default_id);
 
-        let value_id = Self::node_expr(sym_table, node_tree, &stmt.value);
+        let value_id = Self::node_expr(node_tree, module, &stmt.value);
         node_tree.add_node(Node::Match {
             target: value_id,
             arms,
@@ -531,9 +284,9 @@ impl Noder {
     /// convert an abitrary expression into a wrap node for the `let .Ok = expr wrap .Err` syntax
     /// if the given expression is not a valid enum expression None is returned instead.
     fn node_wrap_expr(
-        &self,
-        sym_table: &SymTable,
+        &mut self,
         node_tree: &mut NodeTree,
+        module: &Module,
         expr: &Expr,
     ) -> Option<NodeID> {
         let dot_expr = match expr {
@@ -541,15 +294,15 @@ impl Noder {
             _ => return None,
         };
 
-        let variant = dot_expr.field;
         let target = match &dot_expr.target {
             Some(target) => target,
-            // TODO: how do we check this more carfully, we need to fill in the type hole first
+            // TODO: how do we check this more carfully, we need to fill in the type hole first by
+            // checking what the return value of the function is
             None => {
                 let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
                 let enum_id = node_tree.add_node(Node::EnumConstructor {
                     target: None,
-                    variant,
+                    variant: dot_expr.field,
                     payload: Some(wrap_id),
                 });
                 return Some(enum_id);
@@ -557,49 +310,55 @@ impl Noder {
         };
 
         let target = match target.deref() {
-            Expr::Identifier(expr) => Some(expr.name),
+            Expr::Identifier(expr) => expr,
             // if we have a non-identifier target this isn't an enum variant
             _ => return None,
         };
 
-        if let Some(target) = target {
-            match sym_table.get_type(target) {
-                Some(t) => {
-                    // if the identifier is a declared enum type we know this is a valid enum expression
-                    if t.kind != TypeKind::Enum {
-                        return None;
-                    }
-                }
-                // this is not a declared type, it could be a struct value though
-                None => return None,
-            };
+        let scope_id = module
+            .get_scope_id(target.token.source_id)
+            .expect("could not find scope for identifier");
+        let binding = module.find_binding(scope_id, target.name);
+        if let Some(b) = binding {
+            // if the identifier is a declared enum type we know this is a valid enum expression
+            if b.binding_type != BindingType::EnumType {
+                return None;
+            }
+
+            let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
+            let enum_id = node_tree.add_node(Node::EnumConstructor {
+                target: Some(target.name),
+                variant: dot_expr.field,
+                payload: Some(wrap_id),
+            });
+
+            Some(enum_id)
+        } else {
+            // this is not a declared type, it could be a struct value though
+            None
         }
-
-        let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
-        let enum_id = node_tree.add_node(Node::EnumConstructor {
-            target,
-            variant,
-            payload: Some(wrap_id),
-        });
-
-        Some(enum_id)
     }
 
-    fn node_expr(sym_table: &mut SymTable, node_tree: &mut NodeTree, expr: &Expr) -> NodeID {
+    fn node_expr(node_tree: &mut NodeTree, module: &Module, expr: &Expr) -> NodeID {
         match expr {
             Expr::IntLiteral(expr) => node_tree.add_node(Node::IntLiteral(*expr)),
             Expr::FloatLiteral(expr) => node_tree.add_node(Node::FloatLiteral(*expr)),
             Expr::StringLiteral(expr) => node_tree.add_node(Node::StringLiteral(*expr)),
             Expr::BoolLiteral(expr) => node_tree.add_node(Node::BoolLiteral(*expr)),
-            Expr::Identifier(expr) => match sym_table.get_binding(expr.name) {
-                // make sure this binding exists before we dereference it
-                // TODO: should I check type information here?
-                Some(_) => node_tree.add_node(Node::Identifier(expr.name)),
-                None => panic!("unknown identifier"),
-            },
+            Expr::Identifier(expr) => {
+                let scope_id = module
+                    .get_scope_id(expr.token.source_id)
+                    .expect("could not get scope for identifier");
+                match module.find_binding(scope_id, expr.name) {
+                    // make sure this binding exists before we dereference it
+                    // TODO: should I check type information here?
+                    Some(_) => node_tree.add_node(Node::Identifier(expr.name)),
+                    None => panic!("unknown identifier"),
+                }
+            }
             Expr::Binary(expr) => {
-                let left_id = Self::node_expr(sym_table, node_tree, &expr.left);
-                let right_id = Self::node_expr(sym_table, node_tree, &expr.right);
+                let left_id = Self::node_expr(node_tree, module, &expr.left);
+                let right_id = Self::node_expr(node_tree, module, &expr.right);
                 node_tree.add_node(Node::Binary {
                     left: left_id,
                     operator: expr.operator,
@@ -607,18 +366,18 @@ impl Noder {
                 })
             }
             Expr::Unary(expr) => {
-                let expr_id = Self::node_expr(sym_table, node_tree, &expr.operand);
+                let expr_id = Self::node_expr(node_tree, module, &expr.operand);
                 node_tree.add_node(Node::Unary {
                     operator: expr.operator,
                     operand: expr_id,
                 })
             }
             Expr::Call(expr) => {
-                let func_id = Self::node_expr(sym_table, node_tree, &expr.func);
+                let func_id = Self::node_expr(node_tree, module, &expr.func);
 
                 let mut args = vec![];
                 for arg in &expr.args {
-                    let param_id = Self::node_expr(sym_table, node_tree, arg);
+                    let param_id = Self::node_expr(node_tree, module, arg);
                     args.push(param_id);
                 }
 
@@ -641,8 +400,8 @@ impl Noder {
                 }
             }
             Expr::Index(expr) => {
-                let target_id = Self::node_expr(sym_table, node_tree, &expr.target);
-                let idx_id = Self::node_expr(sym_table, node_tree, &expr.index);
+                let target_id = Self::node_expr(node_tree, module, &expr.target);
+                let idx_id = Self::node_expr(node_tree, module, &expr.index);
 
                 node_tree.add_node(Node::Index {
                     target: target_id,
@@ -650,8 +409,8 @@ impl Noder {
                 })
             }
             Expr::Range(expr) => {
-                let start_id = Self::node_expr(sym_table, node_tree, &expr.start);
-                let end_id = Self::node_expr(sym_table, node_tree, &expr.end);
+                let start_id = Self::node_expr(node_tree, module, &expr.start);
+                let end_id = Self::node_expr(node_tree, module, &expr.end);
                 node_tree.add_node(Node::Range {
                     start: start_id,
                     end: end_id,
@@ -662,32 +421,33 @@ impl Noder {
             Expr::DotAccess(expr) => match &expr.target {
                 Some(target) => match target.deref() {
                     Expr::Identifier(ident) => {
-                        let binding = sym_table.get_binding(ident.name);
-                        if binding.is_some() {
-                            // if this is a known binding then it's not an enum type
-                            let target_id = Self::node_expr(sym_table, node_tree, target);
-                            return node_tree.add_node(Node::FieldAccess {
-                                target: Some(target_id),
-                                field: expr.field,
-                            });
-                        }
-
-                        let type_binding = sym_table.get_type(ident.name);
-                        if let Some(t) = type_binding {
-                            if t.kind == TypeKind::Enum {
-                                let target_id = Self::node_expr(sym_table, node_tree, target);
+                        let scope_id = module
+                            .get_scope_id(ident.token.source_id)
+                            .expect("could not find scope_id for identifier");
+                        let binding = module.find_binding(scope_id, ident.name);
+                        if let Some(b) = binding {
+                            if b.binding_type == BindingType::EnumType {
+                                let target_id = Self::node_expr(node_tree, module, target);
                                 return node_tree.add_node(Node::EnumConstructor {
                                     target: Some(target_id),
                                     variant: expr.field,
                                     payload: None,
                                 });
-                            };
+                            } else {
+                                // dot expressions that are not enum constructures must be field
+                                // access expressions instead
+                                let target_id = Self::node_expr(node_tree, module, target);
+                                return node_tree.add_node(Node::FieldAccess {
+                                    target: Some(target_id),
+                                    field: expr.field,
+                                });
+                            }
                         }
 
                         panic!("unknown identifier")
                     }
                     _ => {
-                        let target_id = Self::node_expr(sym_table, node_tree, target);
+                        let target_id = Self::node_expr(node_tree, module, target);
                         node_tree.add_node(Node::FieldAccess {
                             target: Some(target_id),
                             field: expr.field,
@@ -706,10 +466,10 @@ impl Noder {
                 type_spec: expr.type_spec.clone(),
             }),
             Expr::Alloc(expr) => {
-                let meta_id = Self::node_expr(sym_table, node_tree, &expr.meta_type);
+                let meta_id = Self::node_expr(node_tree, module, &expr.meta_type);
                 let mut options = vec![];
                 for opt in &expr.options {
-                    let opt_id = Self::node_expr(sym_table, node_tree, opt);
+                    let opt_id = Self::node_expr(node_tree, module, opt);
                     options.push(opt_id);
                 }
 
@@ -719,7 +479,7 @@ impl Noder {
                 })
             }
             Expr::Free(expr) => {
-                let ptr_id = Self::node_expr(sym_table, node_tree, &expr.expr);
+                let ptr_id = Self::node_expr(node_tree, module, &expr.expr);
                 node_tree.add_node(Node::Free { expr: ptr_id })
             }
         }

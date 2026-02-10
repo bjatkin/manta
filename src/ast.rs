@@ -322,6 +322,7 @@ pub enum Expr {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IdentifierExpr {
+    pub token: Token,
     pub name: StrID,
 }
 

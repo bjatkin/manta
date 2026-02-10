@@ -267,12 +267,22 @@
                   "Call": {
                     "func": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 977,
+                          "lexeme_id": 17
+                        },
                         "name": 17
                       }
                     },
                     "args": [
                       {
                         "Identifier": {
+                          "token": {
+                            "kind": "Identifier",
+                            "source_id": 985,
+                            "lexeme_id": 18
+                          },
                           "name": 18
                         }
                       }
@@ -304,12 +314,22 @@
                           "Call": {
                             "func": {
                               "Identifier": {
+                                "token": {
+                                  "kind": "Identifier",
+                                  "source_id": 1017,
+                                  "lexeme_id": 21
+                                },
                                 "name": 21
                               }
                             },
                             "args": [
                               {
                                 "Identifier": {
+                                  "token": {
+                                    "kind": "Identifier",
+                                    "source_id": 1026,
+                                    "lexeme_id": 22
+                                  },
                                   "name": 22
                                 }
                               }
@@ -364,6 +384,11 @@
                           "Free": {
                             "expr": {
                               "Identifier": {
+                                "token": {
+                                  "kind": "Identifier",
+                                  "source_id": 1084,
+                                  "lexeme_id": 26
+                                },
                                 "name": 26
                               }
                             }
@@ -394,17 +419,32 @@
                   "Call": {
                     "func": {
                       "Identifier": {
+                        "token": {
+                          "kind": "Identifier",
+                          "source_id": 1109,
+                          "lexeme_id": 43
+                        },
                         "name": 43
                       }
                     },
                     "args": [
                       {
                         "Identifier": {
+                          "token": {
+                            "kind": "Identifier",
+                            "source_id": 1115,
+                            "lexeme_id": 22
+                          },
                           "name": 22
                         }
                       },
                       {
                         "Identifier": {
+                          "token": {
+                            "kind": "Identifier",
+                            "source_id": 1118,
+                            "lexeme_id": 26
+                          },
                           "name": 26
                         }
                       }
@@ -541,12 +581,6 @@
             "binding_type": "FuncType",
             "used": false
           }
-        ],
-        "children": [
-          1,
-          3,
-          5,
-          7
         ]
       },
       {
@@ -557,15 +591,11 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          2
         ]
       },
       {
         "parent": 1,
-        "bindings": [],
-        "children": []
+        "bindings": []
       },
       {
         "parent": 0,
@@ -575,15 +605,11 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          4
         ]
       },
       {
         "parent": 3,
-        "bindings": [],
-        "children": []
+        "bindings": []
       },
       {
         "parent": 0,
@@ -598,15 +624,11 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          6
         ]
       },
       {
         "parent": 5,
-        "bindings": [],
-        "children": []
+        "bindings": []
       },
       {
         "parent": 0,
@@ -616,9 +638,6 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          8
         ]
       },
       {
@@ -639,21 +658,15 @@
             "binding_type": "Value",
             "used": false
           }
-        ],
-        "children": [
-          9,
-          10
         ]
       },
       {
         "parent": 8,
-        "bindings": [],
-        "children": []
+        "bindings": []
       },
       {
         "parent": 8,
-        "bindings": [],
-        "children": []
+        "bindings": []
       }
     ],
     "current_scope": 0,
@@ -667,7 +680,10 @@
       "911": 7,
       "958": 8,
       "1015": 9,
-      "1077": 10
+      "1017": 9,
+      "1026": 9,
+      "1077": 10,
+      "1084": 10
     }
   }
 }

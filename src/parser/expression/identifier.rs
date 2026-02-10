@@ -16,6 +16,6 @@ impl PrefixExprParselet for IdentifierParselet {
         token: Token,
     ) -> Result<Expr, ParseError> {
         let name = token.lexeme_id;
-        Ok(Expr::Identifier(IdentifierExpr { name }))
+        Ok(Expr::Identifier(IdentifierExpr { token, name }))
     }
 }
