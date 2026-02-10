@@ -154,9 +154,24 @@ mod tests {
                         },
                         statements: vec![Stmt::Return(ReturnStmt {
                             value: Some(Expr::Binary(BinaryExpr {
-                                left: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
+                                left: Box::new(Expr::Identifier(IdentifierExpr {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 46,
+                                        lexeme_id: 3,
+                                    },
+                                    name: 3
+                                })),
+
                                 operator: BinaryOp::Add,
-                                right: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
+                                right: Box::new(Expr::Identifier(IdentifierExpr {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 50,
+                                        lexeme_id: 5,
+                                    },
+                                    name: 5
+                                })),
                             })),
                         })]
                     },
@@ -189,7 +204,15 @@ mod tests {
                         statements: vec![
                             Stmt::Expr(ExprStmt {
                                 expr: Expr::Call(CallExpr {
-                                    func: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
+                                    func: Box::new(Expr::Identifier(IdentifierExpr {
+                                        token: Token {
+                                            kind: TokenKind::Identifier,
+                                            source_id: 28,
+                                            lexeme_id: 5,
+                                        },
+                                        name: 5
+                                    })),
+
                                     args: vec![Expr::StringLiteral(6)],
                                 }),
                             }),
@@ -264,8 +287,23 @@ mod tests {
                         },
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 6 })),
-                                args: vec![Expr::Identifier(IdentifierExpr { name: 3 })],
+                                func: Box::new(Expr::Identifier(IdentifierExpr {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 37,
+                                        lexeme_id: 6,
+                                    },
+                                    name: 6
+                                })),
+
+                                args: vec![Expr::Identifier(IdentifierExpr {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 43,
+                                        lexeme_id: 3,
+                                    },
+                                    name: 3
+                                })],
                             })
                         })],
                     },
@@ -309,7 +347,15 @@ mod tests {
                         statements: vec![
                             Stmt::If(IfStmt {
                                 check: Box::new(Expr::Binary(BinaryExpr {
-                                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
+                                    left: Box::new(Expr::Identifier(IdentifierExpr {
+                                        token: Token {
+                                            kind: TokenKind::Identifier,
+                                            source_id: 48,
+                                            lexeme_id: 5,
+                                        },
+                                        name: 5
+                                    })),
+
                                     operator: BinaryOp::Equal,
                                     right: Box::new(Expr::IntLiteral(0)),
                                 })),
@@ -327,9 +373,24 @@ mod tests {
                             }),
                             Stmt::Return(ReturnStmt {
                                 value: Some(Expr::Binary(BinaryExpr {
-                                    left: Box::new(Expr::Identifier(IdentifierExpr { name: 3 })),
+                                    left: Box::new(Expr::Identifier(IdentifierExpr {
+                                        token: Token {
+                                            kind: TokenKind::Identifier,
+                                            source_id: 127,
+                                            lexeme_id: 3,
+                                        },
+                                        name: 3
+                                    })),
+
                                     operator: BinaryOp::Divide,
-                                    right: Box::new(Expr::Identifier(IdentifierExpr { name: 5 })),
+                                    right: Box::new(Expr::Identifier(IdentifierExpr {
+                                        token: Token {
+                                            kind: TokenKind::Identifier,
+                                            source_id: 131,
+                                            lexeme_id: 5,
+                                        },
+                                        name: 5
+                                    })),
                                 }))
                             }),
                         ]
@@ -401,8 +462,23 @@ mod tests {
                         },
                         statements: vec![Stmt::Expr(ExprStmt {
                             expr: Expr::Call(CallExpr {
-                                func: Box::new(Expr::Identifier(IdentifierExpr { name: 8 })),
-                                args: vec![Expr::Identifier(IdentifierExpr { name: 3 })],
+                                func: Box::new(Expr::Identifier(IdentifierExpr {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 46,
+                                        lexeme_id: 8,
+                                    },
+                                    name: 8
+                                })),
+
+                                args: vec![Expr::Identifier(IdentifierExpr {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 52,
+                                        lexeme_id: 3,
+                                    },
+                                    name: 3
+                                })],
                             }),
                         })],
                     },

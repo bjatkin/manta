@@ -6,8 +6,8 @@ use crate::parser::ParseError;
 use crate::parser::lexer::{Token, TokenKind};
 use crate::str_store::{self, StrID};
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
-enum BindingType {
+#[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum BindingType {
     EnumType,
     StructType,
     FuncType,
@@ -16,22 +16,18 @@ enum BindingType {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Binding {
-    name: StrID,
-    binding_type: BindingType,
-    used: bool,
+pub struct Binding {
+    pub name: StrID,
+    pub binding_type: BindingType,
+    pub used: bool,
 }
 
-type ScopeID = usize;
+pub type ScopeID = usize;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Scope {
     parent: Option<ScopeID>,
     bindings: Vec<Binding>,
-    // TODO: now that I have the scope_map I may be able to revert back to singly linked scopes
-    // instead of mapping both parents and children together. Once the HIR conversion fully uses
-    // the new SymTable come back here and try to remove this.
-    children: Vec<ScopeID>,
 }
 
 impl Scope {
@@ -39,7 +35,6 @@ impl Scope {
         Scope {
             parent: Some(parent),
             bindings: vec![],
-            children: vec![],
         }
     }
 
@@ -75,7 +70,6 @@ impl Scope {
 
         Scope {
             parent: None,
-            children: vec![],
             bindings,
         }
     }
@@ -119,11 +113,9 @@ impl SymTable {
     fn open_scope(&mut self, source_id: usize) {
         let new_scope = Scope::new(self.current_scope);
         let new_scope_id = self.scopes.len();
+
         self.scopes.push(new_scope);
         self.scope_map.insert(source_id, new_scope_id);
-
-        let current_scope = self.get_current_scope_mut();
-        current_scope.children.push(new_scope_id);
 
         self.current_scope = new_scope_id;
     }
@@ -154,12 +146,33 @@ impl SymTable {
                 .position(|b| b.name == name);
 
             if let Some(idx) = binding_index {
-                // Step 2: Now that the search borrow is over,
-                // perform the mutable lookup and return immediately.
                 return Some(&mut self.scopes.get_mut(id).unwrap().bindings[idx]);
             }
 
-            // Move to parent
+            scope_id = self.scopes.get(id).unwrap().parent;
+        }
+
+        None
+    }
+
+    fn find_binding_in_scope(&self, scope_id: ScopeID, name: StrID) -> Option<&Binding> {
+        self.scopes.get(scope_id)?;
+
+        let mut scope_id = Some(scope_id);
+
+        while let Some(id) = scope_id {
+            let binding_index = self
+                .scopes
+                .get(id)
+                .expect("invalid scope id")
+                .bindings
+                .iter()
+                .position(|b| b.name == name);
+
+            if let Some(idx) = binding_index {
+                return Some(&self.scopes.get(id).unwrap().bindings[idx]);
+            }
+
             scope_id = self.scopes.get(id).unwrap().parent;
         }
 
@@ -194,6 +207,18 @@ impl Module {
             decls,
             sym_table,
         }
+    }
+
+    pub fn get_scope_id(&self, source_id: usize) -> Option<ScopeID> {
+        self.sym_table.scope_map.get(&source_id).copied()
+    }
+
+    pub fn get_decls(&self) -> &Vec<Decl> {
+        &self.decls
+    }
+
+    pub fn find_binding(&self, scope_id: ScopeID, name: StrID) -> Option<&Binding> {
+        self.sym_table.find_binding_in_scope(scope_id, name)
     }
 
     pub fn get_errors(&self) -> &Vec<ParseError> {
@@ -517,7 +542,13 @@ impl Module {
             Expr::StringLiteral(_) => { /* nothing to do */ }
             Expr::BoolLiteral(_) => { /* nothing to do */ }
             Expr::Identifier(expr) => match sym_table.find_binding(expr.name) {
-                Some(b) => b.used = true,
+                Some(b) => {
+                    b.used = true;
+                    // TODO: this should be made cleaner. Mabye like a method on the sym_table?
+                    sym_table
+                        .scope_map
+                        .insert(expr.token.source_id, sym_table.current_scope);
+                }
                 None => errors.push(ParseError::Custom(
                     Token {
                         kind: TokenKind::Identifier,
@@ -633,37 +664,6 @@ impl Module {
                 }
             }
             _ => { /* nothing to do */ }
-        }
-    }
-}
-
-impl<'a> IntoIterator for &'a Module {
-    type Item = &'a Decl;
-    type IntoIter = ModuleIter<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        ModuleIter {
-            module: self,
-            idx: 0,
-        }
-    }
-}
-
-pub struct ModuleIter<'a> {
-    module: &'a Module,
-    idx: usize,
-}
-
-impl<'a> Iterator for ModuleIter<'a> {
-    type Item = &'a Decl;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.module.decls.get(self.idx) {
-            Some(decl) => {
-                self.idx += 1;
-                Some(decl)
-            }
-            None => None,
         }
     }
 }

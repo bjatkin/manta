@@ -22,7 +22,7 @@ impl Compiler {
             panic!("errors in the parser: {:?}", module.get_errors())
         }
 
-        let noder = Noder::new();
+        let mut noder = Noder::new();
         let _node_tree = noder.node(module);
     }
 }
