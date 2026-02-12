@@ -116,7 +116,7 @@ mod test {
     use crate::ast::{
         ArrayType, DotAccessPat, IdentifierPat, ModuleAccesPat, Pattern, PayloadPat, TypeSpec,
     };
-    use crate::parser::lexer::Lexer;
+    use crate::parser::lexer::{Lexer, Token, TokenKind};
     use crate::str_store::StrStore;
     use pretty_assertions::assert_eq;
 
@@ -176,6 +176,11 @@ mod test {
         parse_pattern_pointer {
             input: "*foo =",
             want: Pattern::TypeSpec(TypeSpec::Pointer(Box::new(TypeSpec::Named {
+                token: Token {
+                    kind: TokenKind::Identifier,
+                    source_id: 1,
+                    lexeme_id: 1,
+                },
                 module: None,
                 name: 1,
             }))),
@@ -184,6 +189,11 @@ mod test {
             input: "**bar {",
             want: Pattern::TypeSpec(TypeSpec::Pointer(Box::new(TypeSpec::Pointer(Box::new(
                 TypeSpec::Named {
+                    token: Token {
+                        kind: TokenKind::Identifier,
+                        source_id: 2,
+                        lexeme_id: 1,
+                    },
                     module: None,
                     name: 1,
                 }
@@ -192,6 +202,11 @@ mod test {
         parse_pattern_slice {
             input: "[]Vec2 =",
             want: Pattern::TypeSpec(TypeSpec::Slice(Box::new(TypeSpec::Named {
+                token: Token {
+                    kind: TokenKind::Identifier,
+                    source_id: 2,
+                    lexeme_id: 2,
+                },
                 module: None,
                 name: 2,
             }))),
@@ -215,6 +230,11 @@ mod test {
                 size: 3,
                 type_spec: Box::new(TypeSpec::Pointer(Box::new(TypeSpec::Slice(Box::new(
                     TypeSpec::Pointer(Box::new(TypeSpec::Named {
+                        token: Token {
+                            kind: TokenKind::Identifier,
+                            source_id: 7,
+                            lexeme_id: 4,
+                        },
                         module: Some(4),
                         name: 6,
                     }))

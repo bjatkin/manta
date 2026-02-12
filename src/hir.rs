@@ -133,7 +133,7 @@ pub enum Node {
     },
 
     EnumConstructor {
-        target: Option<StrID>,
+        target: StrID,
         variant: StrID,
         payload: Option<NodeID>,
     },

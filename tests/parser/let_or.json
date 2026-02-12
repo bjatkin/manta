@@ -41,6 +41,11 @@
                 "name": 16,
                 "payload": {
                   "Named": {
+                    "token": {
+                      "kind": "Identifier",
+                      "source_id": 250,
+                      "lexeme_id": 10
+                    },
                     "module": null,
                     "name": 10
                   }
@@ -71,6 +76,11 @@
         ],
         "return_type": {
           "Named": {
+            "token": {
+              "kind": "Identifier",
+              "source_id": 362,
+              "lexeme_id": 14
+            },
             "module": null,
             "name": 14
           }
@@ -109,6 +119,11 @@
             "name": 24,
             "type_spec": {
               "Named": {
+                "token": {
+                  "kind": "Identifier",
+                  "source_id": 478,
+                  "lexeme_id": 10
+                },
                 "module": null,
                 "name": 10
               }
@@ -158,6 +173,11 @@
             "name": 24,
             "type_spec": {
               "Named": {
+                "token": {
+                  "kind": "Identifier",
+                  "source_id": 717,
+                  "lexeme_id": 10
+                },
                 "module": null,
                 "name": 10
               }
@@ -166,6 +186,11 @@
         ],
         "return_type": {
           "Named": {
+            "token": {
+              "kind": "Identifier",
+              "source_id": 723,
+              "lexeme_id": 25
+            },
             "module": null,
             "name": 25
           }
@@ -230,6 +255,11 @@
                 "name": 30,
                 "payload": {
                   "Named": {
+                    "token": {
+                      "kind": "Identifier",
+                      "source_id": 966,
+                      "lexeme_id": 14
+                    },
                     "module": null,
                     "name": 14
                   }
@@ -239,6 +269,11 @@
                 "name": 31,
                 "payload": {
                   "Named": {
+                    "token": {
+                      "kind": "Identifier",
+                      "source_id": 986,
+                      "lexeme_id": 25
+                    },
                     "module": null,
                     "name": 25
                   }
@@ -265,6 +300,11 @@
         ],
         "return_type": {
           "Named": {
+            "token": {
+              "kind": "Identifier",
+              "source_id": 1074,
+              "lexeme_id": 29
+            },
             "module": null,
             "name": 29
           }
@@ -861,15 +901,21 @@
     ],
     "current_scope": 0,
     "scope_map": {
+      "250": 0,
       "341": 1,
+      "362": 0,
       "369": 2,
       "464": 3,
       "484": 4,
       "694": 5,
+      "723": 0,
       "738": 6,
       "837": 7,
       "859": 8,
+      "966": 0,
+      "986": 0,
       "1051": 9,
+      "1074": 0,
       "1083": 10,
       "1140": 11,
       "1142": 11,

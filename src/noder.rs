@@ -1,6 +1,8 @@
 use std::ops::Deref;
 
-use crate::ast::{BlockStmt, Decl, Expr, IdentifierPat, LetExcept, LetStmt, Pattern, Stmt};
+use crate::ast::{
+    BlockStmt, Decl, Expr, IdentifierPat, LetExcept, LetStmt, Pattern, Stmt, TypeSpec,
+};
 use crate::hir::{Node, NodeID, NodeTree};
 use crate::parser::module::{BindingType, Module};
 use crate::str_store;
@@ -35,7 +37,7 @@ impl Noder {
                     params.push(param_id);
                 }
 
-                let body_id = self.node_block(node_tree, module, &decl.body);
+                let body_id = self.node_block(node_tree, module, &decl.return_type, &decl.body);
 
                 node_tree.add_root_node(Node::FunctionDecl {
                     name: decl.name,
@@ -86,11 +88,12 @@ impl Noder {
         &mut self,
         node_tree: &mut NodeTree,
         module: &Module,
+        return_type: &Option<TypeSpec>,
         block: &BlockStmt,
     ) -> NodeID {
         let mut stmt_ids = vec![];
         for stmt in &block.statements {
-            let stmt_id = self.node_stmt(node_tree, module, stmt);
+            let stmt_id = self.node_stmt(node_tree, module, return_type, stmt);
             stmt_ids.push(stmt_id);
         }
 
@@ -99,9 +102,15 @@ impl Noder {
         })
     }
 
-    fn node_stmt(&mut self, node_tree: &mut NodeTree, module: &Module, stmt: &Stmt) -> NodeID {
+    fn node_stmt(
+        &mut self,
+        node_tree: &mut NodeTree,
+        module: &Module,
+        return_type: &Option<TypeSpec>,
+        stmt: &Stmt,
+    ) -> NodeID {
         match stmt {
-            Stmt::Let(stmt) => self.node_let(node_tree, module, stmt),
+            Stmt::Let(stmt) => self.node_let(node_tree, module, return_type, stmt),
             Stmt::Assign(stmt) => {
                 let l_id = Self::node_expr(node_tree, module, &stmt.lvalue);
                 let r_id = Self::node_expr(node_tree, module, &stmt.rvalue);
@@ -125,14 +134,14 @@ impl Noder {
                 node_tree.add_node(Node::Return { value })
             }
             Stmt::Defer(stmt) => {
-                let block_id = self.node_block(node_tree, module, &stmt.block);
+                let block_id = self.node_block(node_tree, module, return_type, &stmt.block);
                 node_tree.add_node(Node::Defer { block: block_id })
             }
             Stmt::Match(stmt) => {
                 let target_id = Self::node_expr(node_tree, module, &stmt.target);
                 let mut arms = vec![];
                 for arm in &stmt.arms {
-                    let block_id = self.node_block(node_tree, module, &arm.body);
+                    let block_id = self.node_block(node_tree, module, return_type, &arm.body);
 
                     let arm_id = node_tree.add_node(Node::MatchArm {
                         pattern: arm.pattern.clone(),
@@ -147,14 +156,14 @@ impl Noder {
                     arms,
                 })
             }
-            Stmt::Block(stmt) => self.node_block(node_tree, module, stmt),
+            Stmt::Block(stmt) => self.node_block(node_tree, module, return_type, stmt),
             Stmt::If(stmt) => {
                 let check_id = Self::node_expr(node_tree, module, &stmt.check);
-                let success_id = self.node_block(node_tree, module, &stmt.success);
+                let success_id = self.node_block(node_tree, module, return_type, &stmt.success);
                 let fail_id = stmt
                     .fail
                     .as_ref()
-                    .map(|fail| self.node_block(node_tree, module, fail));
+                    .map(|fail| self.node_block(node_tree, module, return_type, fail));
 
                 node_tree.add_node(Node::If {
                     condition: check_id,
@@ -165,7 +174,13 @@ impl Noder {
         }
     }
 
-    fn node_let(&mut self, node_tree: &mut NodeTree, module: &Module, stmt: &LetStmt) -> NodeID {
+    fn node_let(
+        &mut self,
+        node_tree: &mut NodeTree,
+        module: &Module,
+        return_type: &Option<TypeSpec>,
+        stmt: &LetStmt,
+    ) -> NodeID {
         let mut arms = vec![];
         let empty_body = node_tree.add_node(Node::Block { statements: vec![] });
         if let Pattern::Payload(pat) = &stmt.pattern {
@@ -196,7 +211,7 @@ impl Noder {
 
         let default_id = match &stmt.except {
             LetExcept::Or { binding, body, .. } => {
-                let body_id = self.node_block(node_tree, module, body);
+                let body_id = self.node_block(node_tree, module, return_type, body);
 
                 // TODO: need to update the sym_table for the match body here.
                 match *binding {
@@ -213,7 +228,7 @@ impl Noder {
                 }
             }
             LetExcept::Wrap(expr) => {
-                let enum_id = self.node_wrap_expr(node_tree, module, expr);
+                let enum_id = self.node_wrap_expr(node_tree, module, return_type, expr);
                 if enum_id.is_none() {
                     panic!("not a valid target for a let wrap statement")
                 }
@@ -283,10 +298,13 @@ impl Noder {
 
     /// convert an abitrary expression into a wrap node for the `let .Ok = expr wrap .Err` syntax
     /// if the given expression is not a valid enum expression None is returned instead.
+    ///
+    /// TODO: I should return a specific error instead of just None here if the wrap fails
     fn node_wrap_expr(
         &mut self,
         node_tree: &mut NodeTree,
         module: &Module,
+        return_type: &Option<TypeSpec>,
         expr: &Expr,
     ) -> Option<NodeID> {
         let dot_expr = match expr {
@@ -299,9 +317,35 @@ impl Noder {
             // TODO: how do we check this more carfully, we need to fill in the type hole first by
             // checking what the return value of the function is
             None => {
+                let target = match return_type {
+                    None => {
+                        // If theres no return value in this context so the target can not be emitted
+                        return None;
+                    }
+                    Some(t) => {
+                        match t {
+                            TypeSpec::Named { token, name, .. } => {
+                                let binding = module.find_binding(token.source_id, *name);
+                                if let Some(b) = binding {
+                                    if b.binding_type != BindingType::EnumType {
+                                        // This must be an enum type
+                                        return None;
+                                    }
+                                    *name
+                                } else {
+                                    // The return type actually does not exists
+                                    return None;
+                                }
+                            }
+                            // Only named enum types are valid here
+                            _ => return None,
+                        }
+                    }
+                };
+
                 let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
                 let enum_id = node_tree.add_node(Node::EnumConstructor {
-                    target: None,
+                    target,
                     variant: dot_expr.field,
                     payload: Some(wrap_id),
                 });
@@ -327,7 +371,7 @@ impl Noder {
 
             let wrap_id = node_tree.add_node(Node::Identifier(str_store::WRAP));
             let enum_id = node_tree.add_node(Node::EnumConstructor {
-                target: Some(target.name),
+                target: target.name,
                 variant: dot_expr.field,
                 payload: Some(wrap_id),
             });
@@ -429,7 +473,7 @@ impl Noder {
                             if b.binding_type == BindingType::EnumType {
                                 let target_id = Self::node_expr(node_tree, module, target);
                                 return node_tree.add_node(Node::EnumConstructor {
-                                    target: Some(target_id),
+                                    target: target_id,
                                     variant: expr.field,
                                     payload: None,
                                 });
@@ -455,11 +499,18 @@ impl Noder {
                     }
                 },
                 // if there's no target it must be and enum
-                None => node_tree.add_node(Node::EnumConstructor {
-                    target: None,
-                    variant: expr.field,
-                    payload: None,
-                }),
+                None => {
+                    // TODO: how do I know get the target here...
+                    // I may not really be able to do this yet, maybe this means that I need to do
+                    // this as part of type resolution...
+
+                    node_tree.add_node(Node::EnumConstructor {
+                        // TODO: need to update this
+                        target: 0,
+                        variant: expr.field,
+                        payload: None,
+                    })
+                }
             },
             Expr::ModuleAccess(_expr) => todo!("modules are not yet supported"),
             Expr::MetaType(expr) => node_tree.add_node(Node::MetaType {

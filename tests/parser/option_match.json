@@ -81,6 +81,11 @@
         ],
         "return_type": {
           "Named": {
+            "token": {
+              "kind": "Identifier",
+              "source_id": 348,
+              "lexeme_id": 13
+            },
             "module": null,
             "name": 13
           }
@@ -524,6 +529,7 @@
       "128": 1,
       "150": 2,
       "331": 3,
+      "348": 0,
       "352": 4,
       "361": 4,
       "368": 5,

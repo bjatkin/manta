@@ -101,6 +101,11 @@
                 "name": 23,
                 "payload": {
                   "Named": {
+                    "token": {
+                      "kind": "Identifier",
+                      "source_id": 350,
+                      "lexeme_id": 9
+                    },
                     "module": null,
                     "name": 9
                   }
@@ -127,6 +132,11 @@
         ],
         "return_type": {
           "Named": {
+            "token": {
+              "kind": "Identifier",
+              "source_id": 449,
+              "lexeme_id": 19
+            },
             "module": null,
             "name": 19
           }
@@ -598,7 +608,9 @@
       "253": 2,
       "256": 3,
       "278": 4,
+      "350": 0,
       "423": 5,
+      "449": 0,
       "460": 6,
       "469": 6,
       "474": 7,
