@@ -78,37 +78,7 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
-    #[test]
-    fn parse_file_tests() {
-        let test_dir = Path::new("tests/src");
-        let parser_dir = Path::new("tests/parser");
-
-        if !test_dir.exists() {
-            panic!(
-                "Test directory does not exist. Please create a '{:?}' with test .manta files.",
-                test_dir
-            );
-        }
-
-        let entries = fs::read_dir(test_dir).expect("Failed to read tests/parser directory");
-
-        // Read all .manta files from tests/parser and check them against expected parser output
-        for entry in entries {
-            assert_file_eq(entry, test_dir, parser_dir);
-        }
-    }
-
-    fn assert_file_eq(
-        entry: Result<std::fs::DirEntry, std::io::Error>,
-        test_dir: &std::path::Path,
-        parser_dir: &std::path::Path,
-    ) {
-        let entry = match entry {
-            Ok(dir) => dir,
-            Err(_) => panic!("Failed to read entry in '{:?}' directory", test_dir),
-        };
-
-        let path = entry.path();
+    fn assert_file_path_eq(path: &std::path::Path, parser_dir: &std::path::Path) {
         let ext = path.extension().expect("Failed to get file extension");
         if ext != "manta" {
             // Skip over non-manta files
@@ -162,4 +132,6 @@ mod tests {
             );
         }
     }
+
+    include!(concat!(env!("OUT_DIR"), "/generated_parser_tests.rs"));
 }

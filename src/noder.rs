@@ -497,36 +497,7 @@ mod tests {
     use std::fs;
     use std::path::Path;
 
-    #[test]
-    fn noder_file_tests() {
-        let test_dir = Path::new("tests/src");
-        let noder_dir = Path::new("tests/noder");
-
-        if !test_dir.exists() {
-            panic!(
-                "Test directory does not exist. Please create a '{:?}' with test .manta files.",
-                test_dir
-            );
-        }
-
-        let entries = fs::read_dir(test_dir).expect("Failed to read tests/src directory");
-
-        for entry in entries {
-            assert_file_eq(entry, test_dir, noder_dir);
-        }
-    }
-
-    fn assert_file_eq(
-        entry: Result<std::fs::DirEntry, std::io::Error>,
-        test_dir: &Path,
-        noder_dir: &Path,
-    ) {
-        let entry = match entry {
-            Ok(dir) => dir,
-            Err(_) => panic!("Failed to read entry in '{:?}' directory", test_dir),
-        };
-
-        let path = entry.path();
+    fn assert_file_path_eq(path: &std::path::Path, noder_dir: &std::path::Path) {
         let ext = path.extension().expect("Failed to get file extension");
         if ext != "manta" {
             return;
@@ -579,4 +550,6 @@ mod tests {
             );
         }
     }
+
+    include!(concat!(env!("OUT_DIR"), "/generated_noder_tests.rs"));
 }
