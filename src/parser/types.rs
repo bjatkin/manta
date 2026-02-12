@@ -99,12 +99,14 @@ pub fn parse_type(lexer: &mut Lexer, token: Token) -> Result<TypeSpec, ParseErro
                             ));
                         } else {
                             TypeSpec::Named {
+                                token,
                                 module: Some(token.lexeme_id),
                                 name: type_name.lexeme_id,
                             }
                         }
                     }
                     _ => TypeSpec::Named {
+                        token,
                         module: None,
                         name: token.lexeme_id,
                     },
@@ -149,6 +151,11 @@ mod tests {
         parse_type_named_type {
             input: "MyType",
             want: TypeSpec::Named {
+                token: Token {
+                    kind: TokenKind::Identifier,
+                    source_id: 0,
+                    lexeme_id: 0,
+                },
                 module: None,
                 name: 0,
             },

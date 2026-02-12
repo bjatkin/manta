@@ -1285,6 +1285,11 @@ mod tests {
                 expr,
                 MetaTypeExpr {
                     type_spec: TypeSpec::Slice(Box::new(TypeSpec::Named {
+                        token: Token {
+                            kind: TokenKind::Identifier,
+                            source_id: 3,
+                            lexeme_id: 3
+                        },
                         module: None,
                         name: 3,
                     }))
@@ -1299,6 +1304,11 @@ mod tests {
                 MetaTypeExpr {
                     type_spec: TypeSpec::Array(ArrayType {
                         type_spec: Box::new(TypeSpec::Named {
+                            token: Token {
+                                kind: TokenKind::Identifier,
+                                source_id: 5,
+                                lexeme_id: 4,
+                            },
                             module: Some(4),
                             name: 6,
                         }),

@@ -414,6 +414,11 @@ mod tests {
                     name: 1,
                     params: vec![],
                     return_type: Some(TypeSpec::Named {
+                        token: Token {
+                            kind: TokenKind::Identifier,
+                            source_id: 14,
+                            lexeme_id: 4
+                        },
                         module: Some(4),
                         name: 6,
                     }),
@@ -525,6 +530,11 @@ mod tests {
                             EnumVariant {
                                 name: 4,
                                 payload: Some(TypeSpec::Named {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 26,
+                                        lexeme_id: 6,
+                                    },
                                     module: Some(6),
                                     name: 8
                                 }),
@@ -550,6 +560,11 @@ mod tests {
                             EnumVariant {
                                 name: 4,
                                 payload: Some(TypeSpec::Pointer(Box::new(TypeSpec::Named {
+                                    token: Token {
+                                        kind: TokenKind::Identifier,
+                                        source_id: 24,
+                                        lexeme_id: 1,
+                                    },
                                     module: None,
                                     name: 1
                                 }))),

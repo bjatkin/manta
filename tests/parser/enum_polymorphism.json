@@ -84,6 +84,11 @@
             "name": 23,
             "type_spec": {
               "Named": {
+                "token": {
+                  "kind": "Identifier",
+                  "source_id": 403,
+                  "lexeme_id": 18
+                },
                 "module": null,
                 "name": 18
               }

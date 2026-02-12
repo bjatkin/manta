@@ -315,7 +315,11 @@ impl Module {
                     sym_table.close_scope();
                 }
                 Decl::Type(decl) => match &decl.type_spec {
-                    TypeSpec::Named { module, name } => {
+                    TypeSpec::Named {
+                        token,
+                        module,
+                        name,
+                    } => {
                         if let Some(_module) = module {
                             // TODO: modules are not yet supported just skip things for now
                             continue;
@@ -328,6 +332,10 @@ impl Module {
                             }
                             None => panic!("unknown type (return this error)"),
                         };
+
+                        sym_table
+                            .scope_map
+                            .insert(token.source_id, sym_table.current_scope);
 
                         sym_table.add_binding(Binding {
                             name: decl.name,
@@ -616,7 +624,11 @@ impl Module {
         type_spec: &TypeSpec,
     ) {
         match type_spec {
-            TypeSpec::Named { module, name } => {
+            TypeSpec::Named {
+                token,
+                module,
+                name,
+            } => {
                 if let Some(_module) = module {
                     // TODO: modules are not yet supported just skip things for now
                     errors.push(ParseError::Custom(
@@ -629,6 +641,10 @@ impl Module {
                     ));
                     return;
                 }
+
+                sym_table
+                    .scope_map
+                    .insert(token.source_id, sym_table.current_scope);
 
                 match sym_table.find_binding(*name) {
                     Some(b) => b.used = true,

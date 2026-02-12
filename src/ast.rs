@@ -108,7 +108,11 @@ pub enum TypeSpec {
     String,
     Bool,
     // User-defined types
-    Named { module: Option<StrID>, name: StrID },
+    Named {
+        token: Token,
+        module: Option<StrID>,
+        name: StrID,
+    },
     // Composite types
     Pointer(Box<TypeSpec>),
     Slice(Box<TypeSpec>),
