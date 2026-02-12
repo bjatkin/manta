@@ -547,33 +547,7 @@ mod tests {
     use std::fs::{self, DirEntry};
     use std::path::Path;
 
-    #[test]
-    fn lex_file_tests() {
-        let test_dir = Path::new("tests/src");
-        let lex_dir = Path::new("tests/lexer");
-
-        if !test_dir.exists() {
-            panic!(
-                "Test directory does not exist. Please create a '{:?}' with test .manta files.",
-                test_dir
-            );
-        }
-
-        let entries = fs::read_dir(test_dir).expect("Failed to read tests/src directory");
-
-        // Read all .manta files from tests/src and check them against expected lexer output in tests/lexer
-        for entry in entries {
-            assert_file_eq(entry, test_dir, lex_dir);
-        }
-    }
-
-    fn assert_file_eq(entry: Result<DirEntry, std::io::Error>, test_dir: &Path, lex_dir: &Path) {
-        let entry = match entry {
-            Ok(dir) => dir,
-            Err(_) => panic!("Failed to read entry in '{:?}' directory", test_dir),
-        };
-
-        let path = entry.path();
+    fn assert_file_path_eq(path: &Path, lex_dir: &Path) {
         let ext = path.extension().expect("Failed to get file extension");
         if ext != "manta" {
             // Skip over non-manta files
@@ -619,22 +593,21 @@ mod tests {
                 file_name
             );
         } else {
-            // Create the lex directory if it doesn't exist
             fs::create_dir_all(lex_dir).expect("Failed to create lexer test directory");
 
-            // Write the output if the file does not exist
             match fs::write(&lex_file, &json_output) {
                 Ok(_) => (),
                 Err(_) => panic!("Failed to write lexer output to {:?}", lex_file),
             };
 
-            // If we generated the output file, fail the test to prompt the user to verify it's correctness
             panic!(
                 "Generated new lexer output file: {:?}. Please verify its correctness.",
                 lex_file
             );
         }
     }
+
+    include!(concat!(env!("OUT_DIR"), "/generated_lexer_tests.rs"));
 
     macro_rules! test_lex_inputs {
         ( $( $case:ident { input: $input:expr, want: $want:expr,  } ),*, ) => {
@@ -798,6 +771,7 @@ mod tests {
                 Token { kind: TokenKind::Identifier, source_id: 5, lexeme_id: 1 },
                 Token { kind: TokenKind::EnumKeyword, source_id: 14, lexeme_id: 2 },
                 Token { kind: TokenKind::OpenBrace, source_id: 19, lexeme_id: 3 },
+
                 Token { kind: TokenKind::Identifier, source_id: 21, lexeme_id: 4 },
                 Token { kind: TokenKind::Semicolon, source_id: 23, lexeme_id: 5 },
                 Token { kind: TokenKind::Identifier, source_id: 25, lexeme_id: 6 },
